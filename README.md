@@ -24,6 +24,7 @@ pager2077/
 ## Tech Stack
 
 ### Frontend
+
 - **Framework**: React Native (Expo)
 - **UI Library**: NativeBase (customized for retro aesthetic)
 - **Language**: TypeScript
@@ -31,6 +32,7 @@ pager2077/
 - **Audio**: react-native-audio-recorder-player (to be added)
 
 ### Backend
+
 - **Runtime**: Bun
 - **Language**: TypeScript
 - **Infrastructure**: AWS (Lambda, API Gateway, RDS PostgreSQL, S3, SNS)
@@ -43,13 +45,22 @@ pager2077/
 ```bash
 cd frontend
 npm install
-npm start
+npm start        # For mobile (iOS/Android)
+npm run web      # For web development and debugging
 ```
 
 This will start the Expo development server. You can:
+
 - Press `i` for iOS simulator
 - Press `a` for Android emulator
+- Press `w` for web browser
 - Scan QR code with Expo Go app on your phone
+
+**Important Notes:**
+
+- Ensure React versions match: react@19.1.0 and react-dom@19.1.0
+- For debugging, Kiro can run the dev server in background
+- Web development available at http://localhost:8081
 
 ### Backend Development
 
@@ -64,6 +75,7 @@ The backend server will start on `http://localhost:3000` with hot reload enabled
 ## Current Status
 
 **Completed:**
+
 - Project structure initialized
 - Frontend base setup with Expo + TypeScript
 - Retro theme configuration (monochrome color palette)
@@ -77,6 +89,7 @@ The backend server will start on `http://localhost:3000` with hot reload enabled
 - TypeScript interfaces for data models
 
 **To Do:**
+
 - Audio recording integration
 - API client setup
 - Backend API endpoints
@@ -89,12 +102,14 @@ The backend server will start on `http://localhost:3000` with hot reload enabled
 ## Development Notes
 
 ### Frontend
+
 - The app uses a single-screen design (PagerScreen)
 - All components follow the retro aesthetic (sharp corners, thick borders, pixelated fonts)
 - Mock data is currently used for development
 - NativeBase theme is heavily customized in `src/theme/index.ts`
 
 ### Backend
+
 - Basic Bun server setup is complete
 - Models and interfaces are defined in `src/models/index.ts`
 - Directory structure follows service/repository pattern
@@ -103,6 +118,7 @@ The backend server will start on `http://localhost:3000` with hot reload enabled
 ## Design Documents
 
 Full specifications are available in `.kiro/specs/retro-pager-voice-app/`:
+
 - `requirements.md` - Detailed requirements with acceptance criteria
 - `design.md` - Technical architecture and component design
 - `tasks.md` - Implementation task breakdown
@@ -112,17 +128,20 @@ Full specifications are available in `.kiro/specs/retro-pager-voice-app/`:
 This project is set up with advanced Kiro features:
 
 ### Spec-Driven Development
+
 - Complete specifications in `.kiro/specs/retro-pager-voice-app/`
 - Requirements, design, and task breakdown
 - Click "Start task" in `tasks.md` to begin implementation
 
 ### Steering Documents
+
 - **Project Standards** - Always active coding guidelines
 - **Retro UI Guidelines** - Auto-loaded for frontend components
 - **Backend API Standards** - Auto-loaded for backend code
 - **AWS/Terraform Guidelines** - Auto-loaded for infrastructure code
 
 ### Agent Hooks
+
 - **Format and Lint** - Auto-format on save
 - **Check Retro Styling** - Verify UI follows design system
 - **Update Tests** - Generate test suggestions
@@ -130,6 +149,7 @@ This project is set up with advanced Kiro features:
 - **Commit Message Helper** - Generate conventional commits
 
 ### MCP Integration
+
 - **AWS Documentation** - Search AWS docs directly
 - **Git** - Enhanced git operations
 - **Filesystem** - Advanced file operations
@@ -138,9 +158,5 @@ See `.kiro/KIRO_FEATURES.md` for detailed usage guide.
 
 ## Team
 
-- **UI/Frontend**: [Your Name]
-- **Backend**: [Friend's Name]
-
-## License
-
-Private project - All rights reserved
+- Baalavignesh Arunachalam
+- Mithilesh Chellappan

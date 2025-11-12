@@ -272,8 +272,31 @@ Use 8px grid: 8, 16, 24, 32, 40, 48px
 - Test with VoiceOver/TalkBack
 - Make touch targets at least 44x44px
 
+## Development Workflow
+
+### Frontend Debugging
+- For frontend debugging, Kiro can run the development server in background
+- Use `controlBashProcess` with `npm run web` in frontend/ directory
+- Web server runs on http://localhost:8081
+- Ensure React versions match exactly (react@19.1.0, react-dom@19.1.0)
+- Check browser console for errors and warnings
+
+### Background Process Management
+- Use `controlBashProcess` tool for long-running commands
+- Start: `action: "start"` with appropriate command and path
+- Stop: `action: "stop"` with processId
+- Monitor: `getProcessOutput` to check logs and errors
+
+### Debugging Steps
+1. Start development server in background
+2. Check process output for errors
+3. Open browser to test changes
+4. Monitor console for runtime errors
+5. Stop process when debugging complete
+
 ## When in Doubt
 - Keep it simple (KISS principle)
 - Follow existing patterns in the codebase
 - Ask for code review
 - Refer to the design document in `.kiro/specs/`
+- Use background processes for debugging frontend issues
