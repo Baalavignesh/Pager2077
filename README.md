@@ -13,13 +13,13 @@ pager2077/
 
 ## Features
 
-- 🔢 Unique hexadecimal user IDs (no traditional auth)
-- 👥 Simple friend request system
-- 🎤 Voice note recording and sending
-- 📟 Retro 90s pager-style UI (monochrome, pixelated)
-- 🔔 Real-time voice note delivery with auto-play
-- 🟢 Online/offline status indicators
-- 📱 Single-screen interface
+- Unique hexadecimal user IDs (no traditional auth)
+- Simple friend request system
+- Voice note recording and sending
+- Retro 90s pager-style UI (monochrome, pixelated)
+- Real-time voice note delivery with auto-play
+- Online/offline status indicators
+- Single-screen interface
 
 ## Tech Stack
 
@@ -63,7 +63,7 @@ The backend server will start on `http://localhost:3000` with hot reload enabled
 
 ## Current Status
 
-✅ **Completed:**
+**Completed:**
 - Project structure initialized
 - Frontend base setup with Expo + TypeScript
 - Retro theme configuration (monochrome color palette)
@@ -76,7 +76,7 @@ The backend server will start on `http://localhost:3000` with hot reload enabled
 - Backend project structure
 - TypeScript interfaces for data models
 
-🚧 **To Do:**
+**To Do:**
 - Audio recording integration
 - API client setup
 - Backend API endpoints
@@ -106,6 +106,35 @@ Full specifications are available in `.kiro/specs/retro-pager-voice-app/`:
 - `requirements.md` - Detailed requirements with acceptance criteria
 - `design.md` - Technical architecture and component design
 - `tasks.md` - Implementation task breakdown
+
+## Kiro Features
+
+This project is set up with advanced Kiro features:
+
+### Spec-Driven Development
+- Complete specifications in `.kiro/specs/retro-pager-voice-app/`
+- Requirements, design, and task breakdown
+- Click "Start task" in `tasks.md` to begin implementation
+
+### Steering Documents
+- **Project Standards** - Always active coding guidelines
+- **Retro UI Guidelines** - Auto-loaded for frontend components
+- **Backend API Standards** - Auto-loaded for backend code
+- **AWS/Terraform Guidelines** - Auto-loaded for infrastructure code
+
+### Agent Hooks
+- **Format and Lint** - Auto-format on save
+- **Check Retro Styling** - Verify UI follows design system
+- **Update Tests** - Generate test suggestions
+- **API Documentation** - Auto-generate API docs
+- **Commit Message Helper** - Generate conventional commits
+
+### MCP Integration
+- **AWS Documentation** - Search AWS docs directly
+- **Git** - Enhanced git operations
+- **Filesystem** - Advanced file operations
+
+See `.kiro/KIRO_FEATURES.md` for detailed usage guide.
 
 ## Team
 

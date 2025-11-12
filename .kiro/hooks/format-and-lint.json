@@ -1,0 +1,10 @@
+{
+  "name": "Format and Lint Code",
+  "description": "Automatically format and lint code files on save",
+  "trigger": {
+    "type": "onSave",
+    "filePattern": "**/*.{ts,tsx,js,jsx}"
+  },
+  "prompt": "Format and lint the saved file using ESLint and Prettier. Fix any auto-fixable issues. If there are errors that can't be auto-fixed, report them to the user.",
+  "enabled": true
+}

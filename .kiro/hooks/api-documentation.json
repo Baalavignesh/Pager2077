@@ -1,0 +1,9 @@
+{
+  "name": "Generate API Documentation",
+  "description": "Generate or update API endpoint documentation",
+  "trigger": {
+    "type": "manual"
+  },
+  "prompt": "Review the backend handler files and generate API documentation including:\n- Endpoint URL and method\n- Request body schema\n- Response format\n- Error codes\n- Example requests/responses\n\nFormat as markdown and save to backend/docs/api.md",
+  "enabled": true
+}

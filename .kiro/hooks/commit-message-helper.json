@@ -1,0 +1,9 @@
+{
+  "name": "Commit Message Helper",
+  "description": "Generate conventional commit messages based on changes",
+  "trigger": {
+    "type": "manual"
+  },
+  "prompt": "Review the git diff and generate a conventional commit message following the format:\n\n<type>: <description>\n\nTypes: feat, fix, refactor, style, docs, test, chore\n\nProvide 2-3 commit message options based on the changes made.",
+  "enabled": true
+}

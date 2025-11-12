@@ -1,0 +1,9 @@
+{
+  "name": "Update Tests",
+  "description": "Suggest test updates when code changes",
+  "trigger": {
+    "type": "manual"
+  },
+  "prompt": "Review the current file and identify what tests should be updated or created. Look for:\n- New functions that need unit tests\n- Changed logic that requires test updates\n- Edge cases that should be tested\n\nProvide specific test suggestions with example test code.",
+  "enabled": true
+}

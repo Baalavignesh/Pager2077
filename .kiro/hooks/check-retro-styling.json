@@ -1,0 +1,10 @@
+{
+  "name": "Check Retro Styling",
+  "description": "Verify UI components follow retro design guidelines",
+  "trigger": {
+    "type": "onSave",
+    "filePattern": "frontend/src/components/**/*.tsx"
+  },
+  "prompt": "Review the saved component file and check if it follows the retro design guidelines:\n- No rounded corners (borderRadius should be 0)\n- Thick borders (2-4px)\n- Uses theme colors only\n- Uppercase text for buttons\n- Follows 8px grid spacing\n\nIf any violations are found, suggest fixes. If everything looks good, confirm compliance.",
+  "enabled": false
+}
