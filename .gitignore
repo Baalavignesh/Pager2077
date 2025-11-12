@@ -1,0 +1,55 @@
+# Dependencies
+node_modules/
+bun.lockb
+
+# Expo
+.expo/
+dist/
+web-build/
+
+# Native
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
+# Debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# Local env files
+.env*.local
+.env
+
+# Typescript
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Terraform
+backend/terraform/.terraform/
+backend/terraform/*.tfstate
+backend/terraform/*.tfstate.*
+backend/terraform/.terraform.lock.hcl
+
+# AWS
+.aws/
+
+# Logs
+logs/
+*.log

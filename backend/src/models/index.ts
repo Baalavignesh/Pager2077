@@ -1,0 +1,66 @@
+/**
+ * Data Models and TypeScript Interfaces
+ */
+
+export interface User {
+  id: string;
+  hexCode: string;
+  deviceToken: string;
+  status: 'online' | 'offline';
+  lastSeen: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface FriendRequest {
+  id: string;
+  fromUserId: string;
+  toUserId: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Friendship {
+  id: string;
+  userId1: string;
+  userId2: string;
+  createdAt: Date;
+}
+
+export interface VoiceNote {
+  id: string;
+  senderId: string;
+  recipientId: string;
+  s3Key: string;
+  durationSeconds: number;
+  status: 'pending' | 'delivered' | 'played' | 'expired';
+  createdAt: Date;
+  expiresAt: Date;
+  playedAt?: Date;
+}
+
+// API Request/Response Types
+export interface RegisterUserRequest {
+  deviceToken: string;
+}
+
+export interface RegisterUserResponse {
+  userId: string;
+  hexCode: string;
+  token: string;
+}
+
+export interface SendFriendRequestRequest {
+  toHexCode: string;
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: {
+    code: string;
+    message: string;
+    details?: any;
+  };
+}
