@@ -11,69 +11,98 @@ This steering document is automatically included when working on frontend UI com
 
 ### Visual Style
 - **Monochrome LCD Display**: Use only the defined color palette
-- **Pixelated Look**: Sharp edges, no anti-aliasing effects
-- **Chunky Buttons**: Large, bulky buttons with thick borders
+- **Pixelated Look**: Custom 'MyPager' font for all text
+- **Chunky Buttons**: Large, bulky buttons with thick borders (3px) and rounded corners (10px)
+- **Physical Device Frame**: Display containers with thick borders (8px) and rounded corners (16px)
+- **LCD Screen Elements**: Sharp corners (0px) for menu items and text
 - **No Gradients**: Flat colors only
 - **No Shadows**: Keep it flat and simple
-- **Geometric Shapes**: Rectangles and squares, no organic shapes
+- **Geometric Shapes**: Rectangles and rounded rectangles
 
 ### Component Styling Checklist
 
 When creating or modifying UI components, ensure:
 
-- [ ] `borderRadius: 0` (sharp corners)
-- [ ] Border width: 2px for containers, 4px for buttons
-- [ ] Colors from theme palette only
+- [ ] Physical device elements (buttons, display frame): rounded corners (10-16px)
+- [ ] LCD screen elements (menu items, text): sharp corners (0px)
+- [ ] Border width: 8px for display frame, 3px for buttons, 2px for containers, 0px for body
+- [ ] Colors from defined palette only
 - [ ] Uppercase text for buttons and labels
-- [ ] Monospace font for hex codes and technical data
-- [ ] Spacing follows 8px grid (8, 16, 24, 32px)
+- [ ] fontFamily: 'MyPager' for all text
+- [ ] Spacing follows 8px grid (8, 12, 16, 20, 24, 32px)
 - [ ] No smooth transitions (use stepped animations if needed)
 - [ ] High contrast between foreground and background
 
 ### Color Usage
 
 ```typescript
-// Import from theme
+// Direct color values (use in StyleSheet.create())
+const COLORS = {
+  // Main palette
+  background: '#C7D3C0',      // LCD green-gray (main background)
+  foreground: '#1A1A1A',      // Dark text/borders
+  accent: '#2D4A2B',          // Dark green highlights
+  disabled: '#8B9B88',        // Muted inactive
+  online: '#009819ff',        // Green online status LED
+  offline: '#FF4444',         // Red offline status LED
+  
+  // Component-specific
+  displayBg: '#dadadaff',     // Light gray for display/body backgrounds
+  buttonBg: '#4A4A4A',        // Dark gray for buttons
+  buttonBorder: '#2A2A2A',    // Darker gray for button borders
+  buttonText: '#E0E0E0',      // Light gray for button text
+  selectedBg: '#1A1A1A',      // Dark background for selected items
+  selectedText: '#9CB4A8',    // Light green text for selected items
+};
+
+// Or import from theme (for NativeBase components only)
 import { useTheme } from 'native-base';
-
 const { colors } = useTheme();
-
-// Use semantic colors:
-colors.background  // LCD green-gray background
-colors.foreground  // Dark text and borders
-colors.accent      // Highlights and active states
-colors.disabled    // Inactive/disabled states
-colors.online      // Online status indicator
-colors.offline     // Offline status indicator
 ```
 
 ### Button States
 
 ```typescript
-// Default state
+// Using StyleSheet.create() (preferred)
+const styles = StyleSheet.create({
+  button: {
+    backgroundColor: '#4A4A4A',
+    borderWidth: 3,
+    borderRadius: 10,
+    borderColor: '#2A2A2A',
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#E0E0E0',
+    fontFamily: 'MyPager',
+  },
+  actionButton: {
+    width: 112,
+  },
+  navButton: {
+    width: 60,
+    marginHorizontal: 12,
+  },
+});
+
+// Or with NativeBase (for complex components)
 <Button
-  borderRadius={0}
-  borderWidth={4}
-  borderColor="foreground"
-  bg="accent"
+  borderRadius={10}
+  borderWidth={3}
+  borderColor="#2A2A2A"
+  bg="#4A4A4A"
+  _pressed={{
+    transform: [{ scale: 0.95 }],
+  }}
 >
-  <Text color="background" fontWeight="bold" textTransform="uppercase">
+  <Text color="#E0E0E0" fontWeight="bold" textTransform="uppercase" fontFamily="MyPager">
     BUTTON TEXT
   </Text>
 </Button>
-
-// Pressed state
-_pressed={{
-  transform: [{ scale: 0.95 }],
-  bg: 'foreground',
-}}
-
-// Disabled state
-_disabled={{
-  bg: 'disabled',
-  borderColor: 'disabled',
-  opacity: 0.6,
-}}
 ```
 
 ### Typography

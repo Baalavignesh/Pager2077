@@ -5,13 +5,14 @@ interface PagerButtonProps {
   label: string;
   onPress: () => void;
   isNavButton?: boolean;
+  style?: object;
 }
 
-export const PagerButton: React.FC<PagerButtonProps> = ({ label, onPress, isNavButton = false }) => {
+export const PagerButton: React.FC<PagerButtonProps> = ({ label, onPress, isNavButton = false, style }) => {
   return (
     <Pressable
       onPress={onPress}
-      style={[styles.button, isNavButton ? styles.navButton : styles.actionButton]}
+      style={[styles.button, isNavButton ? styles.navButton : styles.actionButton, style]}
     >
       <Text style={styles.buttonText}>{label}</Text>
     </Pressable>
@@ -22,16 +23,15 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: '#4A4A4A',
     borderWidth: 3,
-    borderTopColor: '#6A6A6A',
-    borderLeftColor: '#6A6A6A',
-    borderRightColor: '#2A2A2A',
-    borderBottomColor: '#2A2A2A',
+    borderRadius: 10,
+    borderColor: '#2A2A2A',
     height: 48,
     justifyContent: 'center',
     alignItems: 'center',
+
   },
   buttonText: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#E0E0E0',
     fontFamily: 'MyPager',
@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
     width: 112,
   },
   navButton: {
-    width: 60,
+    width: 80,
     marginHorizontal: 12,
   },
 });

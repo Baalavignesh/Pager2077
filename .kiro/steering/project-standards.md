@@ -173,27 +173,52 @@ Example: `feat: add voice recording functionality`
 
 ### Colors
 ```typescript
-background: '#C7D3C0'  // LCD green-gray
-foreground: '#1A1A1A'  // Dark text/borders
-accent: '#2D4A2B'      // Dark green highlights
-disabled: '#8B9B88'    // Muted inactive
-online: '#2D4A2B'      // Online status
-offline: '#5A5A5A'     // Offline status
+// Main palette
+background: '#C7D3C0'    // LCD green-gray (main background)
+foreground: '#1A1A1A'    // Dark text/borders
+accent: '#2D4A2B'        // Dark green highlights
+disabled: '#8B9B88'      // Muted inactive
+online: '#009819ff'      // Green online status LED
+offline: '#FF4444'       // Red offline status LED
+
+// Component-specific
+displayBg: '#dadadaff'   // Light gray for display/body backgrounds
+buttonBg: '#4A4A4A'      // Dark gray for buttons
+buttonBorder: '#2A2A2A'  // Darker gray for button borders
+buttonText: '#E0E0E0'    // Light gray for button text
+selectedBg: '#1A1A1A'    // Dark background for selected items
+selectedText: '#9CB4A8'  // Light green text for selected items
 ```
 
 ### Typography
-- Primary: Pixelated font (PressStart2P or similar)
-- Mono: Courier for hex codes
-- Sizes: 10, 12, 14, 18, 24px
+- Primary font: 'MyPager' (custom pixelated font)
+- All text uses fontFamily: 'MyPager'
+- Sizes: 10, 12, 14, 16, 18, 20, 24px
+- Button text: bold, uppercase
+- Menu items: size 20px
+- Titles: size 18px, bold
 
 ### Spacing
-Use 8px grid: 8, 16, 24, 32, 40, 48px
+Use 8px grid: 8, 12, 16, 20, 24, 32, 40, 48px
+
+### Border Radius
+- Display containers: 16px (rounded corners for physical device look)
+- Buttons: 10px (slightly rounded for tactile feel)
+- LEDs: 6px (circular, borderRadius: 50%)
+- Most UI elements: 0px (sharp corners for retro LCD aesthetic)
+
+### Border Widths
+- Display outer border: 8px (thick frame)
+- Button borders: 3px
+- Container borders: 2px
+- No borders (0px) for body containers
 
 ### Components
-- No rounded corners
-- Thick borders (2-4px)
-- Uppercase text for buttons
-- High contrast
+- Rounded corners for physical device elements (display frame, buttons)
+- Sharp corners for LCD screen elements (menu items, text)
+- Thick borders for buttons and display frame
+- Uppercase text for buttons and labels
+- High contrast between text and backgrounds
 - Minimal animations (stepped, not smooth)
 
 ## Dependencies Management
