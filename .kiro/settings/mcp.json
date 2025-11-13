@@ -29,7 +29,8 @@
         "git_diff",
         "git_log",
         "git_commit",
-        "git_add"
+        "git_add",
+        "git_diff_unstaged"
       ]
     },
     "github": {
