@@ -10,100 +10,39 @@ This steering document is automatically included when working on frontend UI com
 ## 90s Pager Aesthetic Rules
 
 ### Visual Style
-- **Monochrome LCD Display**: Use only the defined color palette
-- **Pixelated Look**: Custom 'MyPager' font for all text
-- **Chunky Buttons**: Large, bulky buttons with thick borders (3px) and rounded corners (10px)
-- **Physical Device Frame**: Display containers with thick borders (8px) and rounded corners (16px)
-- **LCD Screen Elements**: Sharp corners (0px) for menu items and text
-- **No Gradients**: Flat colors only
-- **No Shadows**: Keep it flat and simple
-- **Geometric Shapes**: Rectangles and rounded rectangles
+- **90s Pager LCD Display**: Greenish monochrome screen with scanline effects
+- **Pixelated Font**: Chicago font for authentic retro look
+- **Metallic Buttons**: Gradient buttons with press animations
+- **Physical Device Frame**: Dark frame around LCD display
+- **LCD Scanlines**: Dual-layer horizontal and vertical grid for realistic pixel matrix
+- **Subtle Flicker**: Periodic opacity animation mimicking LCD refresh
 
 ### Component Styling Checklist
 
-When creating or modifying UI components, ensure:
+When creating or modifying UI components:
 
-- [ ] Physical device elements (buttons, display frame): rounded corners (10-16px)
-- [ ] LCD screen elements (menu items, text): sharp corners (0px)
-- [ ] Border width: 8px for display frame, 3px for buttons, 2px for containers, 0px for body
-- [ ] Colors from defined palette only
-- [ ] Uppercase text for buttons and labels
-- [ ] fontFamily: 'MyPager' for all text
-- [ ] Spacing follows 8px grid (8, 12, 16, 20, 24, 32px)
-- [ ] No smooth transitions (use stepped animations if needed)
-- [ ] High contrast between foreground and background
+- [ ] Use PagerScreen wrapper for all screens
+- [ ] Use PagerText for consistent text styling
+- [ ] fontFamily: 'Chicago' for all text
+- [ ] Let PagerScreen handle LCD styling (scanlines, fonts, spacing)
+- [ ] Focus screen components on functionality, not styling
+- [ ] Add screen-specific styles only when necessary
 
 ### Color Usage
 
-```typescript
-// Direct color values (use in StyleSheet.create())
-const COLORS = {
-  // Main palette
-  background: '#C7D3C0',      // LCD green-gray (main background)
-  foreground: '#1A1A1A',      // Dark text/borders
-  accent: '#2D4A2B',          // Dark green highlights
-  disabled: '#8B9B88',        // Muted inactive
-  online: '#009819ff',        // Green online status LED
-  offline: '#FF4444',         // Red offline status LED
-  
-  // Component-specific
-  displayBg: '#dadadaff',     // Light gray for display/body backgrounds
-  buttonBg: '#4A4A4A',        // Dark gray for buttons
-  buttonBorder: '#2A2A2A',    // Darker gray for button borders
-  buttonText: '#E0E0E0',      // Light gray for button text
-  selectedBg: '#1A1A1A',      // Dark background for selected items
-  selectedText: '#9CB4A8',    // Light green text for selected items
-};
-
-// Or import from theme (for NativeBase components only)
-import { useTheme } from 'native-base';
-const { colors } = useTheme();
-```
+- Greenish LCD background for authentic pager look
+- Dark text on light background for high contrast
+- Inverted colors for selected items
+- Metallic gradient buttons with multiple color variants
+- Colors defined in theme and component files
 
 ### Button States
 
-```typescript
-// Using StyleSheet.create() (preferred)
-const styles = StyleSheet.create({
-  button: {
-    backgroundColor: '#4A4A4A',
-    borderWidth: 3,
-    borderRadius: 10,
-    borderColor: '#2A2A2A',
-    height: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#E0E0E0',
-    fontFamily: 'MyPager',
-  },
-  actionButton: {
-    width: 112,
-  },
-  navButton: {
-    width: 60,
-    marginHorizontal: 12,
-  },
-});
-
-// Or with NativeBase (for complex components)
-<Button
-  borderRadius={10}
-  borderWidth={3}
-  borderColor="#2A2A2A"
-  bg="#4A4A4A"
-  _pressed={{
-    transform: [{ scale: 0.95 }],
-  }}
->
-  <Text color="#E0E0E0" fontWeight="bold" textTransform="uppercase" fontFamily="MyPager">
-    BUTTON TEXT
-  </Text>
-</Button>
-```
+- Use MetalButton component for gradient buttons
+- Multiple color variants available (primary, error, default, etc.)
+- Automatic press animations (scale and translateY)
+- Shine effect on press
+- PagerButton wrapper maps labels to appropriate variants
 
 ### Typography
 
@@ -268,40 +207,29 @@ toast.show({
 
 ## Styling Approach
 
-**IMPORTANT:** All components and screens must use `StyleSheet.create()` defined within the same file.
-
+**Screen Components:**
 ```typescript
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { PagerScreen, PagerText } from '../components/PagerScreen';
 
-export const MyComponent: React.FC = () => {
+export const MyScreen: React.FC<Props> = ({ items, selectedIndex }) => {
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Content</Text>
-    </View>
+    <PagerScreen title="MY SCREEN">
+      {items.map((item, index) => (
+        <PagerText key={item.id} selected={index === selectedIndex}>
+          {index === selectedIndex ? '>' : ' '} {item.label}
+        </PagerText>
+      ))}
+    </PagerScreen>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    borderWidth: 2,
-    borderColor: '#1A1A1A',
-    backgroundColor: '#9CB4A8',
-    padding: 16,
-  },
-  text: {
-    fontSize: 14,
-    color: '#1A1A1A',
-  },
-});
 ```
 
 **Rules:**
-- ❌ No centralized style files
-- ❌ No importing styles from other files
-- ✅ Each component has its own StyleSheet.create()
-- ✅ Styles defined at the bottom of the component file
-- ✅ Use React Native core components (View, Text, Pressable)
+- ✅ Use PagerScreen wrapper for all screens
+- ✅ Use PagerText for text content
+- ✅ PagerScreen handles all LCD styling
+- ✅ Add screen-specific styles only when needed
+- ❌ Don't duplicate LCD styling in individual screens
 
 ## Component Examples
 

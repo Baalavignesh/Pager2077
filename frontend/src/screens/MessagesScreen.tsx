@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { PagerScreen, PagerText } from '../components/PagerScreen';
 
 interface Message {
   from: string;
@@ -14,48 +14,16 @@ interface MessagesScreenProps {
 
 export const MessagesScreen: React.FC<MessagesScreenProps> = ({ messages, selectedIndex }) => {
   return (
-    <View>
-      <Text style={styles.title}>MESSAGES</Text>
-      <Text> </Text>
+    <PagerScreen title="MESSAGES">
       {messages.length === 0 ? (
-        <Text style={styles.item}>NO MESSAGES</Text>
+        <PagerText>NO MESSAGES</PagerText>
       ) : (
         messages.map((msg, index) => (
-          <Text
-            key={index}
-            style={[
-              styles.item,
-              index === selectedIndex ? styles.itemSelected : styles.itemUnselected
-            ]}
-          >
+          <PagerText key={index} selected={index === selectedIndex}>
             {index === selectedIndex ? '>' : ' '} {msg.from}
-          </Text>
+          </PagerText>
         ))
       )}
-    </View>
+    </PagerScreen>
   );
 };
-
-const styles = StyleSheet.create({
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 8,
-    color: '#1A1A1A',
-    fontFamily: 'MyPager',
-  },
-  item: {
-    fontSize: 14,
-    paddingHorizontal: 4,
-    fontFamily: 'MyPager',
-  },
-  itemSelected: {
-    color: '#9CB4A8',
-    backgroundColor: '#1A1A1A',
-  },
-  itemUnselected: {
-    color: '#1A1A1A',
-    backgroundColor: 'transparent',
-  },
-});

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { PagerScreen, PagerText } from '../components/PagerScreen';
 
 interface MenuItem {
   id: string;
@@ -13,46 +13,12 @@ interface MainMenuScreenProps {
 
 export const MainMenuScreen: React.FC<MainMenuScreenProps> = ({ menuItems, selectedIndex }) => {
   return (
-    <View>
-      <Text style={styles.title}>PAGER 2077</Text>
-      <Text> </Text>
+    <PagerScreen title="PAGER 2077">
       {menuItems.map((item, index) => (
-        <Text 
-          key={item.id} 
-          style={[
-            styles.item,
-            index === selectedIndex ? styles.itemSelected : styles.itemUnselected
-          ]}
-        >
+        <PagerText key={item.id} selected={index === selectedIndex}>
           {index === selectedIndex ? '>' : ' '} {item.label}
-        </Text>
+        </PagerText>
       ))}
-    </View>
+    </PagerScreen>
   );
 };
-
-const styles = StyleSheet.create({
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 8,
-    color: '#1A1A1A',
-    fontFamily: 'MyPager',
-  },
-  item: {
-    fontSize: 20,
-    paddingHorizontal: 4,
-    fontFamily: 'MyPager',
-    margin: 6,
-  },
-  itemSelected: {
-    color: '#9CB4A8',
-    backgroundColor: '#1A1A1A',
-    padding: 6
-  },
-  itemUnselected: {
-    color: '#1A1A1A',
-    backgroundColor: 'transparent',
-  },
-});

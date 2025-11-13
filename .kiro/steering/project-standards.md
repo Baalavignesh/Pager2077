@@ -171,55 +171,29 @@ Example: `feat: add voice recording functionality`
 
 ## Retro Design System
 
-### Colors
-```typescript
-// Main palette
-background: '#C7D3C0'    // LCD green-gray (main background)
-foreground: '#1A1A1A'    // Dark text/borders
-accent: '#2D4A2B'        // Dark green highlights
-disabled: '#8B9B88'      // Muted inactive
-online: '#009819ff'      // Green online status LED
-offline: '#FF4444'       // Red offline status LED
-
-// Component-specific
-displayBg: '#dadadaff'   // Light gray for display/body backgrounds
-buttonBg: '#4A4A4A'      // Dark gray for buttons
-buttonBorder: '#2A2A2A'  // Darker gray for button borders
-buttonText: '#E0E0E0'    // Light gray for button text
-selectedBg: '#1A1A1A'    // Dark background for selected items
-selectedText: '#9CB4A8'  // Light green text for selected items
-```
+### Visual Style
+- 90s pager aesthetic with monochrome LCD display
+- Greenish LCD background with dark text
+- Scanline effects for authentic LCD feel
+- Metallic gradient buttons with press animations
 
 ### Typography
-- Primary font: 'MyPager' (custom pixelated font)
-- All text uses fontFamily: 'MyPager'
-- Sizes: 10, 12, 14, 16, 18, 20, 24px
-- Button text: bold, uppercase
-- Menu items: size 20px
-- Titles: size 18px, bold
+- Primary font: 'Chicago' (pixelated retro font)
+- LCD text has subtle shadow for depth
+- Letter spacing for readability
 
-### Spacing
-Use 8px grid: 8, 12, 16, 20, 24, 32, 40, 48px
+### Components Architecture
+- **PagerDisplay**: Outer frame with LCD screen container
+- **PagerScreen**: Base wrapper for all screens with scanline effects
+- **PagerText**: Consistent text component with selection states
+- **MetalButton**: Gradient buttons with color variants and animations
+- All screens use PagerScreen + PagerText for consistency
 
-### Border Radius
-- Display containers: 16px (rounded corners for physical device look)
-- Buttons: 10px (slightly rounded for tactile feel)
-- LEDs: 6px (circular, borderRadius: 50%)
-- Most UI elements: 0px (sharp corners for retro LCD aesthetic)
-
-### Border Widths
-- Display outer border: 8px (thick frame)
-- Button borders: 3px
-- Container borders: 2px
-- No borders (0px) for body containers
-
-### Components
-- Rounded corners for physical device elements (display frame, buttons)
-- Sharp corners for LCD screen elements (menu items, text)
-- Thick borders for buttons and display frame
-- Uppercase text for buttons and labels
-- High contrast between text and backgrounds
-- Minimal animations (stepped, not smooth)
+### Styling Approach
+- PagerScreen contains all LCD screen styling (fonts, spacing, scanlines)
+- Individual screens focus on functionality, not styling
+- Screen-specific styles only when needed (e.g., text alignment)
+- No centralized style files - styles colocated with components
 
 ## Dependencies Management
 

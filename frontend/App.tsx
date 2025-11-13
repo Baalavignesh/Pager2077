@@ -40,7 +40,7 @@ export default function App() {
     async function loadFont() {
       try {
         await Font.loadAsync({
-          'MyPager': require('./assets/MyPager.ttf'),
+          'Chicago': require('./assets/pixChicago.ttf'),
         });
         setFontLoaded(true);
       } catch (error) {

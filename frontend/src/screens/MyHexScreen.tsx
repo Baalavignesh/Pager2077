@@ -1,32 +1,21 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { Text, StyleSheet } from 'react-native';
+import { PagerScreen, PagerText } from '../components/PagerScreen';
 
 export const MyHexScreen: React.FC = () => {
   return (
-    <View>
-      <Text style={styles.title}>MY HEX CODE</Text>
+    <PagerScreen title="MY HEX CODE">
+      <PagerText style={styles.centered}>A1B2C3D4</PagerText>
       <Text> </Text>
-      <Text style={styles.text}>A1B2C3D4</Text>
-      <Text> </Text>
-      <Text style={styles.text}>SHARE THIS CODE</Text>
-      <Text style={styles.text}>WITH FRIENDS</Text>
-    </View>
+      <PagerText style={styles.centered}>SHARE THIS CODE</PagerText>
+      <PagerText style={styles.centered}>WITH FRIENDS</PagerText>
+    </PagerScreen>
   );
 };
 
+// Screen-specific styles (only when needed)
 const styles = StyleSheet.create({
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
+  centered: {
     textAlign: 'center',
-    marginBottom: 8,
-    color: '#1A1A1A',
-    fontFamily: 'MyPager',
-  },
-  text: {
-    fontSize: 14,
-    color: '#1A1A1A',
-    textAlign: 'center',
-    fontFamily: 'MyPager',
   },
 });

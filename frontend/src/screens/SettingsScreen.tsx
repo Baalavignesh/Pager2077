@@ -1,31 +1,12 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { PagerScreen, PagerText } from '../components/PagerScreen';
 
 export const SettingsScreen: React.FC = () => {
   return (
-    <View>
-      <Text style={styles.title}>SETTINGS</Text>
-      <Text> </Text>
-      <Text style={styles.item}>1. SOUND: ON</Text>
-      <Text style={styles.item}>2. VIBRATE: ON</Text>
-      <Text style={styles.item}>3. ABOUT</Text>
-    </View>
+    <PagerScreen title="SETTINGS">
+      <PagerText>1. SOUND: ON</PagerText>
+      <PagerText>2. VIBRATE: ON</PagerText>
+      <PagerText>3. ABOUT</PagerText>
+    </PagerScreen>
   );
 };
-
-const styles = StyleSheet.create({
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 8,
-    color: '#1A1A1A',
-    fontFamily: 'MyPager',
-  },
-  item: {
-    fontSize: 14,
-    paddingHorizontal: 4,
-    color: '#1A1A1A',
-    fontFamily: 'MyPager',
-  },
-});

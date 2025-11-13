@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { PagerScreen, PagerText } from '../components/PagerScreen';
 
 interface Friend {
   hexCode: string;
@@ -13,44 +13,12 @@ interface FriendsScreenProps {
 
 export const FriendsScreen: React.FC<FriendsScreenProps> = ({ friends, selectedIndex }) => {
   return (
-    <View>
-      <Text style={styles.title}>FRIENDS</Text>
-      <Text> </Text>
+    <PagerScreen title="FRIENDS">
       {friends.map((friend, index) => (
-        <Text 
-          key={friend.hexCode} 
-          style={[
-            styles.item,
-            index === selectedIndex ? styles.itemSelected : styles.itemUnselected
-          ]}
-        >
+        <PagerText key={friend.hexCode} selected={index === selectedIndex}>
           {index === selectedIndex ? '>' : ' '} {friend.hexCode}
-        </Text>
+        </PagerText>
       ))}
-    </View>
+    </PagerScreen>
   );
 };
-
-const styles = StyleSheet.create({
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 8,
-    color: '#1A1A1A',
-    fontFamily: 'MyPager',
-  },
-  item: {
-    fontSize: 14,
-    paddingHorizontal: 4,
-    fontFamily: 'MyPager',
-  },
-  itemSelected: {
-    color: '#9CB4A8',
-    backgroundColor: '#1A1A1A',
-  },
-  itemUnselected: {
-    color: '#1A1A1A',
-    backgroundColor: 'transparent',
-  },
-});
