@@ -237,47 +237,125 @@ toast.show({
 });
 ```
 
+## Styling Approach
+
+**IMPORTANT:** All components and screens must use `StyleSheet.create()` defined within the same file.
+
+```typescript
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+
+export const MyComponent: React.FC = () => {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.text}>Content</Text>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    borderWidth: 2,
+    borderColor: '#1A1A1A',
+    backgroundColor: '#9CB4A8',
+    padding: 16,
+  },
+  text: {
+    fontSize: 14,
+    color: '#1A1A1A',
+  },
+});
+```
+
+**Rules:**
+- ❌ No centralized style files
+- ❌ No importing styles from other files
+- ✅ Each component has its own StyleSheet.create()
+- ✅ Styles defined at the bottom of the component file
+- ✅ Use React Native core components (View, Text, Pressable)
+
 ## Component Examples
 
 ### Retro Card
 ```typescript
-<Box
-  borderWidth={2}
-  borderColor="foreground"
-  bg="background"
-  p={4}
-  mb={2}
->
-  <Text fontSize="xs" color="foreground" opacity={0.7} mb={1}>
-    LABEL
-  </Text>
-  <Text fontSize="lg" fontFamily="mono" color="foreground">
-    CONTENT
-  </Text>
-</Box>
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+
+export const RetroCard: React.FC = () => {
+  return (
+    <View style={styles.card}>
+      <Text style={styles.label}>LABEL</Text>
+      <Text style={styles.content}>CONTENT</Text>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  card: {
+    borderWidth: 2,
+    borderColor: '#1A1A1A',
+    backgroundColor: '#9CB4A8',
+    padding: 16,
+    marginBottom: 8,
+  },
+  label: {
+    fontSize: 10,
+    color: '#1A1A1A',
+    opacity: 0.7,
+    marginBottom: 4,
+  },
+  content: {
+    fontSize: 18,
+    fontFamily: 'monospace',
+    color: '#1A1A1A',
+  },
+});
 ```
 
 ### Retro List Item
 ```typescript
-<Pressable onPress={onSelect}>
-  <Box
-    borderWidth={isSelected ? 4 : 2}
-    borderColor={isSelected ? 'accent' : 'foreground'}
-    bg={isSelected ? 'accent' : 'background'}
-    p={3}
-  >
-    <HStack justifyContent="space-between" alignItems="center">
-      <Text
-        fontSize="md"
-        fontFamily="mono"
-        color={isSelected ? 'background' : 'foreground'}
-      >
-        {text}
-      </Text>
-      <StatusIndicator />
-    </HStack>
-  </Box>
-</Pressable>
+import React from 'react';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
+
+interface RetroListItemProps {
+  text: string;
+  isSelected: boolean;
+  onSelect: () => void;
+}
+
+export const RetroListItem: React.FC<RetroListItemProps> = ({ text, isSelected, onSelect }) => {
+  return (
+    <Pressable onPress={onSelect}>
+      <View style={[styles.item, isSelected && styles.itemSelected]}>
+        <Text style={[styles.text, isSelected && styles.textSelected]}>
+          {text}
+        </Text>
+      </View>
+    </Pressable>
+  );
+};
+
+const styles = StyleSheet.create({
+  item: {
+    borderWidth: 2,
+    borderColor: '#1A1A1A',
+    backgroundColor: '#9CB4A8',
+    padding: 12,
+  },
+  itemSelected: {
+    borderWidth: 4,
+    borderColor: '#2D4A2B',
+    backgroundColor: '#2D4A2B',
+  },
+  text: {
+    fontSize: 14,
+    fontFamily: 'monospace',
+    color: '#1A1A1A',
+  },
+  textSelected: {
+    color: '#9CB4A8',
+  },
+});
 ```
 
 ## Anti-Patterns to Avoid
@@ -316,19 +394,48 @@ Even with retro aesthetics, maintain accessibility:
 ## Reference Components
 
 Look at these existing components for style reference:
-- `HexCodeDisplay.tsx` - Tap-to-copy with retro styling
-- `FriendList.tsx` - List with selection states
-- `VoiceControls.tsx` - Button states and layouts
-- `AddFriendButton.tsx` - Simple button styling
+- `PagerButton.tsx` - Button with 3D border effect
+- `PagerDisplay.tsx` - LCD display container
+- `StatusLEDs.tsx` - Status indicator dots
+- `MainMenuScreen.tsx` - Menu with selection states
+- `NavigationControls.tsx` - Navigation button layout
 
 ## When Adding New Components
 
-1. Start with NativeBase base component
-2. Override styles to match retro aesthetic
-3. Remove any rounded corners
-4. Add thick borders
-5. Use theme colors
+1. Import React Native core components (View, Text, Pressable, StyleSheet)
+2. Define component with TypeScript interface for props
+3. Implement JSX with style references
+4. Add `StyleSheet.create()` at the bottom of the file
+5. Follow retro aesthetic rules:
+   - Sharp corners (borderRadius: 0)
+   - Thick borders (2-4px)
+   - Monochrome colors (#1A1A1A, #9CB4A8, #2D4A2B)
+   - 8px grid spacing
 6. Test on both iOS and Android
 7. Verify accessibility
+
+**Template:**
+```typescript
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+
+interface MyComponentProps {
+  // Props
+}
+
+export const MyComponent: React.FC<MyComponentProps> = (props) => {
+  return (
+    <View style={styles.container}>
+      {/* Component content */}
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    // Styles here
+  },
+});
+```
 
 Remember: The goal is to look like a 90s electronic device display - think pagers, early PDAs, and monochrome LCD screens!

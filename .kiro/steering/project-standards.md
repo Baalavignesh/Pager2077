@@ -20,7 +20,10 @@ Pager2077 is a retro-futuristic voice messaging app with a 90s pager aesthetic. 
 - Use functional components with hooks (no class components)
 - Keep components small and focused (single responsibility)
 - Extract reusable logic into custom hooks
-- Use NativeBase components as base, customize for retro aesthetic
+- Use React Native core components (View, Text, Pressable) with StyleSheet.create()
+- Each component/screen must have its own StyleSheet.create() at the bottom of the file
+- No centralized styles files - keep styles colocated with components
+- Use NativeBase only for theme provider and complex components
 - Follow the retro design system:
   - Sharp corners (borderRadius: 0)
   - Thick borders (4px for buttons, 2px for containers)
@@ -40,14 +43,16 @@ Pager2077 is a retro-futuristic voice messaging app with a 90s pager aesthetic. 
 ### Frontend Structure
 ```
 frontend/src/
-├── components/     # Reusable UI components
-├── screens/        # Screen-level components
+├── components/     # Reusable UI components (each with own StyleSheet)
+├── screens/        # Screen-level components (each with own StyleSheet)
 ├── hooks/          # Custom React hooks
 ├── services/       # API clients, audio, notifications
-├── theme/          # Theme configuration
+├── theme/          # Theme configuration (NativeBase theme only)
 ├── types/          # TypeScript interfaces
 └── utils/          # Helper functions
 ```
+
+**Note:** No centralized styles directory - each component/screen has its own `StyleSheet.create()` at the bottom of the file.
 
 ### Backend Structure
 ```
@@ -62,10 +67,12 @@ backend/src/
 ## Naming Conventions
 
 ### Files
-- Components: PascalCase (e.g., `HexCodeDisplay.tsx`)
+- Components: PascalCase (e.g., `PagerButton.tsx`)
+- Screens: PascalCase with 'Screen' suffix (e.g., `MainMenuScreen.tsx`)
 - Hooks: camelCase with 'use' prefix (e.g., `useAudioRecorder.ts`)
 - Services: camelCase with 'Service' suffix (e.g., `audioService.ts`)
 - Types: PascalCase (e.g., `User`, `VoiceNote`)
+- No separate style files - styles are defined within component files
 
 ### Variables & Functions
 - camelCase for variables and functions
@@ -294,9 +301,47 @@ Use 8px grid: 8, 16, 24, 32, 40, 48px
 4. Monitor console for runtime errors
 5. Stop process when debugging complete
 
+## Component/Screen Template
+
+When creating new components or screens, follow this structure:
+
+```typescript
+import React from 'react';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
+
+interface MyComponentProps {
+  // Props definition
+}
+
+export const MyComponent: React.FC<MyComponentProps> = ({ /* props */ }) => {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.text}>Content</Text>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    // Container styles
+  },
+  text: {
+    // Text styles
+  },
+});
+```
+
+**Rules:**
+- Always use `StyleSheet.create()` at the bottom of the file
+- Never create separate style files
+- Keep styles colocated with the component
+- Use React Native core components (View, Text, Pressable)
+- Follow retro design guidelines (sharp corners, thick borders, monochrome)
+
 ## When in Doubt
 - Keep it simple (KISS principle)
 - Follow existing patterns in the codebase
 - Ask for code review
 - Refer to the design document in `.kiro/specs/`
 - Use background processes for debugging frontend issues
+- Always include StyleSheet.create() in new components/screens
