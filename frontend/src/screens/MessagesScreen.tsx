@@ -43,10 +43,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 8,
     color: '#1A1A1A',
+    fontFamily: 'MyPager',
   },
   item: {
     fontSize: 14,
     paddingHorizontal: 4,
+    fontFamily: 'MyPager',
   },
   itemSelected: {
     color: '#9CB4A8',

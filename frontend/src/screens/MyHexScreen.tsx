@@ -21,10 +21,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 8,
     color: '#1A1A1A',
+    fontFamily: 'MyPager',
   },
   text: {
     fontSize: 14,
     color: '#1A1A1A',
     textAlign: 'center',
+    fontFamily: 'MyPager',
   },
 });

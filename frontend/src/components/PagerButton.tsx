@@ -34,6 +34,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
     color: '#E0E0E0',
+    fontFamily: 'MyPager',
   },
   actionButton: {
     width: 112,

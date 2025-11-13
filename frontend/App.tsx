@@ -12,6 +12,7 @@ import { MessagesScreen } from './src/screens/MessagesScreen';
 import { FriendsScreen } from './src/screens/FriendsScreen';
 import { MyHexScreen } from './src/screens/MyHexScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
+import { PagerBody } from './src/components/PagerBody';
 
 type Screen = 'main' | 'messages' | 'friends' | 'myhex' | 'settings';
 
@@ -113,33 +114,34 @@ export default function App() {
         <PagerDisplay>
           {renderScreen()}
         </PagerDisplay>
+        <PagerBody>
+          <StatusLEDs />
 
-        <StatusLEDs />
+          <View style={styles.actionButtonsContainer}>
+            <PagerButton label="SELECT" onPress={handleSelect} />
+            <PagerButton label="BACK" onPress={handleBack} />
+          </View>
 
-        <View style={styles.actionButtonsContainer}>
-          <PagerButton label="SELECT" onPress={handleSelect} />
-          <PagerButton label="BACK" onPress={handleBack} />
-        </View>
+          <NavigationControls
+            onNavigateUp={() => navigate('up')}
+            onNavigateDown={() => navigate('down')}
+          />
+        </PagerBody>
 
-        <NavigationControls 
-          onNavigateUp={() => navigate('up')} 
-          onNavigateDown={() => navigate('down')} 
-        />
       </View>
     </NativeBaseProvider>
   );
 }
 
-const
- styles = StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#2A2A2A',
     padding: 16,
     justifyContent: 'space-between',
-    borderWidth: 4,
-    borderTopColor: '#4A4A4A',
-    borderLeftColor: '#4A4A4A',
+    borderWidth: 0,
+    borderTopColor: '#1A1A1A',
+    borderLeftColor: '#1A1A1A',
     borderRightColor: '#1A1A1A',
     borderBottomColor: '#1A1A1A',
   },

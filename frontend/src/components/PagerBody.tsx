@@ -1,11 +1,11 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 
-interface PagerDisplayProps {
+interface PagerBodyProps {
   children: React.ReactNode;
 }
 
-export const PagerDisplay: React.FC<PagerDisplayProps> = ({ children }) => {
+export const PagerBody: React.FC<PagerBodyProps> = ({ children }) => {
   return (
     <View style={styles.display}>
       {children}
@@ -15,12 +15,11 @@ export const PagerDisplay: React.FC<PagerDisplayProps> = ({ children }) => {
 
 const styles = StyleSheet.create({
   display: {
-    backgroundColor: '#9CB4A8',
-    borderWidth: 10,
+    backgroundColor: '#252525ff',
+    borderWidth: 0,
     borderColor: '#000000',
     borderRadius: 16,
     padding: 20,
-    height: '45%',
-    marginTop: 100,
+    height: '40%',
   },
 });
