@@ -13,21 +13,20 @@ export const StatusLEDs: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
-    marginVertical: 12,
-    paddingLeft: 20,
+    justifyContent: 'center',
+    marginVertical: 24,
   },
   yellowLED: {
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#FFD700',
+    backgroundColor: '#dadadaff',
     marginRight: 16,
   },
   redLED: {
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#FF4444',
+    backgroundColor: '#dadadaff',
   },
 });

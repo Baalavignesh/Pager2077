@@ -41,13 +41,15 @@ const styles = StyleSheet.create({
     fontFamily: 'MyPager',
   },
   item: {
-    fontSize: 14,
+    fontSize: 20,
     paddingHorizontal: 4,
     fontFamily: 'MyPager',
+    margin: 6,
   },
   itemSelected: {
     color: '#9CB4A8',
     backgroundColor: '#1A1A1A',
+    padding: 6
   },
   itemUnselected: {
     color: '#1A1A1A',

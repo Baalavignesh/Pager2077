@@ -15,11 +15,12 @@ export const PagerDisplay: React.FC<PagerDisplayProps> = ({ children }) => {
 
 const styles = StyleSheet.create({
   display: {
-    backgroundColor: '#9CB4A8',
-    borderWidth: 10,
+    backgroundColor: '#dadadaff',
+    borderWidth: 8,
     borderColor: '#000000',
     borderRadius: 16,
     padding: 20,
+    margin: 16,
     height: '45%',
     marginTop: 100,
   },

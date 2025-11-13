@@ -4,9 +4,6 @@ import { NativeBaseProvider } from 'native-base';
 import { retroTheme } from './src/theme';
 import * as Font from 'expo-font';
 import { PagerDisplay } from './src/components/PagerDisplay';
-import { StatusLEDs } from './src/components/StatusLEDs';
-import { PagerButton } from './src/components/PagerButton';
-import { NavigationControls } from './src/components/NavigationControls';
 import { MainMenuScreen } from './src/screens/MainMenuScreen';
 import { MessagesScreen } from './src/screens/MessagesScreen';
 import { FriendsScreen } from './src/screens/FriendsScreen';
@@ -114,20 +111,13 @@ export default function App() {
         <PagerDisplay>
           {renderScreen()}
         </PagerDisplay>
-        <PagerBody>
-          <StatusLEDs />
 
-          <View style={styles.actionButtonsContainer}>
-            <PagerButton label="SELECT" onPress={handleSelect} />
-            <PagerButton label="BACK" onPress={handleBack} />
-          </View>
-
-          <NavigationControls
-            onNavigateUp={() => navigate('up')}
-            onNavigateDown={() => navigate('down')}
-          />
-        </PagerBody>
-
+        <PagerBody
+          onSelect={handleSelect}
+          onBack={handleBack}
+          onNavigateUp={() => navigate('up')}
+          onNavigateDown={() => navigate('down')}
+        />
       </View>
     </NativeBaseProvider>
   );
@@ -136,18 +126,12 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#2A2A2A',
-    padding: 16,
+    backgroundColor: '#ffffffff',
     justifyContent: 'space-between',
-    borderWidth: 0,
-    borderTopColor: '#1A1A1A',
-    borderLeftColor: '#1A1A1A',
+    borderWidth: 4,
+    borderTopColor: '#4A4A4A',
+    borderLeftColor: '#4A4A4A',
     borderRightColor: '#1A1A1A',
     borderBottomColor: '#1A1A1A',
-  },
-  actionButtonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginVertical: 16,
   },
 });
