@@ -32,8 +32,10 @@ export const PagerBody: React.FC<PagerBodyProps> = ({
 const styles = StyleSheet.create({
     container: {
         backgroundColor: '#dadadaff',
-        borderWidth: 0,
-        borderColor: '#000000',
+        borderWidth: 3,
+        borderBottomColor: '#dadadaff',
+        borderColor: '#343434ff',
+
         borderRadius: 16,
         padding: 20,
         height: '40%',

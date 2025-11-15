@@ -10,12 +10,14 @@ This steering document is automatically included when working on frontend UI com
 ## 90s Pager Aesthetic Rules
 
 ### Visual Style
-- **90s Pager LCD Display**: Greenish monochrome screen with scanline effects
-- **Pixelated Font**: Chicago font for authentic retro look
-- **Metallic Buttons**: Gradient buttons with press animations
-- **Physical Device Frame**: Dark frame around LCD display
-- **LCD Scanlines**: Dual-layer horizontal and vertical grid for realistic pixel matrix
-- **Subtle Flicker**: Periodic opacity animation mimicking LCD refresh
+- **90s Pager LCD Display**: Greenish LCD (#8B9D7F) with dual-layer scanlines
+- **Pixelated Font**: Chicago font (pixChicago.ttf) for authentic retro look
+- **Metallic Buttons**: 3D gradient buttons with 6 variants, press animations, and shine effects
+- **Glossy Bezel**: Single-piece nested gradient frame with 3D lifted appearance
+- **LCD Scanlines**: 300 horizontal + 150 vertical lines for realistic pixel matrix
+- **Flicker Animation**: Subtle opacity pulse every 2 seconds mimicking LCD refresh
+- **Animated Background**: Static noise with gyroscope parallax effect
+- **Edge Vignettes**: Smooth gradients simulating glass depth
 
 ### Component Styling Checklist
 

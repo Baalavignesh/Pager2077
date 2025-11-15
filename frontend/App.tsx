@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StatusBar, View, StyleSheet } from 'react-native';
 import { NativeBaseProvider } from 'native-base';
+import { LinearGradient } from 'expo-linear-gradient';
 import { retroTheme } from './src/theme';
 import * as Font from 'expo-font';
 import { PagerDisplay } from './src/components/PagerDisplay';
@@ -10,6 +11,7 @@ import { FriendsScreen } from './src/screens/FriendsScreen';
 import { MyHexScreen } from './src/screens/MyHexScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { PagerBody } from './src/components/PagerBody';
+import { BackgroundPattern } from './src/components/BackgroundPattern';
 
 type Screen = 'main' | 'messages' | 'friends' | 'myhex' | 'settings';
 
@@ -105,8 +107,16 @@ export default function App() {
 
   return (
     <NativeBaseProvider theme={retroTheme}>
-      <View style={styles.container}>
+      <LinearGradient
+        colors={['#1a1a1a', '#2a2a2a', '#1a1a1a']}
+        style={styles.container}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
         <StatusBar hidden />
+        
+        {/* Subtle dot pattern for tech aesthetic */}
+        <BackgroundPattern />
 
         <PagerDisplay>
           {renderScreen()}
@@ -118,7 +128,7 @@ export default function App() {
           onNavigateUp={() => navigate('up')}
           onNavigateDown={() => navigate('down')}
         />
-      </View>
+      </LinearGradient>
     </NativeBaseProvider>
   );
 }
@@ -126,12 +136,6 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffffff',
     justifyContent: 'space-between',
-    borderWidth: 4,
-    borderTopColor: '#4A4A4A',
-    borderLeftColor: '#4A4A4A',
-    borderRightColor: '#1A1A1A',
-    borderBottomColor: '#1A1A1A',
   },
 });
