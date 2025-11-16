@@ -1,0 +1,9 @@
+{
+  "name": "Cleanup and Commit Changes",
+  "description": "Clean up unused imports/styles, update documentation, and commit changes to git",
+  "trigger": {
+    "type": "manual"
+  },
+  "prompt": "Perform the following tasks:\n1. Check all modified component files for unused imports and remove them\n2. Check all modified component files for unused CSS styles in StyleSheet.create() and remove them\n3. Update .kiro/steering/project-standards.md with any new component architecture changes\n4. Stage all modified files with git add\n5. Create a descriptive commit message following conventional commits format\n6. Commit the changes to git\n\nProvide a summary of what was cleaned up and committed.",
+  "enabled": true
+}
