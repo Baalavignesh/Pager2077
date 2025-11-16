@@ -186,10 +186,12 @@ Example: `feat: add voice recording functionality`
 - **PagerDisplay**: Glossy bezel frame with nested gradients for 3D effect, contains LCD screen with edge vignettes
 - **PagerScreen**: Base wrapper with dual-layer scanlines (300 lines horizontal + 150 vertical), flicker animation, all screen styling centralized here
 - **PagerText**: Consistent text component with selection states and Chicago font
-- **MetalButton**: 3D gradient buttons with 6 color variants, press animations, and shine effects
+- **PagerButton**: Metal buttons with 3D gradient effect (outer, inner, surface layers), colored indicator lines for SELECT/BACK, text labels for nav buttons, consistent 44px height
+- **PagerBody**: Metallic frame matching button style with three-layer gradient system, contains black recessed area for buttons, embossed logo
 - **BackgroundPattern**: Animated static noise with gyroscope parallax, 180 particles with individual flicker
 - **ButtonGrid**: 2x2 symmetric button layout with equal widths
 - All screens use PagerScreen + PagerText for consistency
+- All buttons use PagerButton with label prop for consistent styling
 
 ### Styling Approach
 - PagerScreen contains all LCD screen styling (fonts, spacing, scanlines)

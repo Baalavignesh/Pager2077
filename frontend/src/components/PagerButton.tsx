@@ -4,10 +4,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 type ColorVariant = 'default' | 'primary' | 'success' | 'error' | 'gold' | 'bronze';
 
-interface MetalButtonProps {
-  children?: string;
-  variant?: ColorVariant;
-  onPress?: () => void;
+type ButtonType = 'select' | 'back' | 'nav';
+
+interface PagerButtonProps {
+  label: string;
+  onPress: () => void;
+  isNavButton?: boolean;
   style?: object;
 }
 
@@ -58,17 +60,41 @@ const colorVariants: Record<
   },
 };
 
-export const MetalButton: React.FC<MetalButtonProps> = ({
-  children = 'Button',
-  variant = 'default',
-  onPress,
-  style,
+export const PagerButton: React.FC<PagerButtonProps> = ({ 
+  label, 
+  onPress, 
+  isNavButton = false, 
+  style 
 }) => {
   const [isPressed, setIsPressed] = useState(false);
   const scaleAnim = useState(new Animated.Value(1))[0];
   const translateYAnim = useState(new Animated.Value(0))[0];
 
+  // Determine button type and variant
+  const getButtonType = (): ButtonType => {
+    if (label === 'SELECT') return 'select';
+    if (label === 'BACK') return 'back';
+    return 'nav';
+  };
+
+  const getVariant = (): ColorVariant => {
+    if (label === 'SELECT') return 'primary';
+    if (label === 'BACK') return 'error';
+    if (isNavButton) return 'default';
+    return 'default';
+  };
+
+  const getIndicatorColor = (): string => {
+    const type = getButtonType();
+    if (type === 'select') return '#4eff4eff'; // Green
+    if (type === 'back') return '#ff5b5bff'; // Red
+    return '#ffffff'; // White for nav
+  };
+
+  const buttonType = getButtonType();
+  const variant = getVariant();
   const colors = colorVariants[variant];
+  const showIndicator = buttonType === 'select' || buttonType === 'back';
 
   const handlePressIn = () => {
     setIsPressed(true);
@@ -154,14 +180,28 @@ export const MetalButton: React.FC<MetalButtonProps> = ({
                   />
                 </View>
               )}
-              <Text
-                style={[
-                  styles.buttonText,
-                  { color: colors.textColor },
-                ]}
-              >
-                {children}
-              </Text>
+              
+              {showIndicator ? (
+                // Colored indicator line for SELECT/BACK
+                <View style={styles.indicatorContainer}>
+                  <View
+                    style={[
+                      styles.indicator,
+                      { backgroundColor: getIndicatorColor() },
+                    ]}
+                  />
+                </View>
+              ) : (
+                // Text for nav buttons
+                <Text
+                  style={[
+                    styles.buttonText,
+                    { color: colors.textColor },
+                  ]}
+                >
+                  {label}
+                </Text>
+              )}
             </Animated.View>
           </LinearGradient>
         </Pressable>
@@ -202,13 +242,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 24,
-    paddingVertical: 12,
+    height: 44,
     overflow: 'hidden',
   },
   buttonContent: {
     position: 'relative',
     justifyContent: 'center',
     alignItems: 'center',
+    height: '100%',
   },
   buttonText: {
     fontSize: 16,
@@ -235,37 +276,15 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  indicatorContainer: {
+    width: '70%',
+    height: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  indicator: {
+    width: '50%',
+    height: 6,
+    borderRadius: 3,
+  },
 });
-
-// Wrapper component for backward compatibility with ButtonGrid
-interface PagerButtonProps {
-  label: string;
-  onPress: () => void;
-  isNavButton?: boolean;
-  style?: object;
-}
-
-export const PagerButton: React.FC<PagerButtonProps> = ({ 
-  label, 
-  onPress, 
-  isNavButton = false, 
-  style 
-}) => {
-  // Map button types to variants
-  const getVariant = (): ColorVariant => {
-    if (label === 'SELECT') return 'primary';
-    if (label === 'BACK') return 'error';
-    if (isNavButton) return 'default';
-    return 'default';
-  };
-
-  return (
-    <MetalButton 
-      variant={getVariant()} 
-      onPress={onPress}
-      style={style}
-    >
-      {label}
-    </MetalButton>
-  );
-};

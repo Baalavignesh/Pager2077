@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { PagerButton } from './PagerButton';
+import { RubberButton } from './RubberButton';
 
 interface ButtonGridProps {
   onSelect: () => void;
@@ -25,6 +26,7 @@ export const ButtonGrid: React.FC<ButtonGridProps> = ({
         <PagerButton label="▲" onPress={onNavigateUp} style={styles.button} />
         <PagerButton label="▼" onPress={onNavigateDown} style={styles.button} />
       </View>
+
     </View>
   );
 };
@@ -32,6 +34,7 @@ export const ButtonGrid: React.FC<ButtonGridProps> = ({
 const styles = StyleSheet.create({
   grid: {
     gap: 12,
+    marginTop: 28
   },
   row: {
     flexDirection: 'row',
