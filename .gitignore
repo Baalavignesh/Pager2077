@@ -37,6 +37,7 @@ yarn-error.*
 # IDE
 .vscode/
 .idea/
+.cursor/
 *.swp
 *.swo
 *~
