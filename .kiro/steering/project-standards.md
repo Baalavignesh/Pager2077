@@ -183,15 +183,16 @@ Example: `feat: add voice recording functionality`
 - Letter spacing for readability
 
 ### Components Architecture
-- **PagerDisplay**: Glossy bezel frame with nested gradients for 3D effect, contains LCD screen with edge vignettes
-- **PagerScreen**: Base wrapper with dual-layer scanlines (300 lines horizontal + 150 vertical), flicker animation, all screen styling centralized here
-- **PagerText**: Consistent text component with selection states and Chicago font
-- **PagerButton**: Metal buttons with 3D gradient effect (outer, inner, surface layers), colored indicator lines for SELECT/BACK, text labels for nav buttons, consistent 44px height
-- **PagerBody**: Metallic frame matching button style with three-layer gradient system, contains black recessed area for buttons, embossed logo
+- **PagerDisplay**: Darker metallic black frame with three-layer gradient system (symmetrical top/bottom), contains LCD screen with edge vignettes
+- **PagerScreen**: Base wrapper with dual-layer scanlines (300 horizontal + 150 vertical lines), all screen styling centralized here
+- **PagerText**: Consistent text component with selection states, Chicago font, and flicker animation on selected items only
+- **PagerButton**: Metal buttons with 3D gradient effect (outer, inner, surface layers), colored indicator lines for SELECT/BACK (green/red), text labels for nav buttons, consistent 44px height
+- **PagerBody**: Glossy metallic grey frame with three-layer gradient system, contains black recessed area for buttons, embossed logo with subtle text shadows
 - **BackgroundPattern**: Animated static noise with gyroscope parallax, 180 particles with individual flicker
 - **ButtonGrid**: 2x2 symmetric button layout with equal widths
 - All screens use PagerScreen + PagerText for consistency
 - All buttons use PagerButton with label prop for consistent styling
+- Flicker effect only applies to selected items (PagerText with selected={true})
 
 ### Styling Approach
 - PagerScreen contains all LCD screen styling (fonts, spacing, scanlines)

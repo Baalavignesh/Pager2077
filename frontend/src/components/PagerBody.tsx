@@ -27,7 +27,7 @@ export const PagerBody: React.FC<PagerBodyProps> = ({
             >
                 {/* Inner highlight layer - matching button style */}
                 <LinearGradient
-                    colors={['#FAFAFA', '#3E3E3E', '#E5E5E5']}
+                    colors={['#FAFAFA', '#3E3E3E', '#A0A0A0']}
                     style={styles.innerGradient}
                     start={{ x: 0.5, y: 0 }}
                     end={{ x: 0.5, y: 1 }}

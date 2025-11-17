@@ -19,33 +19,6 @@ export const PagerScreen: React.FC<PagerScreenProps> = ({
   children, 
   scrollable = false 
 }) => {
-  // Subtle flicker animation for authentic LCD feel
-  const flickerAnim = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    // Visible flicker effect (like old LCD refresh)
-    const flicker = () => {
-      Animated.sequence([
-        Animated.timing(flickerAnim, {
-          toValue: 0.95,
-          duration: 80,
-          useNativeDriver: true,
-        }),
-        Animated.timing(flickerAnim, {
-          toValue: 1,
-          duration: 80,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    };
-
-    // Flicker every 2 seconds
-    const interval = setInterval(() => {
-      flicker();
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, [flickerAnim]);
 
   // Generate realistic LCD scanline effect with 3-color pattern
   const renderScanlines = () => {
@@ -122,7 +95,7 @@ export const PagerScreen: React.FC<PagerScreenProps> = ({
 
   if (scrollable) {
     return (
-      <Animated.View style={[styles.screenContainer, { opacity: flickerAnim }]}>
+      <View style={styles.screenContainer}>
         <View style={styles.scanlines} pointerEvents="none">
           {renderScanlines()}
         </View>
@@ -132,12 +105,12 @@ export const PagerScreen: React.FC<PagerScreenProps> = ({
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           {content}
         </ScrollView>
-      </Animated.View>
+      </View>
     );
   }
 
   return (
-    <Animated.View style={[styles.screenContainer, { opacity: flickerAnim }]}>
+    <View style={styles.screenContainer}>
       <View style={styles.scanlines} pointerEvents="none">
         {renderScanlines()}
       </View>
@@ -147,7 +120,7 @@ export const PagerScreen: React.FC<PagerScreenProps> = ({
       <View style={styles.content}>
         {content}
       </View>
-    </Animated.View>
+    </View>
   );
 };
 
@@ -162,8 +135,50 @@ interface PagerTextProps {
 }
 
 export const PagerText: React.FC<PagerTextProps> = ({ children, selected = false, style }) => {
+  const flickerAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    if (!selected) return;
+
+    // Flicker effect for selected item only
+    const flicker = () => {
+      Animated.sequence([
+        Animated.timing(flickerAnim, {
+          toValue: 0.75,
+          duration: 50,
+          useNativeDriver: true,
+        }),
+        Animated.timing(flickerAnim, {
+          toValue: 0.85,
+          duration: 35,
+          useNativeDriver: true,
+        }),
+        Animated.timing(flickerAnim, {
+          toValue: 1,
+          duration: 70,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    };
+
+    // Flicker every 2 seconds
+    const interval = setInterval(() => {
+      flicker();
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [selected, flickerAnim]);
+
+  if (selected) {
+    return (
+      <Animated.Text style={[styles.text, styles.textSelected, style, { opacity: flickerAnim }]}>
+        {children}
+      </Animated.Text>
+    );
+  }
+
   return (
-    <Text style={[styles.text, selected && styles.textSelected, style]}>
+    <Text style={[styles.text, style]}>
       {children}
     </Text>
   );

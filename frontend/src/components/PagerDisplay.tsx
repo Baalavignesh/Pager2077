@@ -9,28 +9,25 @@ interface PagerDisplayProps {
 export const PagerDisplay: React.FC<PagerDisplayProps> = ({ children }) => {
   return (
     <View style={styles.wrapper}>
-      {/* Outer glossy bezel gradient - single piece with balanced lighting */}
+      {/* Outer metallic black frame - darker uniform gradient */}
       <LinearGradient
-        colors={[
-          '#2a2a2a', 
-          '#3a3a3a',
-          '#1a1a1a',
-          '#1a1a1a',
-        ]}
-        style={styles.outerBezel}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+        colors={['#000', '#1a1a1a']}
+        style={styles.outerGradient}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
       >
-        {/* Inner bezel for depth with circular gradient */}
+        {/* Inner highlight layer - darker */}
         <LinearGradient
-          colors={[
-            '#2a2a2a', 
-            '#2a2a2a',
-            '#1a1a1a',
-            '#2a2a2a',
-            '#2a2a2a'  
-          ]}
-          style={styles.innerBezel}
+          colors={['#2a2a2a', '#0a0a0a', '#2a2a2a']}
+          style={styles.innerGradient}
+          start={{ x: 0.5, y: 0 }}
+          end={{ x: 0.5, y: 1 }}
+        />
+        
+        {/* Main bezel surface - darker gradient */}
+        <LinearGradient
+          colors={['#1a1a1a', '#0a0a0a', '#1a1a1a']}
+          style={styles.bezelGradient}
           start={{ x: 0.5, y: 0 }}
           end={{ x: 0.5, y: 1 }}
         >
@@ -106,22 +103,31 @@ const styles = StyleSheet.create({
     marginTop: 100,
     height: '45%',
     borderRadius: 20,
-    // Outer shadow for device depth
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 12,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  outerBezel: {
+  outerGradient: {
     flex: 1,
     borderRadius: 20,
-    padding: 4,
+    padding: 1.25,
   },
-  innerBezel: {
+  innerGradient: {
+    position: 'absolute',
+    top: 1,
+    left: 1,
+    right: 1,
+    bottom: 1,
+    borderRadius: 20,
+  },
+  bezelGradient: {
     flex: 1,
-    borderRadius: 16,
+    margin: 2.5,
+    borderRadius: 18,
     padding: 12,
+    overflow: 'hidden',
   },
   displayContainer: {
     flex: 1,
