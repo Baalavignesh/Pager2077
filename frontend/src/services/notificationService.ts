@@ -28,35 +28,47 @@ export interface NotificationData {
  * Register for push notifications and get device token
  */
 export async function registerForPushNotifications(): Promise<string | null> {
+  console.log('🔔 Starting push notification registration...');
+  
   // Only works on physical devices (or iOS 16+ simulator)
   if (!Device.isDevice && Platform.OS !== 'ios') {
-    console.log('Push notifications require a physical device or iOS simulator');
+    console.log('⚠️  Push notifications require a physical device or iOS simulator');
     return null;
   }
 
+  console.log('✅ Running on physical device');
+
   // Check existing permissions
+  console.log('🔍 Checking existing permissions...');
   const { status: existingStatus } = await Notifications.getPermissionsAsync();
+  console.log('   Existing status:', existingStatus);
   let finalStatus = existingStatus;
 
   // Request permissions if not granted
   if (existingStatus !== 'granted') {
+    console.log('📋 Requesting notification permissions...');
     const { status } = await Notifications.requestPermissionsAsync();
     finalStatus = status;
+    console.log('   Permission result:', status);
   }
 
   if (finalStatus !== 'granted') {
-    console.log('Push notification permission denied');
+    console.log('❌ Push notification permission denied');
     return null;
   }
 
+  console.log('✅ Notification permissions granted');
+
   // Get device push token (APNS token for iOS)
   try {
+    console.log('🔑 Getting device push token from APNS...');
     const tokenData = await Notifications.getDevicePushTokenAsync();
     const token = tokenData.data;
-    console.log('📱 Device Push Token:', token);
+    console.log('✅ Got APNS device token:', token);
+    console.log('📤 Returning token to caller...');
     return token;
   } catch (error) {
-    console.error('Error getting push token:', error);
+    console.error('❌ Error getting push token:', error);
     console.error('⚠️  Build the app with Xcode to enable push notifications.');
     console.error('⚠️  See LOCAL_BUILD_GUIDE.md for instructions.');
     return null;

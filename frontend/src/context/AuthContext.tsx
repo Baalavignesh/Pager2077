@@ -37,14 +37,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function checkAuth() {
     try {
+      console.log('🔍 Checking if user is already registered...');
       const registered = await isUserRegistered();
       
       if (registered) {
+        console.log('✅ User already registered, loading credentials...');
         const credentials = await getUserCredentials();
+        console.log('📋 Loaded credentials:');
+        console.log('   User ID:', credentials.userId);
+        console.log('   Hex Code:', credentials.hexCode);
+        console.log('   Has Auth Token:', !!credentials.authToken);
+        console.log('   Has Device Token:', !!credentials.deviceToken);
+        
         setUserId(credentials.userId);
         setHexCode(credentials.hexCode);
         setAuthToken(credentials.authToken);
         setIsAuthenticated(true);
+        
+        console.log('✅ User authenticated from stored credentials');
+      } else {
+        console.log('❌ No stored credentials found - need to register');
       }
     } catch (error) {
       console.error('Error checking auth:', error);
@@ -57,6 +69,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setIsLoading(true);
 
+      console.log('🔔 Requesting push notification permissions...');
+
       // Request notification permissions and get device token
       const deviceToken = await registerForPushNotifications();
 
@@ -64,12 +78,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error('Failed to get device token');
       }
 
-      console.log('📱 Got device token, registering with backend...');
+      console.log('✅ Got APNS device token:', deviceToken);
+      console.log('📱 Registering with backend...');
 
       // Register with backend
       const response = await registerUser(deviceToken);
 
-      console.log('✅ Registered:', response.hexCode);
+      console.log('🎉 Registration complete!');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('📋 REGISTRATION DETAILS:');
+      console.log('   User ID:', response.userId);
+      console.log('   Hex Code:', response.hexCode);
+      console.log('   Auth Token:', response.token);
+      console.log('   Device Token:', deviceToken);
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
       // Save credentials
       await saveUserCredentials(
@@ -79,13 +101,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         deviceToken
       );
 
+      console.log('💾 Credentials saved to secure storage');
+
       // Update state
       setUserId(response.userId);
       setHexCode(response.hexCode);
       setAuthToken(response.token);
       setIsAuthenticated(true);
+
+      console.log('✅ Auth state updated - user is now authenticated');
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error('❌ Registration error:', error);
       throw error;
     } finally {
       setIsLoading(false);

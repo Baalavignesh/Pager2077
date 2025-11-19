@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "main": "expo/AppEntry.js",
   "scripts": {
+    "build:xcode": "npx expo prebuild --platform ios",
     "start": "expo start",
-    "android": "expo run:android",
-    "ios": "expo run:ios",
+    "android": "expo start --dev-client --android",
+    "ios": "expo start --dev-client --ios",
     "web": "expo start --web"
   },
   "dependencies": {
