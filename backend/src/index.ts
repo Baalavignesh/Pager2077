@@ -23,9 +23,9 @@ import { initRedis } from './queue/redis';
 import { initNotificationQueue, startNotificationWorker } from './queue/notificationQueue';
 import { NotificationService } from './services/NotificationService';
 
-initRedis();
-initNotificationQueue();
-startNotificationWorker();
+// initRedis();
+// initNotificationQueue();
+// startNotificationWorker();
 
 // Initialize repositories
 const userRepo = new UserRepository(db);
