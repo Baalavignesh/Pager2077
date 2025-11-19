@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { StatusBar, View, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StatusBar, View, StyleSheet, Text, ActivityIndicator } from 'react-native';
 import { NativeBaseProvider } from 'native-base';
 import { LinearGradient } from 'expo-linear-gradient';
 import { retroTheme } from './src/theme';
@@ -12,6 +12,8 @@ import { MyHexScreen } from './src/screens/MyHexScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { PagerBody } from './src/components/PagerBody';
 import { BackgroundPattern } from './src/components/BackgroundPattern';
+import { AuthProvider, useAuth } from './src/context/AuthContext';
+import { useNotifications } from './src/hooks/useNotifications';
 
 type Screen = 'main' | 'messages' | 'friends' | 'myhex' | 'settings';
 
@@ -33,12 +35,25 @@ const mockMessages = [
   { from: 'B5A6C7D8', text: 'HOW ARE YOU?', time: '12:15' },
 ];
 
-export default function App() {
+function AppContent() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('main');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [fontLoaded, setFontLoaded] = useState(false);
+  const { isLoading, isAuthenticated, hexCode, register } = useAuth();
 
-  React.useEffect(() => {
+  // Set up notification handlers
+  useNotifications({
+    onNotificationReceived: (data) => {
+      console.log('📬 Notification received:', data);
+      // TODO: Handle different notification types
+    },
+    onNotificationTapped: (data) => {
+      console.log('👆 Notification tapped:', data);
+      // TODO: Navigate to appropriate screen
+    },
+  });
+
+  useEffect(() => {
     async function loadFont() {
       try {
         await Font.loadAsync({
@@ -53,10 +68,27 @@ export default function App() {
     loadFont();
   }, []);
 
-  if (!fontLoaded) {
+  // Auto-register if not authenticated
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated && fontLoaded) {
+      console.log('🔐 Not authenticated, registering...');
+      register().catch((error) => {
+        console.error('❌ Registration failed:', error);
+      });
+    }
+  }, [isLoading, isAuthenticated, fontLoaded]);
+
+  // Show loading screen while initializing
+  if (!fontLoaded || isLoading) {
     return (
       <NativeBaseProvider theme={retroTheme}>
-        <View style={styles.container} />
+        <LinearGradient
+          colors={['#1a1a1a', '#2a2a2a', '#1a1a1a']}
+          style={[styles.container, styles.centered]}
+        >
+          <ActivityIndicator size="large" color="#C7D3C0" />
+          <Text style={styles.loadingText}>INITIALIZING...</Text>
+        </LinearGradient>
       </NativeBaseProvider>
     );
   }
@@ -133,9 +165,30 @@ export default function App() {
   );
 }
 
+export default function App() {
+  return (
+    <NativeBaseProvider theme={retroTheme}>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </NativeBaseProvider>
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'space-between',
+  },
+  centered: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontFamily: 'Chicago',
+    fontSize: 14,
+    color: '#C7D3C0',
+    marginTop: 16,
+    letterSpacing: 2,
   },
 });

@@ -7,7 +7,7 @@ The Retro Pager Voice App is a minimalist React Native mobile application that r
 ## Glossary
 
 - **Pager_App**: The React Native mobile application
-- **Backend_System**: The AWS-based backend infrastructure (API Gateway, Lambda with Bun runtime, RDS PostgreSQL, S3, SNS)
+- **Backend_System**: The Bun-based backend server (SQLite database, S3-compatible object storage, APNS integration)
 - **User**: An individual who has installed the Pager_App
 - **Hex_Code**: A unique hexadecimal identifier automatically assigned to each User upon first app launch
 - **Friend_Request**: A pending invitation sent from one User to another User using their Hex_Code
@@ -145,21 +145,21 @@ The Retro Pager Voice App is a minimalist React Native mobile application that r
 
 ### Requirement 8: Backend Infrastructure
 
-**User Story:** As a system administrator, I want the backend infrastructure provisioned via Terraform on AWS, so that the deployment is reproducible and scalable.
+**User Story:** As a system administrator, I want a simple backend server that handles all operations, so that deployment and maintenance are straightforward.
 
 #### Acceptance Criteria
 
-8.1 THE Backend_System SHALL run on AWS Lambda functions using Bun JavaScript runtime with TypeScript
+8.1 THE Backend_System SHALL run as a singleton Bun server using TypeScript
 
-8.2 THE Backend_System SHALL use API Gateway for HTTP endpoint exposure with RESTful API design
+8.2 THE Backend_System SHALL expose RESTful HTTP endpoints for all API operations
 
-8.3 THE Backend_System SHALL use RDS PostgreSQL for relational data storage with tables for Users, Friendships, Friend_Requests, and Voice_Note metadata
+8.3 THE Backend_System SHALL use SQLite for relational data storage with tables for Users, Friendships, Friend_Requests, and Voice_Note metadata
 
-8.4 THE Backend_System SHALL use S3 for Voice_Note audio file storage with automatic lifecycle deletion after 48 hours
+8.4 THE Backend_System SHALL use S3-compatible object storage for Voice_Note audio file storage with automatic lifecycle deletion after 48 hours
 
-8.5 THE Backend_System SHALL use SNS for push notification delivery to mobile devices
+8.5 THE Backend_System SHALL use APNS (Apple Push Notification Service) for push notification delivery to iOS devices
 
-8.6 THE Backend_System SHALL be provisioned entirely through Terraform configuration files
+8.6 THE Backend_System SHALL store the SQLite database file in the backend directory
 
 8.7 THE Backend_System SHALL implement database schema with foreign keys and indexes to support future feature expansion
 

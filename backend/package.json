@@ -8,11 +8,17 @@
     "start": "bun run src/index.ts"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
     "@types/bun": "latest",
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "pg": "^8.11.3",
-    "@types/pg": "^8.10.9"
+    "@types/pg": "^8.10.9",
+    "apn": "^2.2.0",
+    "apns2": "^12.2.0",
+    "better-sqlite3": "^12.4.1",
+    "bullmq": "^5.63.2",
+    "ioredis": "^5.8.2",
+    "pg": "^8.11.3"
   }
 }

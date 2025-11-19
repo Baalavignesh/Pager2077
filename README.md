@@ -42,9 +42,33 @@ pager2077/
 
 ### Frontend Development
 
+**For Push Notifications (Recommended):**
+
 ```bash
 cd frontend
 npm install
+
+# Build with Xcode (required for push notifications)
+npx expo prebuild --platform ios
+open ios/Pager2077.xcworkspace
+# Configure signing and click Play
+
+# Daily development (after first build)
+npx expo start --dev-client
+# Press 'i' for iOS - instant launch + hot reload!
+```
+
+**Why Xcode Build?**
+- Push notifications require proper Apple entitlements
+- Expo Go doesn't support custom push notifications
+- Build once with Xcode, then use dev client for fast iteration
+- Works on iOS Simulator (iOS 16+)
+- Completely FREE
+
+**For Quick UI Testing (No Push Notifications):**
+
+```bash
+cd frontend
 npm start        # For mobile (iOS/Android)
 npm run web      # For web development and debugging
 ```
@@ -61,6 +85,8 @@ This will start the Expo development server. You can:
 - Ensure React versions match: react@19.1.0 and react-dom@19.1.0
 - For debugging, Kiro can run the dev server in background
 - Web development available at http://localhost:8081
+- **Push notifications only work with Xcode build**, not Expo Go
+- See `frontend/LOCAL_BUILD_GUIDE.md` for setup
 
 ### Backend Development
 

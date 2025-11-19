@@ -50,30 +50,31 @@ retro-pager-voice-app/
          │ HTTPS
          ▼
 ┌─────────────────┐
-│  API Gateway    │
+│   Bun Server    │
+│   (Singleton)   │
 └────────┬────────┘
-         │
-         ▼
-┌─────────────────┐      ┌──────────┐
-│  Lambda (Bun)   │─────▶│   RDS    │
-│   Functions     │      │ Postgres │
-└────────┬────────┘      └──────────┘
          │
          ├──────────────┐
          ▼              ▼
-    ┌────────┐    ┌─────────┐
-    │   S3   │    │   SNS   │
-    │ Audio  │    │  Push   │
-    └────────┘    └─────────┘
+    ┌────────┐    ┌──────────────┐
+    │ SQLite │    │ S3-Compatible│
+    │  File  │    │   Storage    │
+    └────────┘    └──────────────┘
+         │
+         ▼
+    ┌─────────┐
+    │  APNS   │
+    │  Push   │
+    └─────────┘
 ```
 
 ### Communication Flow
 
-1. **User Registration**: App → API Gateway → Lambda → RDS (generate hex code)
-2. **Friend Request**: App → API Gateway → Lambda → RDS → SNS (notify recipient)
-3. **Voice Upload**: App → API Gateway → Lambda → S3 (presigned URL) → RDS (metadata)
-4. **Voice Delivery**: Lambda → SNS → Device → App (auto-play)
-5. **Status Updates**: App → API Gateway → Lambda → RDS → WebSocket/Polling
+1. **User Registration**: App → Bun Server → SQLite (generate hex code)
+2. **Friend Request**: App → Bun Server → SQLite → APNS (notify recipient)
+3. **Voice Upload**: App → Bun Server → S3-Compatible Storage (presigned URL) → SQLite (metadata)
+4. **Voice Delivery**: Bun Server → APNS → Device → App (auto-play)
+5. **Status Updates**: App → Bun Server → SQLite → APNS (notify friends)
 
 ## Components and Interfaces
 
@@ -143,30 +144,33 @@ interface VoiceNoteService {
   generateDownloadUrl(voiceNoteId: string): Promise<string>
   notifyRecipient(recipientId: string, voiceNoteId: string): Promise<void>
 }
+
+// Uses S3-compatible storage (AWS S3, Cloudflare R2, MinIO, etc.)
 ```
 
 #### 4. NotificationService
 ```typescript
 interface NotificationService {
-  sendPushNotification(deviceToken: string, payload: NotificationPayload): Promise<void>
+  sendAPNSNotification(deviceToken: string, payload: APNSPayload): Promise<void>
+  sendSilentNotification(deviceToken: string, data: any): Promise<void>
   registerDevice(userId: string, deviceToken: string): Promise<void>
 }
 ```
 
 ## Data Models
 
-### Database Schema (PostgreSQL)
+### Database Schema (SQLite)
 
 #### Users Table
 ```sql
 CREATE TABLE users (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  hex_code VARCHAR(8) UNIQUE NOT NULL,
-  device_token VARCHAR(255) UNIQUE NOT NULL,
-  status VARCHAR(20) DEFAULT 'offline',
-  last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  id TEXT PRIMARY KEY,
+  hex_code TEXT UNIQUE NOT NULL,
+  device_token TEXT UNIQUE NOT NULL,
+  status TEXT DEFAULT 'offline',
+  last_seen TEXT DEFAULT CURRENT_TIMESTAMP,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX idx_users_hex_code ON users(hex_code);
@@ -177,12 +181,14 @@ CREATE INDEX idx_users_status ON users(status);
 #### Friend Requests Table
 ```sql
 CREATE TABLE friend_requests (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  from_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  to_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  status VARCHAR(20) DEFAULT 'pending', -- pending, accepted, rejected
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  id TEXT PRIMARY KEY,
+  from_user_id TEXT NOT NULL,
+  to_user_id TEXT NOT NULL,
+  status TEXT DEFAULT 'pending',
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (from_user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (to_user_id) REFERENCES users(id) ON DELETE CASCADE,
   UNIQUE(from_user_id, to_user_id)
 );
 
@@ -193,12 +199,14 @@ CREATE INDEX idx_friend_requests_from_user ON friend_requests(from_user_id);
 #### Friendships Table
 ```sql
 CREATE TABLE friendships (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id_1 UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  user_id_2 UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  CHECK (user_id_1 < user_id_2), -- Ensure consistent ordering
-  UNIQUE(user_id_1, user_id_2)
+  id TEXT PRIMARY KEY,
+  user_id_1 TEXT NOT NULL,
+  user_id_2 TEXT NOT NULL,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id_1) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id_2) REFERENCES users(id) ON DELETE CASCADE,
+  UNIQUE(user_id_1, user_id_2),
+  CHECK (user_id_1 < user_id_2)
 );
 
 CREATE INDEX idx_friendships_user1 ON friendships(user_id_1);
@@ -208,15 +216,17 @@ CREATE INDEX idx_friendships_user2 ON friendships(user_id_2);
 #### Voice Notes Table
 ```sql
 CREATE TABLE voice_notes (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  sender_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  recipient_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  s3_key VARCHAR(255) NOT NULL,
+  id TEXT PRIMARY KEY,
+  sender_id TEXT NOT NULL,
+  recipient_id TEXT NOT NULL,
+  s3_key TEXT NOT NULL,
   duration_seconds INTEGER,
-  status VARCHAR(20) DEFAULT 'pending', -- pending, delivered, played, expired
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  expires_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP + INTERVAL '48 hours'),
-  played_at TIMESTAMP
+  status TEXT DEFAULT 'pending',
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  expires_at TEXT,
+  played_at TEXT,
+  FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (recipient_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE INDEX idx_voice_notes_recipient ON voice_notes(recipient_id, status);
@@ -399,25 +409,14 @@ const ErrorCodes = {
    - Hex code generation
 
 2. **Integration Tests**
-   - Lambda handlers with test database
+   - API endpoints with test database
    - S3 upload/download operations
-   - SNS notification sending
+   - APNS notification sending (mocked)
 
 3. **API Tests**
    - Endpoint response validation
    - Authentication middleware
    - Error handling scenarios
-
-### Infrastructure Testing
-
-1. **Terraform Validation**
-   - `terraform validate` in CI/CD
-   - `terraform plan` for change preview
-
-2. **Security Scanning**
-   - IAM policy validation
-   - S3 bucket policy checks
-   - API Gateway authorization
 
 ## Retro UI Design System
 
@@ -475,16 +474,17 @@ const fonts = {
 ### Backend Optimization
 
 1. **Database Indexing**: Indexes on hex_code, device_token, user relationships
-2. **S3 Lifecycle**: Auto-delete voice files after 48 hours
-3. **Lambda Cold Starts**: Keep functions warm with CloudWatch Events (optional)
-4. **Connection Pooling**: Use RDS Proxy for database connections
+2. **Object Storage Lifecycle**: Auto-delete voice files after 48 hours (bucket policy)
+3. **SQLite**: Use WAL mode for better concurrent read performance
+4. **APNS Connection**: Maintain persistent HTTP/2 connection for efficiency
+5. **S3-Compatible Storage**: Use provider-agnostic client (supports AWS S3, Cloudflare R2, MinIO, etc.)
 
 ### Scalability Considerations
 
-1. **Database**: RDS can scale vertically; read replicas for future growth
-2. **Lambda**: Auto-scales; set concurrency limits to protect database
+1. **Database**: SQLite works well for single-server; consider PostgreSQL for multi-server
+2. **Server**: Single Bun instance; can add load balancer + multiple instances later
 3. **S3**: Unlimited storage; use CloudFront CDN if global distribution needed
-4. **SNS**: Handles high throughput; consider batching for future features
+4. **APNS**: HTTP/2 multiplexing handles high throughput efficiently
 
 ## Security
 
@@ -499,31 +499,35 @@ const fonts = {
 
 1. **Authentication**: JWT with short expiration (7 days), refresh token flow
 2. **Authorization**: Verify user owns resources before operations
-3. **S3 Security**: Presigned URLs with 5-minute expiration
+3. **Object Storage Security**: Presigned URLs with 5-minute expiration
 4. **Database**: Parameterized queries to prevent SQL injection
-5. **API Gateway**: Rate limiting (100 requests/minute per user)
-6. **IAM**: Least privilege principle for Lambda execution roles
+5. **Rate Limiting**: Implement middleware (100 requests/minute per user)
+6. **APNS**: Secure certificate-based authentication
+7. **Provider Agnostic**: S3-compatible client works with any provider (AWS S3, Cloudflare R2, MinIO)
 
 ### Data Privacy
 
 1. **Voice Notes**: Auto-delete after 48 hours
 2. **User Data**: Minimal collection (no email, phone, name)
-3. **Device Tokens**: Encrypted at rest in RDS
-4. **Logs**: No PII in CloudWatch logs
+3. **Device Tokens**: Stored securely in SQLite
+4. **Logs**: No PII in server logs
 
 ## Deployment Strategy
 
 ### Frontend Deployment
 
-1. **Development**: Expo Go for rapid testing
+1. **Development**: Local Xcode build (required for push notifications)
+   - Expo Go doesn't support custom push notifications
+   - Xcode build provides proper Apple entitlements
+   - Works on iOS Simulator (iOS 16+)
+   - Use dev client for fast hot reload after initial build
 2. **Staging**: TestFlight (iOS) / Internal Testing (Android)
 3. **Production**: App Store / Google Play Store
 
 ### Backend Deployment
 
-1. **Development**: Local Bun server + LocalStack for AWS services
-2. **Staging**: Separate AWS account with terraform workspace
-3. **Production**: Terraform apply with approval gate
+1. **Development**: Local Bun server with SQLite file
+2. **Production**: Manual deployment (handled separately)
 
 ### CI/CD Pipeline
 
@@ -535,8 +539,8 @@ const fonts = {
 
 1. **Lint**: ESLint + Prettier for code quality
 2. **Test**: Run unit + integration tests
-3. **Build**: Compile TypeScript, bundle Lambda functions
-4. **Deploy**: Terraform apply (backend), EAS Build (frontend)
+3. **Build**: Xcode build for frontend (with entitlements), compile TypeScript for backend
+4. **Deploy**: TestFlight/App Store (frontend), manual deployment (backend)
 
 ## Future Extensibility
 

@@ -5,34 +5,37 @@
   - Initialize React Native project in frontend/ using Expo with TypeScript template
   - Initialize Bun project in backend/ with TypeScript configuration
   - Install NativeBase and required dependencies in frontend
-  - Install AWS SDK, database client (pg), and required dependencies in backend
+  - Install required dependencies in backend (better-sqlite3, @aws-sdk/client-s3 and @aws-sdk/s3-request-presigner for S3-compatible storage, apn for APNS)
   - Set up ESLint and Prettier for both projects
   - _Requirements: 8.1, 8.6_
 
-- [ ] 2. Set up backend database schema and migrations
-  - [ ] 2.1 Create database migration files for all tables
-    - Write SQL migration for users table with indexes
-    - Write SQL migration for friend_requests table with indexes
-    - Write SQL migration for friendships table with indexes and constraints
-    - Write SQL migration for voice_notes table with indexes and expiration
-    - _Requirements: 8.3, 8.7_
+- [ ] 2. Set up backend database schema and SQLite
+  - [ ] 2.1 Create SQLite database initialization script
+    - Write SQL schema for users table with indexes
+    - Write SQL schema for friend_requests table with indexes
+    - Write SQL schema for friendships table with indexes and constraints
+    - Write SQL schema for voice_notes table with indexes
+    - Create database initialization function that runs on server startup
+    - _Requirements: 8.3, 8.6, 8.7_
   
-  - [ ] 2.2 Implement database connection and migration runner
-    - Create database connection utility with connection pooling
-    - Implement migration runner script to execute SQL files
-    - Add environment variable configuration for database credentials
-    - _Requirements: 8.3_
+  - [ ] 2.2 Implement database connection utility
+    - Create database connection wrapper using better-sqlite3
+    - Enable WAL mode for better concurrent read performance
+    - Add helper functions for common query patterns
+    - _Requirements: 8.3, 8.6_
 
 - [ ] 3. Implement backend data models and repositories
   - [ ] 3.1 Create TypeScript interfaces for all data models
     - Define User, FriendRequest, Friendship, VoiceNote interfaces
     - Create request/response DTOs for API endpoints
+    - Add error types and response wrappers
     - _Requirements: 8.1_
   
   - [ ] 3.2 Implement repository layer for database operations
     - Create UserRepository with CRUD operations and hex code generation
     - Create FriendshipRepository with relationship queries
     - Create VoiceNoteRepository with expiration handling
+    - Use parameterized queries for all database operations
     - _Requirements: 1.1, 1.2, 2.2, 2.6, 2.7, 8.3_
   
   - [ ]* 3.3 Write unit tests for repositories
@@ -55,38 +58,50 @@
     - Implement rejectFriendRequest to update status
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7_
   
-  - [ ] 4.3 Create VoiceNoteService with S3 integration
-    - Implement generateUploadUrl for S3 presigned URLs
+  - [ ] 4.3 Create VoiceNoteService with S3-compatible storage integration
+    - Implement generateUploadUrl for S3-compatible presigned URLs
     - Implement processVoiceNote to store metadata after upload
-    - Implement generateDownloadUrl for S3 presigned download URLs
-    - _Requirements: 5.1, 5.2, 6.4_
+    - Implement generateDownloadUrl for S3-compatible presigned download URLs
+    - Set expiration time to 48 hours from creation
+    - Use provider-agnostic S3 client (works with AWS S3, Cloudflare R2, MinIO, etc.)
+    - _Requirements: 5.1, 5.2, 6.4, 8.4_
   
-  - [ ] 4.4 Create NotificationService with SNS integration
-    - Implement sendPushNotification using AWS SNS
+  - [ ] 4.4 Create NotificationService with APNS integration
+    - Implement sendAPNSNotification using node-apn library
+    - Implement sendSilentNotification for background updates
     - Implement registerDevice to store device tokens
     - Implement notifyRecipient for voice note delivery
-    - _Requirements: 5.3, 6.2_
+    - Handle APNS connection and certificate management
+    - _Requirements: 5.3, 6.2, 8.5_
   
   - [ ]* 4.5 Write unit tests for service layer
     - Test user registration flow and hex code uniqueness
     - Test friend request validation logic
     - Test S3 presigned URL generation
+    - Mock APNS calls
     - _Requirements: 1.1, 2.2, 2.3, 2.4_
 
-- [ ] 5. Implement Lambda handlers and API endpoints
-  - [ ] 5.1 Create authentication middleware and JWT utilities
+- [ ] 5. Implement Bun server and API endpoints
+  - [ ] 5.1 Create Bun HTTP server with routing
+    - Set up Bun.serve with request routing
+    - Implement middleware for CORS, logging, error handling
+    - Add rate limiting middleware (100 requests/minute per user)
+    - Create health check endpoint
+    - _Requirements: 8.1, 8.2_
+  
+  - [ ] 5.2 Create authentication middleware and JWT utilities
     - Implement JWT token generation on user registration
     - Create authentication middleware to verify JWT tokens
     - Add error handling for unauthorized requests
     - _Requirements: 1.2, 1.5_
   
-  - [ ] 5.2 Implement user management endpoints
+  - [ ] 5.3 Implement user management endpoints
     - Create POST /api/users/register handler
     - Create GET /api/users/me handler
     - Create PUT /api/users/status handler
     - _Requirements: 1.1, 1.2, 9.1, 9.2_
   
-  - [ ] 5.3 Implement friendship management endpoints
+  - [ ] 5.4 Implement friendship management endpoints
     - Create POST /api/friends/request handler
     - Create GET /api/friends/requests/pending handler
     - Create POST /api/friends/requests/:id/accept handler
@@ -94,43 +109,33 @@
     - Create GET /api/friends handler with status information
     - _Requirements: 2.1, 2.2, 2.5, 2.6, 2.7, 2.8, 3.2_
   
-  - [ ] 5.4 Implement voice note endpoints
+  - [ ] 5.5 Implement voice note endpoints
     - Create POST /api/voice-notes/upload-url handler
-    - Create POST /api/voice-notes/:id/complete handler with SNS notification
+    - Create POST /api/voice-notes/:id/complete handler with APNS notification
     - Create GET /api/voice-notes/:id/download-url handler
     - _Requirements: 5.1, 5.2, 5.3, 6.4_
   
-  - [ ]* 5.5 Write integration tests for API endpoints
+  - [ ]* 5.6 Write integration tests for API endpoints
     - Test user registration and authentication flow
     - Test friend request lifecycle (send, accept, reject)
-    - Test voice note upload and notification flow
+    - Test voice note upload and notification flow (mock S3-compatible storage)
     - _Requirements: 1.1, 2.2, 2.6, 5.1, 5.3_
 
-- [ ] 6. Set up Terraform infrastructure
-  - [ ] 6.1 Create Terraform configuration for core infrastructure
-    - Define VPC, subnets, and security groups
-    - Configure RDS PostgreSQL instance with security settings
-    - Create S3 bucket with lifecycle policy for 48-hour deletion
-    - _Requirements: 8.2, 8.3, 8.4, 8.6_
+- [ ] 6. Configure S3-compatible object storage
+  - [ ] 6.1 Set up storage bucket and lifecycle policy
+    - Create bucket for voice note storage (AWS S3, Cloudflare R2, MinIO, or other S3-compatible provider)
+    - Configure lifecycle rule for 48-hour automatic deletion
+    - Set up bucket CORS policy for presigned URL uploads
+    - Configure access credentials for server
+    - _Requirements: 8.4_
   
-  - [ ] 6.2 Configure Lambda functions and API Gateway
-    - Create Lambda function resources with Bun runtime layer
-    - Configure API Gateway with REST API endpoints
-    - Set up Lambda permissions and IAM roles
-    - Configure API Gateway authorization with JWT
-    - _Requirements: 8.1, 8.2, 8.6_
-  
-  - [ ] 6.3 Set up SNS for push notifications
-    - Create SNS topics for iOS and Android platforms
-    - Configure platform applications for APNS and FCM
-    - Set up IAM permissions for Lambda to publish to SNS
-    - _Requirements: 8.5, 8.6_
-  
-  - [ ] 6.4 Configure environment variables and outputs
-    - Define Terraform variables for configurable values
-    - Create outputs for API Gateway URL, S3 bucket name
-    - Set up parameter store for sensitive configuration
-    - _Requirements: 8.6_
+  - [ ] 6.2 Implement S3-compatible client utilities
+    - Create S3 client wrapper using @aws-sdk/client-s3 (works with any S3-compatible provider)
+    - Configure endpoint URL for chosen provider (AWS, Cloudflare R2, MinIO, etc.)
+    - Implement presigned URL generation for uploads (5-minute expiration)
+    - Implement presigned URL generation for downloads (5-minute expiration)
+    - Add error handling for storage operations
+    - _Requirements: 5.1, 5.2, 6.4, 8.4_
 
 - [ ] 7. Initialize React Native frontend with retro theme
   - [ ] 7.1 Set up NativeBase theme with retro styling
@@ -289,7 +294,7 @@
 - [ ] 12. Implement voice note sending and receiving
   - [ ] 12.1 Create voice note upload flow
     - Request presigned upload URL from API
-    - Upload audio file to S3 using presigned URL
+    - Upload audio file to S3-compatible storage using presigned URL
     - Call completion endpoint to finalize voice note
     - Show loading indicator during upload
     - Handle upload errors with retry option
@@ -302,17 +307,17 @@
     - Keep CLEAR, PLAY, SEND buttons available on error
     - _Requirements: 5.4, 5.5_
   
-  - [ ] 12.3 Set up push notification handling
-    - Configure Firebase Cloud Messaging (FCM) for Android
+  - [ ] 12.3 Set up APNS push notification handling
     - Configure Apple Push Notification Service (APNS) for iOS
     - Register device token with backend on app launch
     - Set up notification listeners for foreground and background
-    - _Requirements: 5.3, 6.2_
+    - Handle notification permissions
+    - _Requirements: 5.3, 6.2, 8.5_
   
   - [ ] 12.4 Implement foreground voice note reception
     - Listen for incoming voice note notifications when app is open
     - Play beep sound immediately on notification
-    - Download voice note audio file from S3
+    - Download voice note audio file from S3-compatible storage
     - Auto-play voice note audio after beep
     - Return to default screen state after playback
     - _Requirements: 6.1, 6.3, 6.4, 6.5_
@@ -324,7 +329,7 @@
     - _Requirements: 6.2, 6.3, 6.4_
   
   - [ ]* 12.6 Write integration tests for voice note flow
-    - Test upload flow with mocked S3 upload
+    - Test upload flow with mocked S3-compatible storage upload
     - Test notification handling in foreground
     - Test notification handling in background
     - Mock push notification events
@@ -345,7 +350,7 @@
     - _Requirements: 9.1, 9.2_
   
   - [ ] 13.3 Implement friend status broadcasting
-    - Backend: Broadcast status changes to all friends via SNS
+    - Backend: Send APNS notifications to all friends when status changes
     - Frontend: Listen for friend status update notifications
     - Update friend list status indicators in real-time
     - _Requirements: 9.3, 9.5_
@@ -384,34 +389,21 @@
     - Adjust spacing using 8px grid system
     - _Requirements: 7.3, 7.4_
 
-- [ ] 15. Deploy and test end-to-end
-  - [ ] 15.1 Deploy backend infrastructure with Terraform
-    - Run terraform init and terraform plan
-    - Apply Terraform configuration to create AWS resources
-    - Verify all resources are created successfully
-    - Note API Gateway URL and other outputs
-    - _Requirements: 8.6_
+- [ ] 15. Test end-to-end functionality
+  - [ ] 15.1 Start backend server locally
+    - Run bun run dev to start the server
+    - Verify SQLite database is created and initialized
+    - Test health check endpoint
+    - Verify S3-compatible storage connection and APNS configuration
+    - _Requirements: 8.1, 8.3, 8.6_
   
-  - [ ] 15.2 Deploy Lambda functions
-    - Bundle Lambda function code with dependencies
-    - Upload function code to AWS Lambda
-    - Configure environment variables (database URL, S3 bucket, etc.)
-    - Test Lambda functions via API Gateway
-    - _Requirements: 8.1, 8.2_
-  
-  - [ ] 15.3 Run database migrations
-    - Connect to RDS PostgreSQL instance
-    - Execute migration scripts to create tables
-    - Verify schema is created correctly with indexes
-    - _Requirements: 8.3, 8.7_
-  
-  - [ ] 15.4 Configure frontend with backend URL
-    - Update API client base URL to point to API Gateway
-    - Configure push notification credentials (FCM, APNS)
+  - [ ] 15.2 Configure frontend with backend URL
+    - Update API client base URL to point to local server
+    - Configure push notification credentials (APNS)
     - Build frontend app for testing (Expo Go or development build)
     - _Requirements: 8.2_
   
-  - [ ] 15.5 Perform end-to-end testing
+  - [ ] 15.3 Perform end-to-end testing
     - Test user registration and hex code generation
     - Test friend request send, accept, and reject
     - Test voice note recording, sending, and receiving
