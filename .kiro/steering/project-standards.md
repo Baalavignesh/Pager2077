@@ -7,6 +7,17 @@ inclusion: always
 ## Project Overview
 Pager2077 is a retro-futuristic voice messaging app with a 90s pager aesthetic. The project uses a monorepo structure with React Native frontend and Bun/AWS backend.
 
+### Recent Updates
+- **Circular Control Wheel**: Replaced metal button grid with iPod-style circular control wheel
+  - Up/Down arrows for navigation
+  - Green dot (right) for Select
+  - Red dot (left) for Back
+  - Center MENU button to return to main screen
+- **Battery Indicator**: Real-time battery status display in top-right corner
+  - Shows 0-4 bars based on battery percentage
+  - Blinks when charging
+  - Uses expo-battery for native battery API access
+
 ## Code Style Guidelines
 
 ### TypeScript Standards

@@ -30,6 +30,23 @@ When creating or modifying UI components:
 - [ ] Focus screen components on functionality, not styling
 - [ ] Add screen-specific styles only when necessary
 
+### New Components
+
+**ControlWheel** - Circular iPod-style navigation control
+- Replaces ButtonGrid in PagerBody
+- 200x200px circular control with 4 directional buttons + center button
+- Up/Down arrows for navigation
+- Green/Red dots for Select/Back actions
+- Center MENU button
+- No borders on individual buttons, only outer ring
+
+**BatteryIndicator** - Real-time battery status display
+- Shows 0-4 bars based on battery level (25% per bar)
+- Blinks when charging using Animated API
+- Compact size (26x13px) for top-right corner placement
+- Uses expo-battery for native battery access
+- Automatically updates every 30 seconds
+
 ### Color Usage
 
 - Greenish LCD background for authentic pager look

@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, Animated } from 'react-native';
+import { BatteryIndicator } from './BatteryIndicator';
+import { useBattery } from '../hooks/useBattery';
 
 interface PagerScreenProps {
   title?: string;
@@ -19,6 +21,7 @@ export const PagerScreen: React.FC<PagerScreenProps> = ({
   children, 
   scrollable = false 
 }) => {
+  const { batteryLevel, isCharging } = useBattery();
 
   // Generate realistic LCD scanline effect with 3-color pattern
   const renderScanlines = () => {
@@ -85,9 +88,19 @@ export const PagerScreen: React.FC<PagerScreenProps> = ({
     <>
       {title && (
         <>
-          <Text style={styles.title}>{title}</Text>
+          <View style={styles.titleRow}>
+            <Text style={styles.title}>{title}</Text>
+            <View style={styles.batteryContainer}>
+              <BatteryIndicator batteryLevel={batteryLevel} isCharging={isCharging} />
+            </View>
+          </View>
           <Text> </Text>
         </>
+      )}
+      {!title && (
+        <View style={styles.batteryContainerNoTitle}>
+          <BatteryIndicator batteryLevel={batteryLevel} isCharging={isCharging} />
+        </View>
       )}
       {children}
     </>
@@ -215,12 +228,32 @@ const styles = StyleSheet.create({
     zIndex: 2,
     padding: 12,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+    borderBottomWidth: 2,
+    paddingBottom: 6,
+    borderBottomColor: '#3d3d3dff',
+    position: 'relative',
+  },
+  batteryContainer: {
+    position: 'absolute',
+    right: 0,
+    top: 2,
+  },
+  batteryContainerNoTitle: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    zIndex: 10,
+  },
   title: {
     fontFamily: 'Chicago',
     fontSize: 14,
     fontWeight: '700',
     textAlign: 'center',
-    marginBottom: 8,
     color: '#1a2618',
     letterSpacing: 1.5,
     textShadowColor: 'rgba(0, 0, 0, 0.25)',
