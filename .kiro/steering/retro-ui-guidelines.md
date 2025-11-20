@@ -47,6 +47,31 @@ When creating or modifying UI components:
 - Uses expo-battery for native battery access
 - Automatically updates every 30 seconds
 
+### Friends Management Screens
+
+**FriendsListScreen** - Main friends list view
+- Shows "ADD FRIEND" as first menu item
+- Shows "REQUESTS (count)" if pending requests exist
+- Displays friends with online (●) / offline (○) status indicators
+- Empty state message when no friends
+- Divider line between menu and friends list
+
+**AddFriendScreen** - Add friend with hex code input
+- Two input methods: Paste from clipboard or Manual entry
+- Method selection with ▲/▼ navigation
+- Paste mode: Uses expo-clipboard to auto-fill hex code
+- Manual mode: 8-digit hex input (0-9, A-F) with digit-by-digit entry
+- Error handling for invalid clipboard content
+- SELECT: Choose method / Move to next digit / Send request
+- BACK: Move to previous digit (manual mode only)
+- MENU: Cancel and return to friends list
+
+**FriendRequestsScreen** - Manage incoming friend requests
+- Lists all pending requests with hex codes
+- SELECT: Accept selected request
+- BACK: Reject selected request
+- Empty state when no pending requests
+
 ### Color Usage
 
 - Greenish LCD background for authentic pager look
