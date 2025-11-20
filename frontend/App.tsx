@@ -69,14 +69,15 @@ function AppContent() {
   }, []);
 
   // Auto-register if not authenticated
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated && fontLoaded) {
-      console.log('🔐 Not authenticated, registering...');
-      register().catch((error) => {
-        console.error('❌ Registration failed:', error);
-      });
-    }
-  }, [isLoading, isAuthenticated, fontLoaded]);
+  // TEMPORARILY DISABLED FOR UI DEVELOPMENT
+  // useEffect(() => {
+  //   if (!isLoading && !isAuthenticated && fontLoaded) {
+  //     console.log('🔐 Not authenticated, registering...');
+  //     register().catch((error) => {
+  //       console.error('❌ Registration failed:', error);
+  //     });
+  //   }
+  // }, [isLoading, isAuthenticated, fontLoaded]);
 
   // Show loading screen while initializing
   if (!fontLoaded || isLoading) {
@@ -120,6 +121,11 @@ function AppContent() {
     }
   };
 
+  const handleMenu = () => {
+    setCurrentScreen('main');
+    setSelectedIndex(0);
+  };
+
   const renderScreen = () => {
     switch (currentScreen) {
       case 'main':
@@ -159,6 +165,7 @@ function AppContent() {
           onBack={handleBack}
           onNavigateUp={() => navigate('up')}
           onNavigateDown={() => navigate('down')}
+          onMenu={handleMenu}
         />
       </LinearGradient>
     </NativeBaseProvider>

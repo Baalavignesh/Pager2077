@@ -1,20 +1,22 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { ButtonGrid } from './ButtonGrid';
+import { ControlWheel } from './ControlWheel';
 
 interface PagerBodyProps {
     onSelect: () => void;
     onBack: () => void;
     onNavigateUp: () => void;
     onNavigateDown: () => void;
+    onMenu: () => void;
 }
 
 export const PagerBody: React.FC<PagerBodyProps> = ({
     onSelect,
     onBack,
     onNavigateUp,
-    onNavigateDown
+    onNavigateDown,
+    onMenu
 }) => {
     return (
         <View style={styles.wrapper}>
@@ -27,7 +29,7 @@ export const PagerBody: React.FC<PagerBodyProps> = ({
             >
                 {/* Inner highlight layer - matching button style */}
                 <LinearGradient
-                    colors={['#FAFAFA', '#3E3E3E', '#A0A0A0']}
+                    colors={['#FAFAFA', '#d1d1d1ff', '#d1d1d1ff']}
                     style={styles.innerGradient}
                     start={{ x: 0.5, y: 0 }}
                     end={{ x: 0.5, y: 1 }}
@@ -35,7 +37,7 @@ export const PagerBody: React.FC<PagerBodyProps> = ({
                 
                 {/* Main body surface - matching button style */}
                 <LinearGradient
-                    colors={['#B9B9B9', '#969696']}
+                    colors={['#d1d1d1ff', '#d1d1d1ff']}
                     style={styles.bodyGradient}
                     start={{ x: 0.5, y: 0 }}
                     end={{ x: 0.5, y: 1 }}
@@ -49,11 +51,12 @@ export const PagerBody: React.FC<PagerBodyProps> = ({
                             end={{ x: 0, y: 1 }}
                         >
                             <View style={styles.contentArea}>
-                                <ButtonGrid
+                                <ControlWheel
                                     onSelect={onSelect}
                                     onBack={onBack}
                                     onNavigateUp={onNavigateUp}
                                     onNavigateDown={onNavigateDown}
+                                    onMenu={onMenu}
                                 />
                                 
                                 {/* Logo imprinted into plastic */}
@@ -125,15 +128,16 @@ const styles = StyleSheet.create({
     },
     logoContainer: {
         position: 'absolute',
-        bottom: 40, // Closer to buttons
+        bottom: 10, // Closer to buttons
         left: 0,
         right: 0,
         alignItems: 'center',
     },
     logo: {
-        fontSize: 13,
+        fontSize: 10 ,
         fontWeight: '700',
-        letterSpacing: 2,
+        letterSpacing: 1,
+        fontFamily: "MyPager",
         color: '#2a2a2a', // Subtle dark grey
         paddingVertical: 8,
         paddingHorizontal: 20,
