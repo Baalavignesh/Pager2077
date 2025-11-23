@@ -154,6 +154,16 @@ function AppContent() {
     }
   };
 
+  const handleNavigateLeft = () => {
+    // No-op for now - reserved for future horizontal navigation
+    console.log('Navigate left (not yet implemented)');
+  };
+
+  const handleNavigateRight = () => {
+    // No-op for now - reserved for future horizontal navigation
+    console.log('Navigate right (not yet implemented)');
+  };
+
   const handleSelect = () => {
     if (currentScreen === 'main') {
       const selected = mainMenu[selectedIndex];
@@ -348,6 +358,8 @@ function AppContent() {
           onNavigateUp={() => navigate('up')}
           onNavigateDown={() => navigate('down')}
           onMenu={handleMenu}
+          onNavigateLeft={handleNavigateLeft}
+          onNavigateRight={handleNavigateRight}
         />
       </LinearGradient>
     </NativeBaseProvider>
