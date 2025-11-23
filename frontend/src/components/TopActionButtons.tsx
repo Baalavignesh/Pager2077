@@ -1,3 +1,22 @@
+/**
+ * TopActionButtons Component
+ * 
+ * A 2x2 grid of action buttons with a centered menu button overlay.
+ * Features a metallic design with flat corner buttons and a gradient center button.
+ * 
+ * Layout:
+ * - 4 corner buttons arranged in 2 rows (Back, Select, Record, Stop)
+ * - 1 center menu button positioned absolutely in the middle
+ * - Corner buttons have seamless borders (no gap in middle)
+ * - Center button has thick double-border frame effect
+ * 
+ * Design:
+ * - Corner buttons: Flat gray (#b5b5b5) with subtle borders
+ * - Center button: Metallic gradient with double-square border frame
+ * - Press animation: Scale effect (0.98) with shine overlay
+ * - High z-index (1000) to sit above other UI elements
+ */
+
 import React, { useState } from 'react';
 import { View, Text, Pressable, StyleSheet, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -7,17 +26,18 @@ interface TopActionButtonProps {
   onPress?: () => void;
   disabled?: boolean;
   isCenter?: boolean;
+  position?: 'left' | 'right';
 }
 
 const TopActionButton: React.FC<TopActionButtonProps> = ({
   label,
   onPress,
   disabled,
-  isCenter = false
+  isCenter = false,
+  position
 }) => {
   const [isPressed, setIsPressed] = useState(false);
   const scaleAnim = useState(new Animated.Value(1))[0];
-  const translateYAnim = useState(new Animated.Value(0))[0];
 
   const handlePress = () => {
     if (!onPress || disabled) {
@@ -34,88 +54,112 @@ const TopActionButton: React.FC<TopActionButtonProps> = ({
   const handlePressIn = () => {
     if (disabled) return;
     setIsPressed(true);
-    Animated.parallel([
-      Animated.timing(scaleAnim, {
-        toValue: 0.97,
-        duration: 250,
-        useNativeDriver: true,
-      }),
-      Animated.timing(translateYAnim, {
-        toValue: 2.5,
-        duration: 250,
-        useNativeDriver: true,
-      }),
-    ]).start();
+    Animated.timing(scaleAnim, {
+      toValue: 0.98,
+      duration: 150,
+      useNativeDriver: true,
+    }).start();
   };
 
   const handlePressOut = () => {
     setIsPressed(false);
-    Animated.parallel([
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 250,
-        useNativeDriver: true,
-      }),
-      Animated.timing(translateYAnim, {
-        toValue: 0,
-        duration: 250,
-        useNativeDriver: true,
-      }),
-    ]).start();
+    Animated.timing(scaleAnim, {
+      toValue: 1,
+      duration: 150,
+      useNativeDriver: true,
+    }).start();
   };
 
-  // Default metallic colors
-  const colors = {
-    outer: ['#000', '#A0A0A0'] as const,
-    inner: ['#FAFAFA', '#3E3E3E', '#E5E5E5'] as const,
-    button: ['#B9B9B9', '#969696'] as const,
+  // Flat color for corner buttons
+  const flatColor = '#b5b5b5';
+  const borderColor = '#6a6a6a';
+
+  // Center button with metallic gradient and thick border
+  const centerColors = {
+    outerBorder: '#4a4a4a',
+    innerBorder: '#6a6a6a',
+    frameBg: '#b0b0b0', // Match button color to blend
+    button: ['#c8c8c8', '#9a9a9a'] as const,
   };
 
   return (
     <Animated.View
       style={[
         isCenter ? styles.centerButtonWrapper : styles.topButtonWrapper,
-        {
-          transform: [{ translateY: translateYAnim }, { scale: 0.99 }],
-        },
         disabled && styles.topButtonDisabled,
       ]}
     >
-        <Pressable
-          onPress={handlePress}
-          onPressIn={handlePressIn}
-          onPressOut={handlePressOut}
-          disabled={disabled}
-          style={styles.pressableWrapper}
-        >
-          <LinearGradient
-            colors={colors.button}
-            style={isCenter ? styles.centerButtonGradient : styles.topButtonGradient}
-            start={{ x: 0.5, y: 0 }}
-            end={{ x: 0.5, y: 1 }}
+      {isCenter ? (
+        // Center button with metallic gradient and thick border effect
+        <View style={[styles.centerOuterBorder, { borderColor: centerColors.outerBorder }]}>
+          {/* Frame background between borders */}
+          <View style={[styles.centerFrameBg, { backgroundColor: centerColors.frameBg }]}>
+            {/* Inner square border for thick border effect */}
+            <View style={[styles.centerInnerBorder, { borderColor: centerColors.innerBorder }]}>
+              <Pressable
+                onPress={handlePress}
+                onPressIn={handlePressIn}
+                onPressOut={handlePressOut}
+                disabled={disabled}
+                style={styles.pressableWrapper}
+              >
+                <LinearGradient
+                  colors={centerColors.button}
+                  style={styles.centerButtonGradient}
+                  start={{ x: 0.5, y: 0 }}
+                  end={{ x: 0.5, y: 1 }}
+                >
+                  <Animated.View
+                    style={[
+                      styles.topButtonContent,
+                      {
+                        transform: [{ scale: scaleAnim }],
+                      },
+                    ]}
+                  >
+                    {isPressed && (
+                      <View style={[styles.shineEffect, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]} />
+                    )}
+                    <Text style={styles.topButtonText}>{label}</Text>
+                  </Animated.View>
+                </LinearGradient>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      ) : (
+        // Corner buttons with flat color and selective borders
+        <View style={[
+          styles.topOuterFlat, 
+          { borderColor },
+          position === 'left' && styles.leftButton,
+          position === 'right' && styles.rightButton,
+        ]}>
+          <Pressable
+            onPress={handlePress}
+            onPressIn={handlePressIn}
+            onPressOut={handlePressOut}
+            disabled={disabled}
+            style={styles.pressableWrapper}
           >
-            <Animated.View
-              style={[
-                styles.topButtonContent,
-                {
-                  transform: [{ scale: scaleAnim }],
-                },
-              ]}
-            >
-              {isPressed && (
-                <View style={styles.shineEffect}>
-                  <LinearGradient
-                    colors={['transparent', 'rgba(243, 244, 246, 0.2)', 'transparent']}
-                    style={styles.shineGradient}
-                    start={{ x: 0, y: 0.5 }}
-                    end={{ x: 1, y: 0.5 }}
-                  />
-                </View>
-              )}
-              <Text style={styles.topButtonText}>{label}</Text>
-            </Animated.View>
-          </LinearGradient>
-        </Pressable>
+            <View style={[styles.topButtonFlat, { backgroundColor: flatColor }]}>
+              <Animated.View
+                style={[
+                  styles.topButtonContent,
+                  {
+                    transform: [{ scale: scaleAnim }],
+                  },
+                ]}
+              >
+                {isPressed && (
+                  <View style={[styles.shineEffect, { backgroundColor: 'rgba(255, 255, 255, 0.15)' }]} />
+                )}
+                <Text style={styles.topButtonText}>{label}</Text>
+              </Animated.View>
+            </View>
+          </Pressable>
+        </View>
+      )}
     </Animated.View>
   );
 };
@@ -131,22 +175,31 @@ export const TopActionButtons: React.FC<TopActionButtonsProps> = ({
   onBack,
   onMenu
 }) => {
+  // Placeholder handlers for future functionality
+  const handleRecord = () => {
+    console.log('Record button pressed - functionality coming soon');
+  };
+
+  const handleStop = () => {
+    console.log('Stop button pressed - functionality coming soon');
+  };
+
   return (
     <View style={styles.topActionsContainer}>
       {/* Top row: BACK and SELECT - full width */}
       <View style={styles.topActionRow}>
-        <TopActionButton label="−" onPress={onBack} />
-        <TopActionButton label="−" onPress={onSelect} />
+        <TopActionButton label="−" onPress={onBack} position="left" />
+        <TopActionButton label="−" onPress={onSelect} position="right" />
       </View>
       
       {/* Bottom row: RECORD and STOP - full width */}
       <View style={styles.bottomActionRow}>
-        <TopActionButton label="−" disabled={true} />
-        <TopActionButton label="−" disabled={true} />
+        <TopActionButton label="−" onPress={handleRecord} position="left" />
+        <TopActionButton label="−" onPress={handleStop} position="right" />
       </View>
       
       {/* Center MENU button - absolutely positioned on top */}
-      <TopActionButton label="−" onPress={onMenu} isCenter={true} />
+      <TopActionButton label="" onPress={onMenu} isCenter={true} />
     </View>
   );
 };
@@ -157,82 +210,92 @@ const styles = StyleSheet.create({
     width: '100%',
     position: 'relative',
     height: 110,
+    zIndex: 1000,
   },
   
   topActionRow: {
     flexDirection: 'row',
     width: '100%',
-    gap: 0,
+    height: 55,
   },
   
   bottomActionRow: {
     flexDirection: 'row',
     width: '100%',
-    gap: 0,
+    height: 55,
   },
   
   // Top button wrapper styles
   topButtonWrapper: {
     flex: 1,
     position: 'relative',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
     height: 55,
-    // elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 2,
   },
   
   centerButtonWrapper: {
     position: 'absolute',
-    top: '50%',
+    top: 55,
     left: '50%',
     width: 90,
     height: 90,
     marginLeft: -45,
     marginTop: -45,
-    zIndex: 10,
+    zIndex: 100,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 10,
   },
   
   topButtonDisabled: {
-    opacity: 0.3,
+    opacity: 0.35,
   },
   
-  // Gradient layers for top buttons
-  topOuterGradient: {
+  // Flat styles for corner buttons
+  topOuterFlat: {
     flex: 1,
-    borderRadius: 12,
-    padding: 1.25,
+    borderWidth: 0.75,
   },
   
-  topInnerGradient: {
-    position: 'absolute',
-    top: 1,
-    left: 1,
-    right: 1,
-    bottom: 1,
-    borderRadius: 12,
+  // Remove borders for seamless middle join
+  leftButton: {
+    borderRightWidth: 0,
   },
   
-  // Gradient layers for center button
-  centerOuterGradient: {
+  rightButton: {
+    borderLeftWidth: 0,
+  },
+  
+  topButtonFlat: {
     flex: 1,
-    borderRadius: 20,
-    padding: 1.25,
+    margin: 1.5,
+    borderRadius: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
   },
   
-  centerInnerGradient: {
-    position: 'absolute',
-    top: 1,
-    left: 1,
-    right: 1,
-    bottom: 1,
-    borderRadius: 20,
+  // Center button with metallic thick border effect
+  centerOuterBorder: {
+    flex: 1,
+    borderRadius: 18,
+    borderWidth: 2.5,
+  },
+  
+  centerFrameBg: {
+    flex: 1,
+    borderRadius: 15,
+    padding: 5,
+  },
+  
+  centerInnerBorder: {
+    flex: 1,
+    borderRadius: 10,
+    borderWidth: 2,
   },
   
   pressableWrapper: {
@@ -241,17 +304,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   
-  topButtonGradient: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
-  },
-  
   centerButtonGradient: {
     flex: 1,
-    margin: 2.5,
-    borderRadius: 18,
+    margin: 2,
+    borderRadius: 7,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
@@ -273,21 +329,14 @@ const styles = StyleSheet.create({
     bottom: 0,
     zIndex: 20,
     overflow: 'hidden',
-    opacity: 0.2,
-  },
-  
-  shineGradient: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
   },
   
   topButtonText: {
     fontSize: 28,
-    fontWeight: '400',
-    color: '#FFFFFF',
-    textShadowColor: 'rgba(80, 80, 80, 1)',
-    textShadowOffset: { width: 0, height: -1 },
+    fontWeight: '500',
+    color: '#2a2a2a',
+    textShadowColor: 'rgba(255, 255, 255, 0.4)',
+    textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 0,
     zIndex: 50,
   },
