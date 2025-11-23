@@ -141,21 +141,25 @@ const styles = StyleSheet.create({
   
   numberRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 4,
     justifyContent: 'center',
   },
   
   // Number button styles
   button: {
-    width: 100,
+    width: 112,
     height: 50,
-    backgroundColor: '#FFFFFF',
-    borderRadius: "14%",
-    // borderWidth: 1,
-    // borderColor: '#E0E0E0',
+    backgroundColor: '#E5E5E5',
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: '#A0A0A0',
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
   
   actionButton: {
@@ -169,8 +173,10 @@ const styles = StyleSheet.create({
   },
   
   buttonPressed: {
-    opacity: 0.7,
-    transform: [{ scale: 0.95 }],
+    backgroundColor: '#CCCCCC',
+    transform: [{ scale: 0.97 }],
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
   },
   
   buttonDisabled: {
@@ -179,27 +185,32 @@ const styles = StyleSheet.create({
   
   // Button content styles
   buttonContent: {
+    flexDirection: 'row',
     alignItems: 'center',
-    // gap: 2,
+    justifyContent: 'center',
+    gap: 6,
   },
   
   number: {
     fontSize: 24,
     fontWeight: '600',
-    color: '#000000',
+    color: '#1A1A1A',
+    fontFamily: 'FuturaCyrillicBook',
   },
   
   letters: {
-    fontSize: 10,
+    fontSize: 14,
     fontWeight: '400',
-    color: '#666666',
-    letterSpacing: 1,
+    color: '#4A4A4A',
+    letterSpacing: 0.5,
     textTransform: 'lowercase',
+    fontFamily: 'FuturaCyrillicBook',
   },
   
   symbol: {
     fontSize: 20,
     fontWeight: '500',
-    color: '#000000',
+    color: '#1A1A1A',
+    fontFamily: 'FuturaCyrillicBook',
   },
 });

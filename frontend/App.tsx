@@ -72,6 +72,8 @@ function AppContent() {
       try {
         await Font.loadAsync({
           'Chicago': require('./assets/pixChicago.ttf'),
+          'FuturaCyrillicLight': require('./assets/fonts/FuturaCyrillicLight.ttf'),
+          'FuturaCyrillicBook': require('./assets/fonts/FuturaCyrillicBook.ttf'),
         });
         setFontLoaded(true);
       } catch (error) {
