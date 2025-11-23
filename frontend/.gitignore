@@ -40,3 +40,7 @@ yarn-error.*
 /ios
 /android
 yarn.lock
+# Expo
+.expo
+dist/
+web-build/

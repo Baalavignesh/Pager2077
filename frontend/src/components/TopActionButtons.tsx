@@ -210,6 +210,8 @@ const styles = StyleSheet.create({
     width: '100%',
     position: 'relative',
     height: 110,
+    marginBottom: -2,
+    paddingBottom: 2,
     zIndex: 1000,
   },
   

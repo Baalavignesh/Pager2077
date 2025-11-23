@@ -381,7 +381,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'space-between',
+    paddingBottom: 20,
   },
   centered: {
     justifyContent: 'center',

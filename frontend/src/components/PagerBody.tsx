@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NumPad } from './NumPad';
 
 interface PagerBodyProps {
@@ -22,8 +23,10 @@ export const PagerBody: React.FC<PagerBodyProps> = ({
     onNavigateLeft,
     onNavigateRight
 }) => {
+    const insets = useSafeAreaInsets();
+    
     return (
-        <View style={styles.wrapper}>
+        <View style={[styles.wrapper, { marginBottom: Math.max(20, insets.bottom + 10) }]}>
             {/* Outer metallic frame - matching button style */}
             <LinearGradient
                 colors={['#000', '#A0A0A0']}
@@ -33,7 +36,7 @@ export const PagerBody: React.FC<PagerBodyProps> = ({
             >
                 {/* Inner highlight layer - matching button style */}
                 <LinearGradient
-                    colors={['#FAFAFA', '#d1d1d1ff', '#d1d1d1ff']}
+                    colors={['#FAFAFA', '#d1d1d1ff', '#FAFAFA']}
                     style={styles.innerGradient}
                     start={{ x: 0.5, y: 0 }}
                     end={{ x: 0.5, y: 1 }}
@@ -76,7 +79,7 @@ export const PagerBody: React.FC<PagerBodyProps> = ({
 
 const styles = StyleSheet.create({
     wrapper: {
-        height: '60%',
+        height: '55%',
         position: 'relative',
         borderRadius: 20,
         shadowColor: '#000',
@@ -84,6 +87,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.08,
         shadowRadius: 8,
         elevation: 3,
+        marginBottom: 20,
     },
     outerGradient: {
         flex: 1,
@@ -100,10 +104,9 @@ const styles = StyleSheet.create({
     },
     bodyGradient: {
         flex: 1,
-        // margin: 2.5,
+        margin: 2.5,
         borderRadius: 18,
-        padding: 16,
-        paddingBottom: 32,
+        padding: 8,
         overflow: 'hidden',
     },
     innerRecess: {
@@ -124,12 +127,6 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'flex-start',
         position: 'relative',
-    },
-    logoContainer: {
-        position: 'absolute',
-        bottom: 8,
-        left: 0,
-        right: 0,
-        alignItems: 'center',
+        overflow: 'visible',
     },
 });
