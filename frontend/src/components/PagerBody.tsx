@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { ControlWheel } from './ControlWheel';
+import { NumPad } from './NumPad';
 
 interface PagerBodyProps {
     onSelect: () => void;
@@ -9,6 +9,8 @@ interface PagerBodyProps {
     onNavigateUp: () => void;
     onNavigateDown: () => void;
     onMenu: () => void;
+    onNavigateLeft?: () => void;
+    onNavigateRight?: () => void;
 }
 
 export const PagerBody: React.FC<PagerBodyProps> = ({
@@ -16,7 +18,9 @@ export const PagerBody: React.FC<PagerBodyProps> = ({
     onBack,
     onNavigateUp,
     onNavigateDown,
-    onMenu
+    onMenu,
+    onNavigateLeft,
+    onNavigateRight
 }) => {
     return (
         <View style={styles.wrapper}>
@@ -45,24 +49,22 @@ export const PagerBody: React.FC<PagerBodyProps> = ({
                     {/* Inner black recessed area */}
                     <View style={styles.innerRecess}>
                         <LinearGradient
-                            colors={['#1a1a1a', '#0a0a0a', '#000000']}
+                            colors={['#c1c1c1ff', '#c1c1c1ff', '#c1c1c1ff']}
                             style={styles.recessGradient}
                             start={{ x: 0, y: 0 }}
                             end={{ x: 0, y: 1 }}
                         >
                             <View style={styles.contentArea}>
-                                <ControlWheel
+                                <NumPad
                                     onSelect={onSelect}
                                     onBack={onBack}
                                     onNavigateUp={onNavigateUp}
                                     onNavigateDown={onNavigateDown}
                                     onMenu={onMenu}
+                                    onNavigateLeft={onNavigateLeft}
+                                    onNavigateRight={onNavigateRight}
                                 />
                                 
-                                {/* Logo imprinted into plastic */}
-                                <View style={styles.logoContainer}>
-                                    <Text style={styles.logo}>PAGER 2077</Text>
-                                </View>
                             </View>
                         </LinearGradient>
                     </View>
@@ -74,7 +76,7 @@ export const PagerBody: React.FC<PagerBodyProps> = ({
 
 const styles = StyleSheet.create({
     wrapper: {
-        height: '40%',
+        height: '60%',
         position: 'relative',
         borderRadius: 20,
         shadowColor: '#000',
@@ -98,7 +100,7 @@ const styles = StyleSheet.create({
     },
     bodyGradient: {
         flex: 1,
-        margin: 2.5,
+        // margin: 2.5,
         borderRadius: 18,
         padding: 16,
         paddingBottom: 32,
@@ -109,7 +111,7 @@ const styles = StyleSheet.create({
         borderRadius: 14,
         overflow: 'hidden',
         // Inner shadow effect for depth
-        borderWidth: 2,
+        // borderWidth: 2,
         borderTopColor: '#2a2a2a',
         borderLeftColor: '#2a2a2a',
         borderRightColor: '#0a0a0a',
@@ -117,33 +119,17 @@ const styles = StyleSheet.create({
     },
     recessGradient: {
         flex: 1,
-        padding: 3,
     },
     contentArea: {
         flex: 1,
-        padding: 20,
-        paddingTop: 30,
         justifyContent: 'flex-start',
         position: 'relative',
     },
     logoContainer: {
         position: 'absolute',
-        bottom: 10, // Closer to buttons
+        bottom: 8,
         left: 0,
         right: 0,
         alignItems: 'center',
-    },
-    logo: {
-        fontSize: 10 ,
-        fontWeight: '700',
-        letterSpacing: 1,
-        fontFamily: "MyPager",
-        color: '#2a2a2a', // Subtle dark grey
-        paddingVertical: 8,
-        paddingHorizontal: 20,
-        // Text shadow for embossed/carved effect
-        textShadowColor: '#000000',
-        textShadowOffset: { width: 0, height: -1 },
-        textShadowRadius: 2,
     },
 });
