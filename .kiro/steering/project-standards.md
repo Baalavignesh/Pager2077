@@ -8,11 +8,12 @@ inclusion: always
 Pager2077 is a retro-futuristic voice messaging app with a 90s pager aesthetic. The project uses a monorepo structure with React Native frontend and Bun/AWS backend.
 
 ### Recent Updates
-- **Circular Control Wheel**: Replaced metal button grid with iPod-style circular control wheel
-  - Up/Down arrows for navigation
-  - Green dot (right) for Select
-  - Red dot (left) for Back
-  - Center MENU button to return to main screen
+- **NumPad Interface**: Replaced circular control wheel with classic phone numpad-style interface
+  - 4x3 grid with numbers 1-9, *, 0, # in standard phone keypad layout
+  - Number keys 2/4/6/8 for directional navigation (up/left/right/down)
+  - Top action buttons: Back (-), Menu (⬜), Select (-)
+  - Placeholder buttons for future Record/Stop functionality
+  - Flat, minimalist black-and-white design matching retro aesthetic
 - **Battery Indicator**: Real-time battery status display in top-right corner
   - Shows 0-4 bars based on battery percentage
   - Blinks when charging
@@ -203,9 +204,14 @@ Example: `feat: add voice recording functionality`
 - **PagerScreen**: Base wrapper with dual-layer scanlines (300 horizontal + 150 vertical lines), all screen styling centralized here
 - **PagerText**: Consistent text component with selection states, Chicago font, and flicker animation on selected items only
 - **PagerButton**: Metal buttons with 3D gradient effect (outer, inner, surface layers), colored indicator lines for SELECT/BACK (green/red), text labels for nav buttons, consistent 44px height
-- **PagerBody**: Glossy metallic grey frame with three-layer gradient system, contains black recessed area for buttons, embossed logo with subtle text shadows
+- **PagerBody**: Glossy metallic grey frame with three-layer gradient system, contains black recessed area for navigation interface, embossed logo with subtle text shadows
+- **NumPad**: Phone numpad-style navigation interface with 4x3 button grid
+  - Top action row: Back, Menu, Select buttons
+  - Placeholder row: Record and Stop buttons (disabled)
+  - Number grid: 1-9, *, 0, # with letter labels
+  - Navigation keys: 2 (up), 4 (left), 5 (menu), 6 (right), 8 (down)
+  - Flat white buttons with black text, rounded corners, subtle shadows
 - **BackgroundPattern**: Animated static noise with gyroscope parallax, 180 particles with individual flicker
-- **ButtonGrid**: 2x2 symmetric button layout with equal widths
 - All screens use PagerScreen + PagerText for consistency
 - All buttons use PagerButton with label prop for consistent styling
 - Flicker effect only applies to selected items (PagerText with selected={true})

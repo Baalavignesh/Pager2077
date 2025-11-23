@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
   wrapper: {
     margin: 16,
     marginTop: 100,
-    height: '45%',
+    height: '40%',
     borderRadius: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
