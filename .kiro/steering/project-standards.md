@@ -205,12 +205,12 @@ Example: `feat: add voice recording functionality`
 - **PagerText**: Consistent text component with selection states, Chicago font, and flicker animation on selected items only
 - **PagerButton**: Metal buttons with 3D gradient effect (outer, inner, surface layers), colored indicator lines for SELECT/BACK (green/red), text labels for nav buttons, consistent 44px height
 - **PagerBody**: Glossy metallic grey frame with three-layer gradient system, contains black recessed area for navigation interface, embossed logo with subtle text shadows
-- **NumPad**: Phone numpad-style navigation interface with 4x3 button grid
-  - Top action row: Back, Menu, Select buttons
-  - Placeholder row: Record and Stop buttons (disabled)
-  - Number grid: 1-9, *, 0, # with letter labels
+- **NumPad**: Phone numpad-style navigation interface with 5x3 button grid
+  - Top action row: Call-End (reject/back), Circle (up navigation), Call (accept/select) - uses MaterialIcons
+  - Number grid rows: 1-9 with letter labels (abc, def, ghi, etc.)
+  - Bottom row: *, 0, # symbols
   - Navigation keys: 2 (up), 4 (left), 5 (menu), 6 (right), 8 (down)
-  - Flat white buttons with black text, rounded corners, subtle shadows
+  - Dark background (#1a1a1a) with grey text (#888888), minimal borders
 - **BackgroundPattern**: Animated static noise with gyroscope parallax, 180 particles with individual flicker
 - All screens use PagerScreen + PagerText for consistency
 - All buttons use PagerButton with label prop for consistent styling

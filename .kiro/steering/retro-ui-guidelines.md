@@ -32,13 +32,16 @@ When creating or modifying UI components:
 
 ### New Components
 
-**ControlWheel** - Circular iPod-style navigation control
-- Replaces ButtonGrid in PagerBody
-- 200x200px circular control with 4 directional buttons + center button
-- Up/Down arrows for navigation
-- Green/Red dots for Select/Back actions
-- Center MENU button
-- No borders on individual buttons, only outer ring
+**NumPad** - Phone numpad-style navigation interface
+- 5x3 grid layout with dark background (#1a1a1a)
+- Top row: Call-End icon (left, reject/back), Circle icon (center, up nav), Call icon (right, accept/select)
+- Uses MaterialIcons from @expo/vector-icons for call/call-end icons
+- Number rows: 1-9 with letter labels (abc, def, ghi, jkl, mno, pqrs, tuv, wxyz)
+- Bottom row: *, 0, # symbols
+- Navigation mapping: 2 (up), 4 (left), 5 (menu), 6 (right), 8 (down)
+- Grey text (#888888) with darker grey on press (#0a0a0a background)
+- Minimal borders (0.5px) between buttons
+- Press animation: background color change only
 
 **BatteryIndicator** - Real-time battery status display
 - Shows 0-4 bars based on battery level (25% per bar)

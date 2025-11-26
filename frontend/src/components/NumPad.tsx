@@ -1,11 +1,50 @@
-import React from 'react';
+/**
+ * NumPad Component
+ * 
+ * Phone numpad-style navigation interface for the pager device.
+ * 
+ * Layout:
+ * - 5 rows x 3 columns grid
+ * - Top row: Back (left), Circle/Up (center), Call (right - not used yet)
+ * - Rows 2-4: Number keys 1-9 with letter labels (standard phone layout)
+ * - Bottom row: *, 0, # symbols
+ * 
+ * Navigation Mapping:
+ * - Left arrow icon: Back action
+ * - Circle icon (center): Select action
+ * - Call icon (right): Not used yet
+ * - Key 2: Navigate up
+ * - Key 5: Select action
+ * - Key 8: Navigate down
+ * - Key * (star): Menu/Home action
+ * 
+ * Icon System:
+ * - Supports multiple icon libraries (Ionicons, FontAwesome, MaterialIcons)
+ * - Each icon configured with { library, name, size } object
+ * - Flexible system allows mixing icons from different libraries
+ * 
+ * Design:
+ * - Dark background (#1a1a1a) with grey text (#888888)
+ * - Minimal borders (0.5px) between buttons
+ * - Press state: darker background (#0a0a0a)
+ * - Uses FuturaCyrillicBook font for numbers and letters
+ */
+
+import React, { useState } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { TopActionButtons } from './TopActionButtons';
+import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
+
+type IconConfig = {
+  library: 'ionicons' | 'fontawesome' | 'materialicons';
+  name: string;
+  size?: number;
+};
 
 interface NumPadButtonProps {
   number?: string;
   letters?: string;
   symbol?: string;
+  icon?: IconConfig;
   onPress?: () => void;
   disabled?: boolean;
   type: 'number' | 'action' | 'placeholder';
@@ -15,13 +54,16 @@ const NumPadButton: React.FC<NumPadButtonProps> = ({
   number,
   letters,
   symbol,
+  icon,
   onPress,
   disabled,
   type
 }) => {
+  const [isPressed, setIsPressed] = useState(false);
+
   // Safe callback invocation with error handling
   const handlePress = () => {
-    if (!onPress) {
+    if (!onPress || disabled) {
       return;
     }
     
@@ -32,27 +74,82 @@ const NumPadButton: React.FC<NumPadButtonProps> = ({
     }
   };
 
+  const handlePressIn = () => {
+    if (disabled) return;
+    setIsPressed(true);
+  };
+
+  const handlePressOut = () => {
+    setIsPressed(false);
+  };
+
   return (
-    <Pressable
-      style={({ pressed }) => [
-        styles.button,
-        type === 'action' && styles.actionButton,
-        type === 'placeholder' && styles.placeholderButton,
-        pressed && !disabled && styles.buttonPressed,
-        disabled && styles.buttonDisabled
+    <View
+      style={[
+        styles.buttonWrapper,
+        type === 'action' && styles.actionButtonWrapper,
+        type === 'placeholder' && styles.placeholderButtonWrapper,
+        disabled && styles.buttonDisabled,
       ]}
-      onPress={handlePress}
-      disabled={disabled}
     >
-      {symbol ? (
-        <Text style={styles.symbol}>{symbol}</Text>
-      ) : (
-        <View style={styles.buttonContent}>
-          <Text style={styles.number}>{number}</Text>
-          {letters && <Text style={styles.letters}>{letters}</Text>}
+      <Pressable
+        style={styles.pressable}
+        onPress={handlePress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        disabled={disabled}
+      >
+        <View style={[
+          styles.buttonInner,
+          isPressed && styles.buttonPressed
+        ]}>
+          {icon ? (
+            <>
+              {icon.library === 'ionicons' && (
+                <Ionicons 
+                  name={icon.name as any}
+                  size={icon.size || 24}
+                  style={styles.iconStyle}
+                  color="#898989ff" 
+                />
+              )}
+              {icon.library === 'fontawesome' && (
+                <FontAwesome
+                  name={icon.name as any}
+                  size={icon.size || 24}
+                  style={styles.iconStyle}
+                  color="#898989ff" 
+                />
+              )}
+              {icon.library === 'materialicons' && (
+                <MaterialIcons 
+                  name={icon.name as any}
+                  size={icon.size || 24}
+                  style={styles.iconStyle}
+                  color="#898989ff" 
+                />
+              )}
+            </>
+          ) : symbol ? (
+            <Text style={styles.symbol}>{symbol}</Text>
+          ) : (
+            <View style={styles.buttonContent}>
+              <Text style={[
+                styles.number,
+                number === '–' && styles.dashNumber
+              ]}>
+                {number}
+              </Text>
+              {letters && (
+                <Text style={styles.letters}>
+                  {letters}
+                </Text>
+              )}
+            </View>
+          )}
         </View>
-      )}
-    </Pressable>
+      </Pressable>
+    </View>
   );
 };
 
@@ -83,13 +180,18 @@ export const NumPad: React.FC<NumPadProps> = ({
   // Number buttons configuration with navigation mapping
   const numberButtons: NumPadButtonProps[][] = [
     [
+      { icon: { library: 'ionicons', name: 'arrow-back', size: 24 }, onPress: onBack, type: 'number' },
+      { icon: { library: 'materialicons', name: 'circle', size: 18 }, onPress: onSelect, type: 'number' },
+      { icon: { library: 'ionicons', name: 'call-outline', size: 24 }, type: 'number' }
+    ],
+    [
       { number: '1', letters: '', type: 'number' },
       { number: '2', letters: 'abc', onPress: onNavigateUp, type: 'number' },
       { number: '3', letters: 'def', type: 'number' }
     ],
     [
       { number: '4', letters: 'ghi', onPress: onNavigateLeft, type: 'number' },
-      { number: '5', letters: 'jkl', onPress: onMenu, type: 'number' },
+      { number: '5', letters: 'jkl', onPress: onSelect, type: 'number' },
       { number: '6', letters: 'mno', onPress: onNavigateRight, type: 'number' }
     ],
     [
@@ -98,119 +200,100 @@ export const NumPad: React.FC<NumPadProps> = ({
       { number: '9', letters: 'wxyz', type: 'number' }
     ],
     [
-      { number: '*', letters: '+', type: 'number' },
-      { number: '0', letters: '_', type: 'number' },
-      { number: '#', letters: '⇧⇩', type: 'number' }
+      { number: '*', letters: '', onPress: onMenu, type: 'number' },
+      { number: '0', letters: '', type: 'number' },
+      { number: '#', letters: '', type: 'number' }
     ]
   ];
 
   return (
     <View style={styles.container}>
-      {/* Top Action Buttons - 4 full-width buttons + center menu */}
-      <TopActionButtons 
-        onSelect={onSelect}
-        onBack={onBack}
-        onMenu={onMenu}
-      />
-      
-      {/* Number Grid */}
-      <View style={styles.numberGrid}>
-        {numberButtons.map((row, rowIndex) => (
-          <View key={`row-${rowIndex}`} style={styles.numberRow}>
-            {row.map((button, colIndex) => (
-              <NumPadButton key={`num-${rowIndex}-${colIndex}`} {...button} />
-            ))}
-          </View>
-        ))}
-      </View>
+      {numberButtons.map((row, rowIndex) => (
+        <View key={`row-${rowIndex}`} style={styles.numberRow}>
+          {row.map((button, colIndex) => (
+            <NumPadButton key={`num-${rowIndex}-${colIndex}`} {...button} />
+          ))}
+        </View>
+      ))}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#1a1a1a',
   },
-  
-  // Number grid
-  numberGrid: {
-    gap: 10,
-    marginTop: 10
+  iconStyle: {
+    marginTop: 8,
   },
-  
   numberRow: {
     flexDirection: 'row',
-    gap: 4,
-    justifyContent: 'center',
+    height: '20%',
   },
-  
-  // Number button styles
-  button: {
-    width: 112,
-    height: 50,
-    backgroundColor: '#E5E5E5',
-    borderRadius: 16,
-    borderWidth: 1.5,
-    borderColor: '#A0A0A0',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
+  buttonWrapper: {
+    flex: 1,
+    borderWidth: 0.5,
+    borderColor: '#0a0a0a',
+    margin: -0.5,
   },
-  
-  actionButton: {
-    width: 70,
-    height: 50,
+  actionButtonWrapper: {
+    flex: 1,
   },
-  
-  placeholderButton: {
-    width: 60,
-    height: 40,
+  placeholderButtonWrapper: {
+    flex: 1,
+    opacity: 0,
   },
-  
-  buttonPressed: {
-    backgroundColor: '#CCCCCC',
-    transform: [{ scale: 0.97 }],
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
+  pressable: {
+    flex: 1,
   },
-  
   buttonDisabled: {
-    opacity: 0.3,
+    opacity: 0.5,
   },
-  
-  // Button content styles
+  buttonInner: {
+    flex: 1,
+    backgroundColor: '#1a1a1a',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonPressed: {
+    backgroundColor: '#0a0a0a',
+  },
   buttonContent: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: 0,
   },
-  
   number: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#1A1A1A',
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#888888',
     fontFamily: 'FuturaCyrillicBook',
+    marginBottom: -4,
   },
-  
+  dashNumber: {
+    fontSize: 36,
+    fontWeight: '600',
+    fontFamily: 'System',
+    letterSpacing: -2,
+  },
   letters: {
     fontSize: 14,
     fontWeight: '400',
-    color: '#4A4A4A',
+    color: '#555555',
     letterSpacing: 0.5,
     textTransform: 'lowercase',
     fontFamily: 'FuturaCyrillicBook',
   },
-  
   symbol: {
-    fontSize: 20,
-    fontWeight: '500',
-    color: '#1A1A1A',
+    fontSize: 32,
+    fontWeight: '800',
+    color: '#888888',
     fontFamily: 'FuturaCyrillicBook',
+    textAlign: 'center',
+    includeFontPadding: false,
+    textAlignVertical: 'center',
   },
 });

@@ -340,15 +340,15 @@ function AppContent() {
   return (
     <NativeBaseProvider theme={retroTheme}>
       <LinearGradient
-        colors={['#1a1a1a', '#2a2a2a', '#1a1a1a']}
+        colors={['#d4d4d4', '#a8a8a8', '#c0c0c0', '#909090', '#b8b8b8', '#888888', '#a0a0a0']}
         style={styles.container}
         start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+        end={{ x: 0, y: 1 }}
+        locations={[0, 0.15, 0.3, 0.5, 0.65, 0.8, 1]}
       >
-        <StatusBar hidden />
         
         {/* Subtle dot pattern for tech aesthetic */}
-        <BackgroundPattern />
+        {/* <BackgroundPattern /> */}
 
         <PagerDisplay>
           {renderScreen()}
