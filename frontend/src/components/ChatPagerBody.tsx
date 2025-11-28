@@ -1,32 +1,24 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { NumPad } from './NumPad';
+import { ChatNumPad } from './ChatNumPad';
 
-interface PagerBodyProps {
-    onSelect: () => void;
+interface ChatPagerBodyProps {
+    onNumberPress: (number: string) => void;
+    onConfirm: () => void;
     onBack: () => void;
-    onNavigateUp: () => void;
-    onNavigateDown: () => void;
+    onCall: () => void;
     onMenu: () => void;
-    onNavigateLeft?: () => void;
-    onNavigateRight?: () => void;
-    onNumberPress?: (number: string) => void;
-    onCall?: () => void;
     soundEnabled?: boolean;
     vibrateEnabled?: boolean;
 }
 
-export const PagerBody: React.FC<PagerBodyProps> = ({
-    onSelect,
-    onBack,
-    onNavigateUp,
-    onNavigateDown,
-    onMenu,
-    onNavigateLeft,
-    onNavigateRight,
+export const ChatPagerBody: React.FC<ChatPagerBodyProps> = ({
     onNumberPress,
+    onConfirm,
+    onBack,
     onCall,
+    onMenu,
     soundEnabled = true,
     vibrateEnabled = true
 }) => {
@@ -40,16 +32,12 @@ export const PagerBody: React.FC<PagerBodyProps> = ({
                     end={{ x: 0, y: 1 }}
                 >
                     <View style={styles.contentArea}>
-                        <NumPad
-                            onSelect={onSelect}
-                            onBack={onBack}
-                            onNavigateUp={onNavigateUp}
-                            onNavigateDown={onNavigateDown}
-                            onMenu={onMenu}
-                            onNavigateLeft={onNavigateLeft}
-                            onNavigateRight={onNavigateRight}
+                        <ChatNumPad
                             onNumberPress={onNumberPress}
+                            onConfirm={onConfirm}
+                            onBack={onBack}
                             onCall={onCall}
+                            onMenu={onMenu}
                             soundEnabled={soundEnabled}
                             vibrateEnabled={vibrateEnabled}
                         />
@@ -76,7 +64,7 @@ const styles = StyleSheet.create({
     innerRecess: {
         flex: 1,
         borderRadius: 14,
-        borderBottomLeftRadius: "15%",
+         borderBottomLeftRadius: "15%",
         borderBottomRightRadius: "15%",
         overflow: 'hidden',
     },

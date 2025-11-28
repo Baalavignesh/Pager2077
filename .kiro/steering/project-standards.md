@@ -213,13 +213,22 @@ Example: `feat: add voice recording functionality`
 - **PagerScreen**: Base wrapper with dual-layer scanlines (300 horizontal + 150 vertical lines), all screen styling centralized here
 - **PagerText**: Consistent text component with selection states, Chicago font, and flicker animation on selected items only
 - **PagerButton**: Metal buttons with 3D gradient effect (outer, inner, surface layers), colored indicator lines for SELECT/BACK (green/red), text labels for nav buttons, consistent 44px height
-- **PagerBody**: Glossy metallic grey frame with three-layer gradient system, contains black recessed area for navigation interface, embossed logo with subtle text shadows
+- **PagerBody**: Glossy metallic grey frame with three-layer gradient system, contains black recessed area for navigation interface, proportional rounded corners (borderBottomEndRadius: 60) for organic curved shape, shadow effects for depth
+- **ChatPagerBody**: Full-height metallic container for chat screens (identical design to PagerBody), proportional rounded corners (borderBottomEndRadius: 60) for organic curved shape, shadow effects for depth, wraps ChatNumPad in recessed black area
 - **NumPad**: Phone numpad-style navigation interface with 5x3 button grid
   - Top action row: Call-End (reject/back), Circle (up navigation), Call (accept/select) - uses MaterialIcons
   - Number grid rows: 1-9 with letter labels (abc, def, ghi, etc.)
   - Bottom row: *, 0, # symbols
   - Navigation keys: 2 (up), 4 (left), 5 (menu), 6 (right), 8 (down)
   - Dark background (#1a1a1a) with grey text (#888888), minimal borders
+- **ChatNumPad**: T9 text input numpad interface
+  - Same 5x3 grid layout and design as NumPad
+  - All number keys (0-9) used for T9 multi-tap text entry (not navigation)
+  - Center circle icon confirms character and moves cursor
+  - Keys: 1=1, 2=abc2, 3=def3, 4=ghi4, 5=jkl5, 6=mno6, 7=pqrs7, 8=tuv8, 9=wxyz9, 0=space/0, #=backspace
+  - Multi-tap cycles letters first, then number (e.g., 2: a→b→c→2)
+  - Same haptic and audio feedback system
+  - Use for name entry, chat messages, and text input screens
 - **BackgroundPattern**: Animated static noise with gyroscope parallax, 180 particles with individual flicker
 - All screens use PagerScreen + PagerText for consistency
 - All buttons use PagerButton with label prop for consistent styling

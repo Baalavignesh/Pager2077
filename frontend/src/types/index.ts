@@ -59,3 +59,24 @@ export interface RegistrationResponse {
   hexCode: string;
   token: string;
 }
+
+// Display Name Types
+export interface DisplayNameMapping {
+  [hexCode: string]: string;
+}
+
+export interface ValidationResult {
+  valid: boolean;
+  error?: string;
+}
+
+export interface T9KeyMap {
+  [key: string]: string[];
+}
+
+export interface T9InputState {
+  input: string;
+  currentKey: string | null;
+  keyPressCount: number;
+  lastKeyPressTime: number;
+}

@@ -9,11 +9,13 @@ interface FriendRequest {
 interface FriendRequestsScreenProps {
   requests: FriendRequest[];
   selectedIndex: number;
+  displayNameMap?: Record<string, string>;
 }
 
 export const FriendRequestsScreen: React.FC<FriendRequestsScreenProps> = ({ 
   requests, 
-  selectedIndex 
+  selectedIndex,
+  displayNameMap = {}
 }) => {
   return (
     <PagerScreen title="FRIEND REQUESTS">
@@ -24,11 +26,14 @@ export const FriendRequestsScreen: React.FC<FriendRequestsScreenProps> = ({
           <PagerText>SELECT: VIEW</PagerText>
           <PagerText>─────────────</PagerText>
           
-          {requests.map((request, index) => (
-            <PagerText key={request.sixDigitCode} selected={index === selectedIndex}>
-              {index === selectedIndex ? '>' : ' '} {request.sixDigitCode}
-            </PagerText>
-          ))}
+          {requests.map((request, index) => {
+            const displayName = displayNameMap[request.sixDigitCode] || request.sixDigitCode;
+            return (
+              <PagerText key={request.sixDigitCode} selected={index === selectedIndex}>
+                {index === selectedIndex ? '>' : ' '} {displayName}
+              </PagerText>
+            );
+          })}
         </>
       )}
     </PagerScreen>

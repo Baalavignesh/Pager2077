@@ -1,27 +1,20 @@
 /**
- * NumPad Component
+ * ChatNumPad Component
  * 
- * Phone numpad-style navigation interface for the pager device.
+ * Phone numpad-style interface for T9 text input (name entry, chat messages).
+ * All number keys (0-9) are used for multi-tap text entry.
  * 
  * Layout:
  * - 5 rows x 3 columns grid
- * - Top row: Back (left), Circle/Up (center), Call (right - not used yet)
- * - Rows 2-4: Number keys 1-9 with letter labels (standard phone layout)
- * - Bottom row: *, 0, # symbols
+ * - Top row: Back icon (left), Circle icon for Select (center), Call icon (right)
+ * - Rows 2-4: Number keys 1-9 with letter labels for T9 input
+ * - Bottom row: * (menu), 0 (space/0), # (backspace)
  * 
- * Navigation Mapping:
- * - Left arrow icon: Back action
- * - Circle icon (center): Select action
- * - Call icon (right): Not used yet
- * - Key 2: Navigate up
- * - Key 5: Select action
- * - Key 8: Navigate down
- * - Key * (star): Menu/Home action
- * 
- * Icon System:
- * - Supports multiple icon libraries (Ionicons, FontAwesome, MaterialIcons)
- * - Each icon configured with { library, name, size } object
- * - Flexible system allows mixing icons from different libraries
+ * T9 Text Input:
+ * - All number keys 0-9 trigger onNumberPress for multi-tap text entry
+ * - Center circle icon triggers onSelect (confirm character/move cursor)
+ * - # key triggers onNumberPress('#') for backspace
+ * - No navigation keys (2/4/5/6/8) - all used for text input
  * 
  * Design:
  * - Dark background (#1a1a1a) with grey text (#888888)
@@ -42,7 +35,7 @@ type IconConfig = {
   size?: number;
 };
 
-interface NumPadButtonProps {
+interface ChatNumPadButtonProps {
   number?: string;
   letters?: string;
   symbol?: string;
@@ -53,7 +46,7 @@ interface NumPadButtonProps {
   triggerFeedback?: () => Promise<void>;
 }
 
-const NumPadButton: React.FC<NumPadButtonProps> = ({
+const ChatNumPadButton: React.FC<ChatNumPadButtonProps> = ({
   number,
   letters,
   symbol,
@@ -164,39 +157,25 @@ const NumPadButton: React.FC<NumPadButtonProps> = ({
   );
 };
 
-interface NumPadProps {
-  // Existing callbacks (matching ControlWheel)
-  onSelect: () => void;
+interface ChatNumPadProps {
+  // Text input callbacks
+  onNumberPress: (number: string) => void;
+  onConfirm: () => void;  // Center circle - confirm character
   onBack: () => void;
-  onNavigateUp: () => void;
-  onNavigateDown: () => void;
+  onCall: () => void;     // Submit/save
   onMenu: () => void;
-  
-  // New callbacks for horizontal navigation
-  onNavigateLeft?: () => void;
-  onNavigateRight?: () => void;
-  
-  // Number key callbacks
-  onNumberPress?: (number: string) => void;
-  
-  // Call button callback
-  onCall?: () => void;
   
   // Settings
   soundEnabled?: boolean;
   vibrateEnabled?: boolean;
 }
 
-export const NumPad: React.FC<NumPadProps> = ({
-  onSelect,
-  onBack,
-  onNavigateUp,
-  onNavigateDown,
-  onMenu,
-  onNavigateLeft,
-  onNavigateRight,
+export const ChatNumPad: React.FC<ChatNumPadProps> = ({
   onNumberPress,
+  onConfirm,
+  onBack,
   onCall,
+  onMenu,
   soundEnabled = true,
   vibrateEnabled = true
 }) => {
@@ -279,32 +258,32 @@ export const NumPad: React.FC<NumPadProps> = ({
     }
   };
 
-  // Number buttons configuration with navigation mapping
-  const numberButtons: NumPadButtonProps[][] = [
+  // Number buttons configuration - all number keys for T9 text input
+  const numberButtons: ChatNumPadButtonProps[][] = [
     [
       { icon: { library: 'ionicons', name: 'arrow-back', size: 24 }, onPress: onBack, type: 'number' },
-      { icon: { library: 'materialicons', name: 'circle', size: 18 }, onPress: onSelect, type: 'number' },
+      { icon: { library: 'materialicons', name: 'circle', size: 18 }, onPress: onConfirm, type: 'number' },
       { icon: { library: 'ionicons', name: 'call-outline', size: 24 }, onPress: onCall, type: 'number' }
     ],
     [
-      { number: '1', letters: '', onPress: () => onNumberPress?.('1'), type: 'number' },
-      { number: '2', letters: 'abc', onPress: onNavigateUp, type: 'number' },
-      { number: '3', letters: 'def', onPress: () => onNumberPress?.('3'), type: 'number' }
+      { number: '1', letters: '', onPress: () => onNumberPress('1'), type: 'number' },
+      { number: '2', letters: 'abc', onPress: () => onNumberPress('2'), type: 'number' },
+      { number: '3', letters: 'def', onPress: () => onNumberPress('3'), type: 'number' }
     ],
     [
-      { number: '4', letters: 'ghi', onPress: onNavigateLeft, type: 'number' },
-      { number: '5', letters: 'jkl', onPress: onSelect, type: 'number' },
-      { number: '6', letters: 'mno', onPress: onNavigateRight, type: 'number' }
+      { number: '4', letters: 'ghi', onPress: () => onNumberPress('4'), type: 'number' },
+      { number: '5', letters: 'jkl', onPress: () => onNumberPress('5'), type: 'number' },
+      { number: '6', letters: 'mno', onPress: () => onNumberPress('6'), type: 'number' }
     ],
     [
-      { number: '7', letters: 'pqrs', onPress: () => onNumberPress?.('7'), type: 'number' },
-      { number: '8', letters: 'tuv', onPress: onNavigateDown, type: 'number' },
-      { number: '9', letters: 'wxyz', onPress: () => onNumberPress?.('9'), type: 'number' }
+      { number: '7', letters: 'pqrs', onPress: () => onNumberPress('7'), type: 'number' },
+      { number: '8', letters: 'tuv', onPress: () => onNumberPress('8'), type: 'number' },
+      { number: '9', letters: 'wxyz', onPress: () => onNumberPress('9'), type: 'number' }
     ],
     [
       { number: '*', letters: '', onPress: onMenu, type: 'number' },
-      { number: '0', letters: '', onPress: () => onNumberPress?.('0'), type: 'number' },
-      { number: '#', letters: '', onPress: () => onNumberPress?.('#'), type: 'number' }
+      { number: '0', letters: '', onPress: () => onNumberPress('0'), type: 'number' },
+      { number: '#', letters: '', onPress: () => onNumberPress('#'), type: 'number' }
     ]
   ];
 
@@ -313,7 +292,7 @@ export const NumPad: React.FC<NumPadProps> = ({
       {numberButtons.map((row, rowIndex) => (
         <View key={`row-${rowIndex}`} style={rowIndex === numberButtons.length - 1 ? styles.numberRowLast : styles.numberRow}>
           {row.map((button, colIndex) => (
-            <NumPadButton 
+            <ChatNumPadButton 
               key={`num-${rowIndex}-${colIndex}`} 
               {...button} 
               triggerFeedback={triggerFeedback}

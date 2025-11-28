@@ -10,13 +10,16 @@ interface FriendRequestConfirmationScreenProps {
   request: FriendRequest;
   focusedButton: 'yes' | 'no' | null;
   isProcessing?: boolean;
+  displayNameMap?: Record<string, string>;
 }
 
 export const FriendRequestConfirmationScreen: React.FC<FriendRequestConfirmationScreenProps> = ({ 
   request, 
   focusedButton,
-  isProcessing = false
+  isProcessing = false,
+  displayNameMap = {}
 }) => {
+  const displayName = displayNameMap[request.sixDigitCode] || request.sixDigitCode;
   if (isProcessing) {
     return (
       <PagerScreen title="CONFIRM REQUEST">
@@ -29,7 +32,7 @@ export const FriendRequestConfirmationScreen: React.FC<FriendRequestConfirmation
 
   return (
     <PagerScreen title="CONFIRM REQUEST">
-      <PagerText>FROM: {request.sixDigitCode}</PagerText>
+      <PagerText>FROM: {displayName}</PagerText>
       <PagerText>─────────────</PagerText>
       <PagerText> </PagerText>
       <PagerText>ACCEPT THIS REQUEST?</PagerText>

@@ -10,12 +10,14 @@ interface FriendsListScreenProps {
   friends: Friend[];
   selectedIndex: number;
   pendingRequestsCount: number;
+  displayNameMap?: Record<string, string>;
 }
 
 export const FriendsListScreen: React.FC<FriendsListScreenProps> = ({ 
   friends, 
   selectedIndex,
-  pendingRequestsCount 
+  pendingRequestsCount,
+  displayNameMap = {}
 }) => {
   // Menu items: ADD FRIEND, REQUESTS (if any), then friends list
   const menuItems = [
@@ -40,10 +42,11 @@ export const FriendsListScreen: React.FC<FriendsListScreenProps> = ({
       {/* Friends list */}
       {friends.map((friend, index) => {
         const itemIndex = totalMenuItems + index;
+        const displayName = displayNameMap[friend.sixDigitCode] || friend.sixDigitCode;
         // const statusDot = friend.status === 'ONLINE' ? '●' : '○';
         return (
           <PagerText key={friend.sixDigitCode} selected={itemIndex === selectedIndex}>
-            {itemIndex === selectedIndex ? '>' : ' '} {friend.sixDigitCode}
+            {itemIndex === selectedIndex ? '>' : ' '} {displayName}
           </PagerText>
         );
       })}

@@ -2,12 +2,15 @@
  * Storage Service - Secure storage for user credentials
  */
 import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const KEYS = {
   USER_ID: 'userId',
   HEX_CODE: 'hexCode',
   AUTH_TOKEN: 'authToken',
   DEVICE_TOKEN: 'deviceToken',
+  DISPLAY_NAME: 'displayName',
+  DISPLAY_NAME_MAPPINGS: 'displayNameMappings',
 };
 
 /**
@@ -64,4 +67,51 @@ export async function clearUserCredentials(): Promise<void> {
 export async function isUserRegistered(): Promise<boolean> {
   const authToken = await SecureStore.getItemAsync(KEYS.AUTH_TOKEN);
   return authToken !== null;
+}
+
+/**
+ * Save current user's display name to Secure Storage
+ */
+export async function saveDisplayName(displayName: string): Promise<void> {
+  await SecureStore.setItemAsync(KEYS.DISPLAY_NAME, displayName);
+}
+
+/**
+ * Get current user's display name from Secure Storage
+ */
+export async function getDisplayName(): Promise<string | null> {
+  return await SecureStore.getItemAsync(KEYS.DISPLAY_NAME);
+}
+
+/**
+ * Save all display name mappings to AsyncStorage
+ */
+export async function saveAllDisplayNameMappings(
+  mappings: Record<string, string>
+): Promise<void> {
+  await AsyncStorage.setItem(
+    KEYS.DISPLAY_NAME_MAPPINGS,
+    JSON.stringify(mappings)
+  );
+}
+
+/**
+ * Get all display name mappings from AsyncStorage
+ */
+export async function getAllDisplayNameMappings(): Promise<Record<string, string>> {
+  try {
+    const json = await AsyncStorage.getItem(KEYS.DISPLAY_NAME_MAPPINGS);
+    return json ? JSON.parse(json) : {};
+  } catch (error) {
+    console.error('Failed to load display name mappings:', error);
+    return {};
+  }
+}
+
+/**
+ * Check if user has set a display name
+ */
+export async function hasDisplayName(): Promise<boolean> {
+  const displayName = await getDisplayName();
+  return displayName !== null && displayName.length > 0;
 }

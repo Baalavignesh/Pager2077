@@ -14,6 +14,7 @@ pager2077/
 ## Features
 
 - Unique 6-digit user codes (simplified from hex IDs)
+- User display names with T9 text input
 - Simple friend request system with confirmation flow
 - Voice note recording and sending
 - Retro 90s pager-style UI (monochrome, pixelated)
@@ -111,7 +112,22 @@ The backend server will start on `http://localhost:3000` with hot reload enabled
   - FriendList (scrollable with status indicators)
   - VoiceControls (TALK/STOP/CLEAR/PLAY/SEND buttons)
   - AddFriendButton
+  - NumPad (phone numpad-style navigation)
+  - ChatNumPad (chat-specific numpad with T9 input)
+  - PagerBody (container for NumPad)
+  - ChatPagerBody (compact container for ChatNumPad)
+  - BatteryIndicator (real-time battery status)
 - Main PagerScreen layout
+- Friends management system:
+  - FriendsListScreen with 6-digit codes
+  - AddFriendScreen with numpad entry
+  - FriendRequestsScreen
+  - FriendRequestConfirmationScreen
+- Display names feature:
+  - NameEntryScreen with T9 text input
+  - EditNameScreen for changing display name
+  - Local storage for display name mappings
+  - Display names shown throughout app (friends, requests, messages)
 - Backend project structure
 - TypeScript interfaces for data models
 
@@ -123,8 +139,8 @@ The backend server will start on `http://localhost:3000` with hot reload enabled
 - Database schema and migrations
 - AWS infrastructure (Terraform)
 - Push notifications
-- Friend request modal
 - Status management
+- Backend display name sync
 
 ## Development Notes
 
@@ -134,6 +150,8 @@ The backend server will start on `http://localhost:3000` with hot reload enabled
 - All components follow the retro aesthetic (sharp corners, thick borders, pixelated fonts)
 - Mock data is currently used for development
 - NativeBase theme is heavily customized in `src/theme/index.ts`
+- Display names stored locally using Secure Storage (user's own name) and AsyncStorage (mappings)
+- T9 text input system for entering names using numpad (multi-tap character entry)
 
 ### Backend
 

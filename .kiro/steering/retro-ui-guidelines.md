@@ -44,11 +44,45 @@ When creating or modifying UI components:
 - Press animation: background color change only
 - Haptic and audio feedback on button press (configurable via soundEnabled/vibrateEnabled props)
 
+**ChatNumPad** - T9 text input numpad interface
+- Same 5x3 grid layout and design as NumPad
+- **Key difference**: All number keys (0-9) used for T9 multi-tap text entry
+- Top row: Back icon (left), Circle icon (center, select/confirm character), Call icon (right, submit)
+- Number keys 1-9: Multi-tap cycles through characters (letters first, then number)
+  - 1: 1 only
+  - 2: a, b, c, 2
+  - 3: d, e, f, 3
+  - 4: g, h, i, 4
+  - 5: j, k, l, 5
+  - 6: m, n, o, 6
+  - 7: p, q, r, s, 7
+  - 8: t, u, v, 8
+  - 9: w, x, y, z, 9
+- Key 0: Cycles through space and 0
+- Key #: Backspace (delete last character)
+- Key *: Menu/Home action
+- Center circle icon: Confirm current character and move cursor to next position
+- No navigation keys - all keys used for text input
+- Same haptic and audio feedback system
+- Use for name entry, chat messages, and any text input screens
+
 **PagerBody** - Container for NumPad interface
 - Wraps NumPad component with metallic frame styling
+- Rounded corners with proportional bottom radius (borderBottomEndRadius: 60) for organic curved shape
+- Shadow effects for depth and dimension
 - Passes through soundEnabled and vibrateEnabled settings to NumPad
 - Default values: soundEnabled=true, vibrateEnabled=true
 - Props interface includes all NumPad navigation callbacks plus settings
+
+**ChatPagerBody** - Container for ChatNumPad interface
+- Wraps ChatNumPad component with metallic frame styling
+- Identical design to PagerBody (full-height flex container)
+- Rounded corners with proportional bottom radius (borderBottomEndRadius: 60) for organic curved shape
+- Shadow effects for depth and dimension
+- Passes through soundEnabled and vibrateEnabled settings to ChatNumPad
+- Default values: soundEnabled=true, vibrateEnabled=true
+- Props interface includes all ChatNumPad navigation callbacks plus settings
+- Use for messaging/chat screens where text input is primary function
 
 **BatteryIndicator** - Real-time battery status display
 - Shows 0-4 bars based on battery level (25% per bar)
@@ -91,7 +125,7 @@ When creating or modifying UI components:
   - SELECT (key 5): Confirm choice
   - BACK: Return to requests list without action
 - Visual feedback: "PROCESSING..." state during API call
-- Selection indicator: PagerText selected state (inverted colors) with directional arrows (◄ for NO, ► for YES)
+- Selection indicator: PagerText selected state (inverted colors)
 
 ### Settings Screens
 

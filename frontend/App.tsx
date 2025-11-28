@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { StatusBar, View, StyleSheet, Text, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { StyleSheet, Text, ActivityIndicator } from 'react-native';
 import { NativeBaseProvider } from 'native-base';
 import { LinearGradient } from 'expo-linear-gradient';
 import { retroTheme } from './src/theme';
@@ -13,12 +13,16 @@ import { FriendRequestsScreen } from './src/screens/FriendRequestsScreen';
 import { FriendRequestConfirmationScreen } from './src/screens/FriendRequestConfirmationScreen';
 import { MyHexScreen } from './src/screens/MyHexScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
+import { NameEntryScreen, NameEntryScreenHandle } from './src/screens/NameEntryScreen';
+import { EditNameScreen, EditNameScreenHandle } from './src/screens/EditNameScreen';
 import { PagerBody } from './src/components/PagerBody';
-import { BackgroundPattern } from './src/components/BackgroundPattern';
+import { ChatPagerBody } from './src/components/ChatPagerBody';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { useNotifications } from './src/hooks/useNotifications';
+import { hasDisplayName, getAllDisplayNameMappings } from './src/services/storageService';
+import { setCurrentUserDisplayName } from './src/services/displayNameService';
 
-type Screen = 'main' | 'messages' | 'friends' | 'addFriend' | 'friendRequests' | 'friendRequestConfirmation' | 'myhex' | 'settings';
+type Screen = 'main' | 'messages' | 'friends' | 'addFriend' | 'friendRequests' | 'friendRequestConfirmation' | 'myhex' | 'settings' | 'editName';
 
 const mainMenu = [
   { id: 'messages', label: '1. MESSAGES', screen: 'messages' as Screen },
@@ -47,7 +51,13 @@ function AppContent() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('main');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [fontLoaded, setFontLoaded] = useState(false);
-  const { isLoading, isAuthenticated, hexCode, register } = useAuth();
+  const { isLoading, isAuthenticated, hexCode } = useAuth();
+  
+  // Display name state
+  const [needsDisplayName, setNeedsDisplayName] = useState(false);
+  const [displayNameMap, setDisplayNameMap] = useState<Record<string, string>>({});
+  const nameEntryRef = useRef<NameEntryScreenHandle>(null);
+  const editNameRef = useRef<EditNameScreenHandle>(null);
   
   // Add friend state
   const [friendRequestInput, setFriendRequestInput] = useState('');
@@ -61,7 +71,8 @@ function AppContent() {
   // Settings state
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [vibrateEnabled, setVibrateEnabled] = useState(true);
-  const [settingsView, setSettingsView] = useState<'main' | 'about' | 'help'>('main');
+  const [settingsView, setSettingsView] = useState<'main' | 'about' | 'help' | 'editName'>('main');
+  const [currentDisplayName, setCurrentDisplayName] = useState<string>('');
 
   // Set up notification handlers
   useNotifications({
@@ -92,6 +103,29 @@ function AppContent() {
     loadFont();
   }, []);
 
+  // Check for display name on authentication (or in dev mode)
+  useEffect(() => {
+    async function checkDisplayName() {
+      // In development mode (no auth), use a mock hex code for testing
+      const effectiveHexCode = hexCode || 'ABC123';
+      
+      if (fontLoaded && (isAuthenticated || !hexCode)) {
+        const hasName = await hasDisplayName();
+        setNeedsDisplayName(!hasName);
+        
+        // Load display name mappings
+        const mappings = await getAllDisplayNameMappings();
+        setDisplayNameMap(mappings);
+        
+        // Load current user's display name
+        const { getCurrentUserDisplayName } = await import('./src/services/displayNameService');
+        const name = await getCurrentUserDisplayName();
+        setCurrentDisplayName(name || effectiveHexCode);
+      }
+    }
+    checkDisplayName();
+  }, [isAuthenticated, hexCode, fontLoaded]);
+
   // Auto-register if not authenticated
   // TEMPORARILY DISABLED FOR UI DEVELOPMENT
   // useEffect(() => {
@@ -103,6 +137,66 @@ function AppContent() {
   //   }
   // }, [isLoading, isAuthenticated, fontLoaded]);
 
+  // Handle display name set
+  const handleDisplayNameSet = async (displayName: string) => {
+    try {
+      // Use mock hex code in dev mode if not authenticated
+      const effectiveHexCode = hexCode || 'ABC123';
+      
+      await setCurrentUserDisplayName(effectiveHexCode, displayName);
+      setNeedsDisplayName(false);
+      
+      // Reload mappings
+      const mappings = await getAllDisplayNameMappings();
+      setDisplayNameMap(mappings);
+    } catch (error) {
+      console.error('Failed to set display name:', error);
+      // Show error to user
+      alert('Failed to save name. Please try again.');
+    }
+  };
+
+  const handleSkipDisplayName = async () => {
+    try {
+      // Use mock hex code in dev mode if not authenticated
+      const effectiveHexCode = hexCode || 'ABC123';
+      
+      // Use hex code as default display name
+      await setCurrentUserDisplayName(effectiveHexCode, effectiveHexCode);
+      setNeedsDisplayName(false);
+      
+      // Reload mappings
+      const mappings = await getAllDisplayNameMappings();
+      setDisplayNameMap(mappings);
+    } catch (error) {
+      console.error('Failed to set default name:', error);
+    }
+  };
+
+  const handleEditDisplayName = async (newDisplayName: string) => {
+    try {
+      // Use mock hex code in dev mode if not authenticated
+      const effectiveHexCode = hexCode || 'ABC123';
+      
+      await setCurrentUserDisplayName(effectiveHexCode, newDisplayName);
+      setCurrentDisplayName(newDisplayName);
+      
+      // Reload mappings
+      const mappings = await getAllDisplayNameMappings();
+      setDisplayNameMap(mappings);
+      
+      // Return to settings main
+      setSettingsView('main');
+    } catch (error) {
+      console.error('Failed to update display name:', error);
+      alert('Failed to save name. Please try again.');
+    }
+  };
+
+  const handleCancelEditName = () => {
+    setSettingsView('main');
+  };
+
   // Show loading screen while initializing
   if (!fontLoaded || isLoading) {
     return (
@@ -113,6 +207,45 @@ function AppContent() {
         >
           <ActivityIndicator size="large" color="#C7D3C0" />
           <Text style={styles.loadingText}>INITIALIZING...</Text>
+        </LinearGradient>
+      </NativeBaseProvider>
+    );
+  }
+
+  // Show name entry screen if needed
+  if (needsDisplayName) {
+    return (
+      <NativeBaseProvider theme={retroTheme}>
+        <LinearGradient
+          colors={['#d4d4d4', '#a8a8a8', '#c0c0c0', '#909090', '#b8b8b8', '#888888', '#a0a0a0']}
+          style={styles.container}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          locations={[0, 0.15, 0.3, 0.5, 0.65, 0.8, 1]}
+        >
+          <PagerDisplay>
+            <NameEntryScreen 
+              ref={nameEntryRef}
+              onComplete={handleDisplayNameSet}
+              onSkip={handleSkipDisplayName}
+            />
+          </PagerDisplay>
+
+          <ChatPagerBody
+            onConfirm={() => nameEntryRef.current?.handleSubmit()}
+            onBack={handleSkipDisplayName}
+            onMenu={() => {}}
+            onNumberPress={(key) => {
+              if (key === '#') {
+                nameEntryRef.current?.handleBackspace();
+              } else if (key >= '0' && key <= '9') {
+                nameEntryRef.current?.handleNumberPress(key);
+              }
+            }}
+            onCall={() => nameEntryRef.current?.handleSubmit()}
+            soundEnabled={soundEnabled}
+            vibrateEnabled={vibrateEnabled}
+          />
         </LinearGradient>
       </NativeBaseProvider>
     );
@@ -153,7 +286,7 @@ function AppContent() {
     } else if (currentScreen === 'messages') {
       maxIndex = mockMessages.length - 1;
     } else if (currentScreen === 'settings') {
-      maxIndex = 3; // Sound, Vibrate, About, Help
+      maxIndex = 4; // Sound, Vibrate, Edit Name, About, Help
     }
 
     if (direction === 'up' && selectedIndex > 0) {
@@ -248,10 +381,13 @@ function AppContent() {
         case 1: // Vibrate
           setVibrateEnabled(!vibrateEnabled);
           break;
-        case 2: // About
+        case 2: // Edit Name
+          setSettingsView('editName');
+          break;
+        case 3: // About
           setSettingsView('about');
           break;
-        case 3: // Help
+        case 4: // Help
           setSettingsView('help');
           break;
       }
@@ -277,7 +413,7 @@ function AppContent() {
     }
     
     if (currentScreen === 'settings' && settingsView !== 'main') {
-      // Return to settings main menu from About or Help
+      // Return to settings main menu from About, Help, or Edit Name
       setSettingsView('main');
       return;
     }
@@ -306,7 +442,7 @@ function AppContent() {
   };
 
   const handleNumberPress = (number: string) => {
-    // Only handle number presses on Add Friend screen
+    // Handle number presses on Add Friend screen
     if (currentScreen === 'addFriend') {
       if (number === '#') {
         // Backspace - remove last digit
@@ -320,12 +456,26 @@ function AppContent() {
         }
       }
     }
+    
+    // Handle number presses on Edit Name screen
+    if (currentScreen === 'settings' && settingsView === 'editName') {
+      if (number === '#') {
+        editNameRef.current?.handleBackspace();
+      } else if (number >= '0' && number <= '9') {
+        editNameRef.current?.handleNumberPress(number);
+      }
+    }
   };
 
   const handleCall = () => {
     // On Add Friend screen, call button sends the friend request
     if (currentScreen === 'addFriend' && friendRequestInput.length === 6) {
       handleSendFriendRequest(friendRequestInput);
+    }
+    
+    // On Edit Name screen, call button saves the name
+    if (currentScreen === 'settings' && settingsView === 'editName') {
+      editNameRef.current?.handleSubmit();
     }
   };
 
@@ -380,13 +530,14 @@ function AppContent() {
       case 'main':
         return <MainMenuScreen menuItems={mainMenu} selectedIndex={selectedIndex} />;
       case 'messages':
-        return <MessagesScreen messages={mockMessages} selectedIndex={selectedIndex} />;
+        return <MessagesScreen messages={mockMessages} selectedIndex={selectedIndex} displayNameMap={displayNameMap} />;
       case 'friends':
         return (
           <FriendsListScreen 
             friends={mockFriends} 
             selectedIndex={selectedIndex}
             pendingRequestsCount={mockFriendRequests.length}
+            displayNameMap={displayNameMap}
           />
         );
       case 'addFriend':
@@ -402,6 +553,7 @@ function AppContent() {
           <FriendRequestsScreen 
             requests={mockFriendRequests}
             selectedIndex={selectedIndex}
+            displayNameMap={displayNameMap}
           />
         );
       case 'friendRequestConfirmation':
@@ -410,11 +562,22 @@ function AppContent() {
             request={confirmingRequest}
             focusedButton={confirmationFocusedButton}
             isProcessing={isProcessing}
+            displayNameMap={displayNameMap}
           />
         ) : null;
       case 'myhex':
         return <MyHexScreen />;
       case 'settings':
+        if (settingsView === 'editName') {
+          return (
+            <EditNameScreen 
+              ref={editNameRef}
+              currentDisplayName={currentDisplayName}
+              onSave={handleEditDisplayName}
+              onCancel={handleCancelEditName}
+            />
+          );
+        }
         return (
           <SettingsScreen 
             selectedIndex={selectedIndex}
@@ -445,19 +608,32 @@ function AppContent() {
           {renderScreen()}
         </PagerDisplay>
 
-        <PagerBody
-          onSelect={handleSelect}
-          onBack={handleBack}
-          onNavigateUp={() => navigate('up')}
-          onNavigateDown={() => navigate('down')}
-          onMenu={handleMenu}
-          onNavigateLeft={handleNavigateLeft}
-          onNavigateRight={handleNavigateRight}
-          onNumberPress={handleNumberPress}
-          onCall={handleCall}
-          soundEnabled={soundEnabled}
-          vibrateEnabled={vibrateEnabled}
-        />
+        {/* Use ChatPagerBody for edit name mode, regular PagerBody otherwise */}
+        {currentScreen === 'settings' && settingsView === 'editName' ? (
+          <ChatPagerBody
+            onConfirm={() => editNameRef.current?.handleSubmit()}
+            onBack={handleBack}
+            onMenu={handleMenu}
+            onNumberPress={handleNumberPress}
+            onCall={handleCall}
+            soundEnabled={soundEnabled}
+            vibrateEnabled={vibrateEnabled}
+          />
+        ) : (
+          <PagerBody
+            onSelect={handleSelect}
+            onBack={handleBack}
+            onNavigateUp={() => navigate('up')}
+            onNavigateDown={() => navigate('down')}
+            onMenu={handleMenu}
+            onNavigateLeft={handleNavigateLeft}
+            onNavigateRight={handleNavigateRight}
+            onNumberPress={handleNumberPress}
+            onCall={handleCall}
+            soundEnabled={soundEnabled}
+            vibrateEnabled={vibrateEnabled}
+          />
+        )}
       </LinearGradient>
     </NativeBaseProvider>
   );
@@ -476,7 +652,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingBottom: 20,
+    paddingBottom: 0,
   },
   centered: {
     justifyContent: 'center',

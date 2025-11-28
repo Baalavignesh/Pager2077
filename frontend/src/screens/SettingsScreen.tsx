@@ -6,7 +6,7 @@ interface SettingsScreenProps {
   selectedIndex: number;
   soundEnabled: boolean;
   vibrateEnabled: boolean;
-  currentView: 'main' | 'about' | 'help';
+  currentView: 'main' | 'about' | 'help' | 'editName';
 }
 
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({
@@ -61,10 +61,13 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
         {selectedIndex === 1 ? '>' : ' '} VIBRATE: {vibrateEnabled ? 'ON' : 'OFF'}
       </PagerText>
       <PagerText selected={selectedIndex === 2}>
-        {selectedIndex === 2 ? '>' : ' '} ABOUT
+        {selectedIndex === 2 ? '>' : ' '} EDIT NAME
       </PagerText>
       <PagerText selected={selectedIndex === 3}>
-        {selectedIndex === 3 ? '>' : ' '} HELP
+        {selectedIndex === 3 ? '>' : ' '} ABOUT
+      </PagerText>
+      <PagerText selected={selectedIndex === 4}>
+        {selectedIndex === 4 ? '>' : ' '} HELP
       </PagerText>
     </PagerScreen>
   );
