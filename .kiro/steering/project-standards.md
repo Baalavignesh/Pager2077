@@ -218,7 +218,7 @@ Example: `feat: add voice recording functionality`
 - **NumPad**: Phone numpad-style navigation interface with 5x3 button grid
   - Top action row: Call-End (reject/back), Circle (up navigation), Call (accept/select) - uses MaterialIcons
   - Number grid rows: 1-9 with letter labels (abc, def, ghi, etc.)
-  - Bottom row: *, 0, # symbols
+  - Bottom row: *, 0 (with ␣ space symbol label), # symbols
   - Navigation keys: 2 (up), 4 (left), 5 (menu), 6 (right), 8 (down)
   - Dark background (#1a1a1a) with grey text (#888888), minimal borders
 - **ChatNumPad**: T9 text input numpad interface

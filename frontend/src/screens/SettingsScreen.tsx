@@ -25,10 +25,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
         <PagerText>WITH A 90S PAGER</PagerText>
         <PagerText>AESTHETIC.</PagerText>
         <View style={styles.spacer} />
-        <PagerText>SEND TEXT MESSAGES</PagerText>
-        <PagerText>TO FRIENDS USING</PagerText>
-        <PagerText>6-DIGIT CODES.</PagerText>
-        <View style={styles.spacer} />
+        
         <PagerText>PRESS BACK TO</PagerText>
         <PagerText>RETURN</PagerText>
       </PagerScreen>

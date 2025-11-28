@@ -282,7 +282,7 @@ export const ChatNumPad: React.FC<ChatNumPadProps> = ({
     ],
     [
       { number: '*', letters: '', onPress: onMenu, type: 'number' },
-      { number: '0', letters: '', onPress: () => onNumberPress('0'), type: 'number' },
+      { number: '0', letters: '␣', onPress: () => onNumberPress('0'), type: 'number' },
       { number: '#', letters: '', onPress: () => onNumberPress('#'), type: 'number' }
     ]
   ];
@@ -356,7 +356,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 0,
   },
-  number: {
+
+
+    number: {
     fontSize: 28,
     fontWeight: '800',
     color: '#888888',
@@ -370,9 +372,9 @@ const styles = StyleSheet.create({
     letterSpacing: -2,
   },
   letters: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: '#555555',
+    fontSize: 16,
+    fontWeight: '300',
+    color: '#afafafff',
     letterSpacing: 0.5,
     textTransform: 'lowercase',
     fontFamily: 'FuturaCyrillicBook',

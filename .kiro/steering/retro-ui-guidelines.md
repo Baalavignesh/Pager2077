@@ -37,7 +37,7 @@ When creating or modifying UI components:
 - Top row: Call-End icon (left, reject/back), Circle icon (center, up nav), Call icon (right, accept/select)
 - Uses MaterialIcons from @expo/vector-icons for call/call-end icons
 - Number rows: 1-9 with letter labels (abc, def, ghi, jkl, mno, pqrs, tuv, wxyz)
-- Bottom row: *, 0, # symbols
+- Bottom row: *, 0 (with ␣ space symbol label), # symbols
 - Navigation mapping: 2 (up), 4 (left), 5 (menu), 6 (right), 8 (down)
 - Grey text (#888888) with darker grey on press (#0a0a0a background)
 - Minimal borders (0.5px) between buttons
