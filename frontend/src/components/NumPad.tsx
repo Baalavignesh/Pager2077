@@ -30,9 +30,11 @@
  * - Uses FuturaCyrillicBook font for numbers and letters
  */
 
-import React, { useState } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Pressable, StyleSheet, AppState, AppStateStatus } from 'react-native';
 import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import { audioService } from '../services/audioService';
 
 type IconConfig = {
   library: 'ionicons' | 'fontawesome' | 'materialicons';
@@ -48,6 +50,7 @@ interface NumPadButtonProps {
   onPress?: () => void;
   disabled?: boolean;
   type: 'number' | 'action' | 'placeholder';
+  triggerFeedback?: () => Promise<void>;
 }
 
 const NumPadButton: React.FC<NumPadButtonProps> = ({
@@ -57,7 +60,8 @@ const NumPadButton: React.FC<NumPadButtonProps> = ({
   icon,
   onPress,
   disabled,
-  type
+  type,
+  triggerFeedback
 }) => {
   const [isPressed, setIsPressed] = useState(false);
 
@@ -76,6 +80,13 @@ const NumPadButton: React.FC<NumPadButtonProps> = ({
 
   const handlePressIn = () => {
     if (disabled) return;
+    
+    // Trigger feedback (non-blocking)
+    if (triggerFeedback) {
+      triggerFeedback();
+    }
+    
+    // Update visual state
     setIsPressed(true);
   };
 
@@ -175,7 +186,71 @@ export const NumPad: React.FC<NumPadProps> = ({
   onNavigateLeft,
   onNavigateRight
 }) => {
+  // Load click sound on mount, unload on unmount
+  useEffect(() => {
+    const loadClickSound = async () => {
+      try {
+        await audioService.loadSound('click', require('../../assets/click.mp3'));
+      } catch (error) {
+        console.error('Failed to load click sound:', error);
+      }
+    };
 
+    loadClickSound();
+
+    return () => {
+      audioService.unloadSound('click');
+    };
+  }, []);
+
+  // Handle app state changes (background/foreground)
+  useEffect(() => {
+    const handleAppStateChange = async (nextAppState: AppStateStatus) => {
+      if (nextAppState === 'background') {
+        // Unload sounds when app goes to background
+        await audioService.unloadAll();
+      } else if (nextAppState === 'active') {
+        // Reload sounds when app comes to foreground
+        try {
+          await audioService.loadSound('click', require('../../assets/click.mp3'));
+        } catch (error) {
+          console.error('Failed to reload click sound:', error);
+        }
+      }
+    };
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
+  // Trigger haptic feedback
+  const triggerHaptic = async () => {
+    try {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    } catch (error) {
+      console.warn('Haptic feedback failed:', error);
+    }
+  };
+
+  // Play click sound
+  const playClickSound = async () => {
+    try {
+      await audioService.playSound('click');
+    } catch (error) {
+      console.warn('Click sound failed:', error);
+    }
+  };
+
+  // Trigger both feedback types concurrently
+  const triggerFeedback = async () => {
+    await Promise.allSettled([
+      triggerHaptic(),
+      playClickSound()
+    ]);
+  };
 
   // Number buttons configuration with navigation mapping
   const numberButtons: NumPadButtonProps[][] = [
@@ -211,7 +286,11 @@ export const NumPad: React.FC<NumPadProps> = ({
       {numberButtons.map((row, rowIndex) => (
         <View key={`row-${rowIndex}`} style={styles.numberRow}>
           {row.map((button, colIndex) => (
-            <NumPadButton key={`num-${rowIndex}-${colIndex}`} {...button} />
+            <NumPadButton 
+              key={`num-${rowIndex}-${colIndex}`} 
+              {...button} 
+              triggerFeedback={triggerFeedback}
+            />
           ))}
         </View>
       ))}

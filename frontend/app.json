@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.pager2077.app",
+      "bundleIdentifier": "com.pager2077v1.app",
       "appleTeamId": "PQD3HLJC38",
       "infoPlist": {
         "UIBackgroundModes": [
@@ -27,7 +27,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#C7D3C0"
       },
-      "package": "com.pager2077.app",
+      "package": "com.pager207v1.app",
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
