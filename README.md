@@ -13,13 +13,14 @@ pager2077/
 
 ## Features
 
-- Unique hexadecimal user IDs (no traditional auth)
-- Simple friend request system
+- Unique 6-digit user codes (simplified from hex IDs)
+- Simple friend request system with confirmation flow
 - Voice note recording and sending
 - Retro 90s pager-style UI (monochrome, pixelated)
 - Real-time voice note delivery with auto-play
 - Online/offline status indicators
-- Single-screen interface
+- Phone numpad-style navigation interface
+- Single-screen interface with intuitive controls
 
 ## Tech Stack
 

@@ -18,11 +18,20 @@ Pager2077 is a retro-futuristic voice messaging app with a 90s pager aesthetic. 
   - Shows 0-4 bars based on battery percentage
   - Blinks when charging
   - Uses expo-battery for native battery API access
-- **Friends Management System**: Complete UI for managing friends
-  - FriendsListScreen: View friends with online/offline status
-  - AddFriendScreen: Paste from clipboard or manual hex code entry
-  - FriendRequestsScreen: Accept/reject incoming friend requests
-  - Navigation flow with SELECT/BACK/MENU buttons
+- **Friends Management System**: Complete UI for managing friends with 6-digit codes
+  - FriendsListScreen: View friends with online/offline status using 6-digit codes
+  - AddFriendScreen: Simple 6-digit number entry using numpad
+    - All number keys (0-9) enter digits
+    - # key acts as backspace
+    - Call button (top right) sends friend request
+    - Visual feedback with "SENDING..." state
+  - FriendRequestsScreen: View pending friend requests
+    - SELECT to view request details
+  - FriendRequestConfirmationScreen: Confirm accept/reject actions
+    - Up/Down or Left/Right to toggle Yes/No
+    - SELECT to confirm choice
+    - Visual feedback with "PROCESSING..." state
+  - Navigation flow with intuitive numpad controls
 
 ## Code Style Guidelines
 

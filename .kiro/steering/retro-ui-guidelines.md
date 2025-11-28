@@ -55,25 +55,36 @@ When creating or modifying UI components:
 **FriendsListScreen** - Main friends list view
 - Shows "ADD FRIEND" as first menu item
 - Shows "REQUESTS (count)" if pending requests exist
-- Displays friends with online (●) / offline (○) status indicators
+- Displays friends with 6-digit codes and online (●) / offline (○) status indicators
 - Empty state message when no friends
 - Divider line between menu and friends list
 
-**AddFriendScreen** - Add friend with hex code input
-- Two input methods: Paste from clipboard or Manual entry
-- Method selection with ▲/▼ navigation
-- Paste mode: Uses expo-clipboard to auto-fill hex code
-- Manual mode: 8-digit hex input (0-9, A-F) with digit-by-digit entry
-- Error handling for invalid clipboard content
-- SELECT: Choose method / Move to next digit / Send request
-- BACK: Move to previous digit (manual mode only)
+**AddFriendScreen** - Add friend with 6-digit number entry
+- Simple 6-digit number input using numpad
+- All number keys (0-9, including 2/4/5/6/8) enter digits
+- # key acts as backspace to remove last digit
+- Call button (top right icon) sends friend request when 6 digits entered
+- Visual feedback: "SENDING..." state during API call
+- Error handling with inline error messages
+- Helper text: "CALL BUTTON: SEND" and "Backspace - #"
+- BACK: Clear input and return to friends list
 - MENU: Cancel and return to friends list
 
-**FriendRequestsScreen** - Manage incoming friend requests
-- Lists all pending requests with hex codes
-- SELECT: Accept selected request
-- BACK: Reject selected request
+**FriendRequestsScreen** - View incoming friend requests
+- Lists all pending requests with 6-digit codes
+- SELECT: Navigate to confirmation screen
 - Empty state when no pending requests
+
+**FriendRequestConfirmationScreen** - Confirm accept/reject actions
+- Displays request details with 6-digit code
+- Two-button confirmation: "NO" (left) and "YES" (right)
+- Navigation controls:
+  - Up/Down (keys 2/8): Toggle between Yes and No
+  - Left/Right (keys 4/6): Select No or Yes
+  - SELECT (key 5): Confirm choice
+  - BACK: Return to requests list without action
+- Visual feedback: "PROCESSING..." state during API call
+- Arrows indicate focused button: "◄ NO" or "YES ►"
 
 ### Color Usage
 
