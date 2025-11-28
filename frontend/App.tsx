@@ -58,6 +58,11 @@ function AppContent() {
   const [confirmingRequest, setConfirmingRequest] = useState<{ sixDigitCode: string; timestamp: string } | null>(null);
   const [confirmationFocusedButton, setConfirmationFocusedButton] = useState<'yes' | 'no' | null>(null);
 
+  // Settings state
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [vibrateEnabled, setVibrateEnabled] = useState(true);
+  const [settingsView, setSettingsView] = useState<'main' | 'about' | 'help'>('main');
+
   // Set up notification handlers
   useNotifications({
     onNotificationReceived: (data) => {
@@ -147,6 +152,8 @@ function AppContent() {
       maxIndex = mockFriendRequests.length - 1;
     } else if (currentScreen === 'messages') {
       maxIndex = mockMessages.length - 1;
+    } else if (currentScreen === 'settings') {
+      maxIndex = 3; // Sound, Vibrate, About, Help
     }
 
     if (direction === 'up' && selectedIndex > 0) {
@@ -232,6 +239,22 @@ function AppContent() {
           handleRejectRequest(confirmingRequest.sixDigitCode);
         }
       }
+    } else if (currentScreen === 'settings') {
+      // Handle settings menu selection
+      switch (selectedIndex) {
+        case 0: // Sound
+          setSoundEnabled(!soundEnabled);
+          break;
+        case 1: // Vibrate
+          setVibrateEnabled(!vibrateEnabled);
+          break;
+        case 2: // About
+          setSettingsView('about');
+          break;
+        case 3: // Help
+          setSettingsView('help');
+          break;
+      }
     }
   };
 
@@ -253,9 +276,19 @@ function AppContent() {
       return;
     }
     
+    if (currentScreen === 'settings' && settingsView !== 'main') {
+      // Return to settings main menu from About or Help
+      setSettingsView('main');
+      return;
+    }
+    
     if (currentScreen !== 'main') {
       setCurrentScreen('main');
       setSelectedIndex(0);
+      // Reset settings view when leaving settings
+      if (currentScreen === 'settings') {
+        setSettingsView('main');
+      }
     }
   };
 
@@ -382,7 +415,14 @@ function AppContent() {
       case 'myhex':
         return <MyHexScreen />;
       case 'settings':
-        return <SettingsScreen />;
+        return (
+          <SettingsScreen 
+            selectedIndex={selectedIndex}
+            soundEnabled={soundEnabled}
+            vibrateEnabled={vibrateEnabled}
+            currentView={settingsView}
+          />
+        );
       default:
         return null;
     }
@@ -415,6 +455,8 @@ function AppContent() {
           onNavigateRight={handleNavigateRight}
           onNumberPress={handleNumberPress}
           onCall={handleCall}
+          soundEnabled={soundEnabled}
+          vibrateEnabled={vibrateEnabled}
         />
       </LinearGradient>
     </NativeBaseProvider>

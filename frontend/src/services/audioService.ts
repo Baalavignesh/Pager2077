@@ -5,9 +5,9 @@
  * Handles sound caching, concurrent playback, and resource cleanup.
  * 
  * Volume Configuration:
- * - Default volume is set to 0.6 (60% of maximum)
+ * - Default volume is set to 0.1 (10% of maximum)
  * - This provides subtle, non-intrusive audio feedback
- * - Volume was reduced by 40% from the original 1.0 for better user experience
+ * - Volume was reduced by 90% from the original 1.0 for better user experience
  */
 
 import { Audio } from 'expo-av';
@@ -27,14 +27,20 @@ class AudioService {
    * Load a sound file from assets
    * @param soundId - Unique identifier for the sound
    * @param assetPath - Path to the audio file (e.g., require('../assets/click.mp3'))
+   * @param forceReload - Force reload even if already cached
    * @returns Promise that resolves when sound is loaded
    */
-  async loadSound(soundId: string, assetPath: any): Promise<void> {
+  async loadSound(soundId: string, assetPath: any, forceReload: boolean = false): Promise<void> {
     try {
       // Check if already loaded
-      if (this.soundCache[soundId]?.isLoaded) {
+      if (this.soundCache[soundId]?.isLoaded && !forceReload) {
         console.log(`Sound ${soundId} already loaded`);
         return;
+      }
+
+      // Unload existing sound if force reload
+      if (forceReload && this.soundCache[soundId]?.isLoaded) {
+        await this.unloadSound(soundId);
       }
 
       // Configure audio mode to allow simultaneous playback
@@ -45,10 +51,10 @@ class AudioService {
       });
 
       // Create and load the sound
-      // Volume set to 0.6 (60%) for subtle feedback
+      // Volume set to 0.1 (10%) for subtle feedback
       const { sound } = await Audio.Sound.createAsync(
         assetPath,
-        { shouldPlay: false, isLooping: false, volume: 0.6 }
+        { shouldPlay: false, isLooping: false, volume: 0.1 }
       );
 
       // Cache the sound and asset path
@@ -58,7 +64,7 @@ class AudioService {
         assetPath,
       };
 
-      console.log(`Sound ${soundId} loaded successfully`);
+      console.log(`Sound ${soundId} loaded successfully with volume 0.1`);
     } catch (error) {
       console.error(`Failed to load sound ${soundId}:`, error);
       throw error;
@@ -81,10 +87,10 @@ class AudioService {
 
       // Create a new sound instance for overlapping playback
       // This allows rapid button presses to play multiple sounds simultaneously
-      // Volume set to 0.6 (60%) for subtle feedback
+      // Volume set to 0.1 (10%) for subtle feedback
       const { sound: newSound } = await Audio.Sound.createAsync(
         cachedSound.assetPath,
-        { shouldPlay: true, isLooping: false, volume: 0.6 }
+        { shouldPlay: true, isLooping: false, volume: 0.1 }
       );
 
       // Unload after playing to free memory
