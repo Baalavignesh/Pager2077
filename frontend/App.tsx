@@ -10,6 +10,7 @@ import { MessagesScreen } from './src/screens/MessagesScreen';
 import { FriendsListScreen } from './src/screens/FriendsListScreen';
 import { AddFriendScreen } from './src/screens/AddFriendScreen';
 import { FriendRequestsScreen } from './src/screens/FriendRequestsScreen';
+import { FriendRequestConfirmationScreen } from './src/screens/FriendRequestConfirmationScreen';
 import { MyHexScreen } from './src/screens/MyHexScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { PagerBody } from './src/components/PagerBody';
@@ -17,7 +18,7 @@ import { BackgroundPattern } from './src/components/BackgroundPattern';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { useNotifications } from './src/hooks/useNotifications';
 
-type Screen = 'main' | 'messages' | 'friends' | 'addFriend' | 'friendRequests' | 'myhex' | 'settings';
+type Screen = 'main' | 'messages' | 'friends' | 'addFriend' | 'friendRequests' | 'friendRequestConfirmation' | 'myhex' | 'settings';
 
 const mainMenu = [
   { id: 'messages', label: '1. MESSAGES', screen: 'messages' as Screen },
@@ -27,14 +28,14 @@ const mainMenu = [
 ];
 
 const mockFriends = [
-  { hexCode: 'F1E2D3C4', status: 'ONLINE' as const },
-  { hexCode: 'B5A6C7D8', status: 'OFFLINE' as const },
-  { hexCode: '9C8D7E6F', status: 'ONLINE' as const },
+  { sixDigitCode: '123456', status: 'ONLINE' as const },
+  { sixDigitCode: '789012', status: 'OFFLINE' as const },
+  { sixDigitCode: '345678', status: 'ONLINE' as const },
 ];
 
 const mockFriendRequests = [
-  { hexCode: 'A1B2C3D4', timestamp: '2024-11-19T10:30:00' },
-  { hexCode: 'E5F6G7H8', timestamp: '2024-11-19T09:15:00' },
+  { sixDigitCode: '111222', timestamp: '2024-11-19T10:30:00' },
+  { sixDigitCode: '333444', timestamp: '2024-11-19T09:15:00' },
 ];
 
 const mockMessages = [
@@ -49,11 +50,13 @@ function AppContent() {
   const { isLoading, isAuthenticated, hexCode, register } = useAuth();
   
   // Add friend state
-  const [addFriendHexCode, setAddFriendHexCode] = useState('00000000');
-  const [addFriendDigitIndex, setAddFriendDigitIndex] = useState(0);
-  const [addFriendOption, setAddFriendOption] = useState(-1); // -1 = choosing method, 0 = paste selected, 1 = manual selected
-  const [addFriendMethodIndex, setAddFriendMethodIndex] = useState(0); // 0 = paste, 1 = manual
-  const [addFriendPasteError, setAddFriendPasteError] = useState(false);
+  const [friendRequestInput, setFriendRequestInput] = useState('');
+  const [friendRequestError, setFriendRequestError] = useState<string>('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  
+  // Friend request confirmation state
+  const [confirmingRequest, setConfirmingRequest] = useState<{ sixDigitCode: string; timestamp: string } | null>(null);
+  const [confirmationFocusedButton, setConfirmationFocusedButton] = useState<'yes' | 'no' | null>(null);
 
   // Set up notification handlers
   useNotifications({
@@ -111,27 +114,24 @@ function AppContent() {
   }
 
   const navigate = (direction: 'up' | 'down') => {
-    // Special handling for Add Friend screen
+    // On Add Friend screen, up/down keys should enter numbers, not navigate
     if (currentScreen === 'addFriend') {
-      // If choosing input method, toggle between paste and manual
-      if (addFriendOption === -1) {
-        setAddFriendMethodIndex(addFriendMethodIndex === 0 ? 1 : 0);
-        setAddFriendPasteError(false); // Clear error when switching
-        return;
+      // Handle as number input instead
+      if (direction === 'up') {
+        handleNumberPress('2');
+      } else if (direction === 'down') {
+        handleNumberPress('8');
       }
-      
-      // Manual entry mode - change hex digit
-      const hexChars = '0123456789ABCDEF'.split('');
-      const currentChar = addFriendHexCode[addFriendDigitIndex];
-      const currentIndex = hexChars.indexOf(currentChar);
-      
-      const newIndex = direction === 'up' 
-        ? (currentIndex + 1) % hexChars.length
-        : (currentIndex - 1 + hexChars.length) % hexChars.length;
-      
-      const newHexCode = addFriendHexCode.split('');
-      newHexCode[addFriendDigitIndex] = hexChars[newIndex];
-      setAddFriendHexCode(newHexCode.join(''));
+      return;
+    }
+    
+    // On confirmation screen, up/down toggles between yes and no
+    if (currentScreen === 'friendRequestConfirmation') {
+      if (confirmationFocusedButton === 'yes') {
+        setConfirmationFocusedButton('no');
+      } else {
+        setConfirmationFocusedButton('yes');
+      }
       return;
     }
     
@@ -157,16 +157,46 @@ function AppContent() {
   };
 
   const handleNavigateLeft = () => {
-    // No-op for now - reserved for future horizontal navigation
+    // On Add Friend screen, key 4 should enter number
+    if (currentScreen === 'addFriend') {
+      handleNumberPress('4');
+      return;
+    }
+    
+    // On confirmation screen, focus "NO"
+    if (currentScreen === 'friendRequestConfirmation') {
+      setConfirmationFocusedButton('no');
+      return;
+    }
+    
+    // No-op for other screens
     console.log('Navigate left (not yet implemented)');
   };
 
   const handleNavigateRight = () => {
-    // No-op for now - reserved for future horizontal navigation
+    // On Add Friend screen, key 6 should enter number
+    if (currentScreen === 'addFriend') {
+      handleNumberPress('6');
+      return;
+    }
+    
+    // On confirmation screen, focus "YES"
+    if (currentScreen === 'friendRequestConfirmation') {
+      setConfirmationFocusedButton('yes');
+      return;
+    }
+    
+    // No-op for other screens
     console.log('Navigate right (not yet implemented)');
   };
 
   const handleSelect = () => {
+    // On Add Friend screen, key 5 should enter number
+    if (currentScreen === 'addFriend') {
+      handleNumberPress('5');
+      return;
+    }
+    
     if (currentScreen === 'main') {
       const selected = mainMenu[selectedIndex];
       setCurrentScreen(selected.screen);
@@ -177,64 +207,53 @@ function AppContent() {
       if (selectedIndex === 0) {
         // ADD FRIEND selected
         setCurrentScreen('addFriend');
-        setAddFriendHexCode('00000000');
-        setAddFriendDigitIndex(0);
-        setAddFriendOption(-1); // Show method selection
-        setAddFriendMethodIndex(0); // Default to paste
-        setAddFriendPasteError(false);
+        setFriendRequestInput('');
+        setFriendRequestError('');
       } else if (hasRequests && selectedIndex === 1) {
         // REQUESTS selected
         setCurrentScreen('friendRequests');
         setSelectedIndex(0);
       }
       // Individual friend selection can be handled later
-    } else if (currentScreen === 'addFriend') {
-      if (addFriendOption === -1) {
-        // Choosing method - select the highlighted option
-        if (addFriendMethodIndex === 0) {
-          // Paste selected - try to paste
-          handlePasteFromClipboard();
-        } else {
-          // Manual entry selected - switch to manual mode
-          setAddFriendOption(1);
-          setAddFriendHexCode('00000000');
-          setAddFriendDigitIndex(0);
-        }
-      } else {
-        // Manual entry mode - move to next digit or send request
-        if (addFriendDigitIndex < 7) {
-          setAddFriendDigitIndex(addFriendDigitIndex + 1);
-        } else {
-          // Send friend request
-          handleSendFriendRequest(addFriendHexCode);
-        }
-      }
     } else if (currentScreen === 'friendRequests') {
-      // Accept friend request
+      // Navigate to confirmation screen
       const request = mockFriendRequests[selectedIndex];
       if (request) {
-        handleAcceptRequest(request.hexCode);
+        setConfirmingRequest(request);
+        setConfirmationFocusedButton('yes'); // Default to yes
+        setCurrentScreen('friendRequestConfirmation');
+      }
+    } else if (currentScreen === 'friendRequestConfirmation') {
+      // Execute accept or reject based on focused button
+      if (confirmingRequest && confirmationFocusedButton) {
+        if (confirmationFocusedButton === 'yes') {
+          handleAcceptRequest(confirmingRequest.sixDigitCode);
+        } else {
+          handleRejectRequest(confirmingRequest.sixDigitCode);
+        }
       }
     }
   };
 
   const handleBack = () => {
-    if (currentScreen === 'friendRequests') {
-      // Reject friend request
-      const request = mockFriendRequests[selectedIndex];
-      if (request) {
-        handleRejectRequest(request.hexCode);
-      }
+    if (currentScreen === 'friendRequestConfirmation') {
+      // Return to friend requests screen without action
+      setCurrentScreen('friendRequests');
+      setConfirmingRequest(null);
+      setConfirmationFocusedButton(null);
       return;
     }
     
     if (currentScreen === 'addFriend') {
-      // In manual entry mode - move to previous digit
-      if (addFriendOption === 0 && addFriendDigitIndex > 0) {
-        setAddFriendDigitIndex(addFriendDigitIndex - 1);
-      }
-      // On paste screen - do nothing (use MENU to cancel)
-    } else if (currentScreen !== 'main') {
+      // Clear input and return to friends screen
+      setFriendRequestInput('');
+      setFriendRequestError('');
+      setCurrentScreen('friends');
+      setSelectedIndex(0);
+      return;
+    }
+    
+    if (currentScreen !== 'main') {
       setCurrentScreen('main');
       setSelectedIndex(0);
     }
@@ -253,48 +272,74 @@ function AppContent() {
     setSelectedIndex(0);
   };
 
-  const handlePasteFromClipboard = async () => {
-    try {
-      const { default: Clipboard } = await import('expo-clipboard');
-      const text = await Clipboard.getStringAsync();
-      
-      // Validate and clean hex code
-      const cleanedHex = text.replace(/[^0-9A-Fa-f]/g, '').toUpperCase().substring(0, 8);
-      
-      if (cleanedHex.length === 8) {
-        setAddFriendHexCode(cleanedHex);
-        setAddFriendDigitIndex(7); // Move to last digit
-        setAddFriendOption(0); // Show pasted code
-        setAddFriendPasteError(false);
-        console.log('Pasted hex code:', cleanedHex);
-      } else {
-        console.log('Invalid hex code in clipboard');
-        // Show error and stay on paste screen
-        setAddFriendPasteError(true);
+  const handleNumberPress = (number: string) => {
+    // Only handle number presses on Add Friend screen
+    if (currentScreen === 'addFriend') {
+      if (number === '#') {
+        // Backspace - remove last digit
+        if (friendRequestInput.length > 0) {
+          setFriendRequestInput(friendRequestInput.slice(0, -1));
+        }
+      } else if (number >= '0' && number <= '9') {
+        // Append digit if less than 6 digits
+        if (friendRequestInput.length < 6) {
+          setFriendRequestInput(friendRequestInput + number);
+        }
       }
-    } catch (error) {
-      console.log('Clipboard error:', error);
-      // Show error and stay on paste screen
-      setAddFriendPasteError(true);
     }
   };
 
-  const handleSendFriendRequest = (hexCode: string) => {
-    console.log('Sending friend request to:', hexCode);
-    // TODO: Implement API call
-    // Go back to friends list
+  const handleCall = () => {
+    // On Add Friend screen, call button sends the friend request
+    if (currentScreen === 'addFriend' && friendRequestInput.length === 6) {
+      handleSendFriendRequest(friendRequestInput);
+    }
+  };
+
+  const handleSendFriendRequest = async (sixDigitCode: string) => {
+    console.log('Sending friend request to:', sixDigitCode);
+    setIsProcessing(true);
+    
+    // Simulate API call with delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // TODO: Implement actual API call
+    // For now, just clear and navigate
+    setIsProcessing(false);
+    setFriendRequestInput('');
+    setFriendRequestError('');
     setCurrentScreen('friends');
     setSelectedIndex(0);
   };
 
-  const handleAcceptRequest = (hexCode: string) => {
-    console.log('Accepting friend request from:', hexCode);
-    // TODO: Implement API call
+  const handleAcceptRequest = async (sixDigitCode: string) => {
+    console.log('Accepting friend request from:', sixDigitCode);
+    setIsProcessing(true);
+    
+    // Simulate API call with delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // TODO: Implement actual API call
+    setIsProcessing(false);
+    setCurrentScreen('friendRequests');
+    setConfirmingRequest(null);
+    setConfirmationFocusedButton(null);
+    setSelectedIndex(0);
   };
 
-  const handleRejectRequest = (hexCode: string) => {
-    console.log('Rejecting friend request from:', hexCode);
-    // TODO: Implement API call
+  const handleRejectRequest = async (sixDigitCode: string) => {
+    console.log('Rejecting friend request from:', sixDigitCode);
+    setIsProcessing(true);
+    
+    // Simulate API call with delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // TODO: Implement actual API call
+    setIsProcessing(false);
+    setCurrentScreen('friendRequests');
+    setConfirmingRequest(null);
+    setConfirmationFocusedButton(null);
+    setSelectedIndex(0);
   };
 
   const renderScreen = () => {
@@ -314,11 +359,9 @@ function AppContent() {
       case 'addFriend':
         return (
           <AddFriendScreen 
-            hexCode={addFriendHexCode}
-            selectedDigit={addFriendDigitIndex}
-            selectedOption={addFriendOption}
-            methodIndex={addFriendMethodIndex}
-            pasteError={addFriendPasteError}
+            digitInput={friendRequestInput}
+            error={friendRequestError}
+            isProcessing={isProcessing}
           />
         );
       case 'friendRequests':
@@ -328,6 +371,14 @@ function AppContent() {
             selectedIndex={selectedIndex}
           />
         );
+      case 'friendRequestConfirmation':
+        return confirmingRequest ? (
+          <FriendRequestConfirmationScreen 
+            request={confirmingRequest}
+            focusedButton={confirmationFocusedButton}
+            isProcessing={isProcessing}
+          />
+        ) : null;
       case 'myhex':
         return <MyHexScreen />;
       case 'settings':
@@ -362,6 +413,8 @@ function AppContent() {
           onMenu={handleMenu}
           onNavigateLeft={handleNavigateLeft}
           onNavigateRight={handleNavigateRight}
+          onNumberPress={handleNumberPress}
+          onCall={handleCall}
         />
       </LinearGradient>
     </NativeBaseProvider>

@@ -2,7 +2,7 @@ import React from 'react';
 import { PagerScreen, PagerText } from '../components/PagerScreen';
 
 interface Friend {
-  hexCode: string;
+  sixDigitCode: string;
   status: 'ONLINE' | 'OFFLINE';
 }
 
@@ -42,8 +42,8 @@ export const FriendsListScreen: React.FC<FriendsListScreenProps> = ({
         const itemIndex = totalMenuItems + index;
         // const statusDot = friend.status === 'ONLINE' ? '●' : '○';
         return (
-          <PagerText key={friend.hexCode} selected={itemIndex === selectedIndex}>
-            {itemIndex === selectedIndex ? '>' : ' '} {friend.hexCode}
+          <PagerText key={friend.sixDigitCode} selected={itemIndex === selectedIndex}>
+            {itemIndex === selectedIndex ? '>' : ' '} {friend.sixDigitCode}
           </PagerText>
         );
       })}

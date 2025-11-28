@@ -2,7 +2,7 @@ import React from 'react';
 import { PagerScreen, PagerText } from '../components/PagerScreen';
 
 interface FriendRequest {
-  hexCode: string;
+  sixDigitCode: string;
   timestamp: string;
 }
 
@@ -21,13 +21,12 @@ export const FriendRequestsScreen: React.FC<FriendRequestsScreenProps> = ({
         <PagerText>NO PENDING REQUESTS</PagerText>
       ) : (
         <>
-          <PagerText>SELECT: ACCEPT</PagerText>
-          <PagerText>BACK: REJECT</PagerText>
+          <PagerText>SELECT: VIEW</PagerText>
           <PagerText>─────────────</PagerText>
           
           {requests.map((request, index) => (
-            <PagerText key={request.hexCode} selected={index === selectedIndex}>
-              {index === selectedIndex ? '>' : ' '} {request.hexCode}
+            <PagerText key={request.sixDigitCode} selected={index === selectedIndex}>
+              {index === selectedIndex ? '>' : ' '} {request.sixDigitCode}
             </PagerText>
           ))}
         </>

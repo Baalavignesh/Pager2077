@@ -175,6 +175,12 @@ interface NumPadProps {
   // New callbacks for horizontal navigation
   onNavigateLeft?: () => void;
   onNavigateRight?: () => void;
+  
+  // Number key callbacks
+  onNumberPress?: (number: string) => void;
+  
+  // Call button callback
+  onCall?: () => void;
 }
 
 export const NumPad: React.FC<NumPadProps> = ({
@@ -184,7 +190,9 @@ export const NumPad: React.FC<NumPadProps> = ({
   onNavigateDown,
   onMenu,
   onNavigateLeft,
-  onNavigateRight
+  onNavigateRight,
+  onNumberPress,
+  onCall
 }) => {
   // Load click sound on mount, unload on unmount
   useEffect(() => {
@@ -257,12 +265,12 @@ export const NumPad: React.FC<NumPadProps> = ({
     [
       { icon: { library: 'ionicons', name: 'arrow-back', size: 24 }, onPress: onBack, type: 'number' },
       { icon: { library: 'materialicons', name: 'circle', size: 18 }, onPress: onSelect, type: 'number' },
-      { icon: { library: 'ionicons', name: 'call-outline', size: 24 }, type: 'number' }
+      { icon: { library: 'ionicons', name: 'call-outline', size: 24 }, onPress: onCall, type: 'number' }
     ],
     [
-      { number: '1', letters: '', type: 'number' },
+      { number: '1', letters: '', onPress: () => onNumberPress?.('1'), type: 'number' },
       { number: '2', letters: 'abc', onPress: onNavigateUp, type: 'number' },
-      { number: '3', letters: 'def', type: 'number' }
+      { number: '3', letters: 'def', onPress: () => onNumberPress?.('3'), type: 'number' }
     ],
     [
       { number: '4', letters: 'ghi', onPress: onNavigateLeft, type: 'number' },
@@ -270,14 +278,14 @@ export const NumPad: React.FC<NumPadProps> = ({
       { number: '6', letters: 'mno', onPress: onNavigateRight, type: 'number' }
     ],
     [
-      { number: '7', letters: 'pqrs', type: 'number' },
+      { number: '7', letters: 'pqrs', onPress: () => onNumberPress?.('7'), type: 'number' },
       { number: '8', letters: 'tuv', onPress: onNavigateDown, type: 'number' },
-      { number: '9', letters: 'wxyz', type: 'number' }
+      { number: '9', letters: 'wxyz', onPress: () => onNumberPress?.('9'), type: 'number' }
     ],
     [
       { number: '*', letters: '', onPress: onMenu, type: 'number' },
-      { number: '0', letters: '', type: 'number' },
-      { number: '#', letters: '', type: 'number' }
+      { number: '0', letters: '', onPress: () => onNumberPress?.('0'), type: 'number' },
+      { number: '#', letters: '', onPress: () => onNumberPress?.('#'), type: 'number' }
     ]
   ];
 

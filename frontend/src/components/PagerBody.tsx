@@ -11,6 +11,8 @@ interface PagerBodyProps {
     onMenu: () => void;
     onNavigateLeft?: () => void;
     onNavigateRight?: () => void;
+    onNumberPress?: (number: string) => void;
+    onCall?: () => void;
 }
 
 export const PagerBody: React.FC<PagerBodyProps> = ({
@@ -20,7 +22,9 @@ export const PagerBody: React.FC<PagerBodyProps> = ({
     onNavigateDown,
     onMenu,
     onNavigateLeft,
-    onNavigateRight
+    onNavigateRight,
+    onNumberPress,
+    onCall
 }) => {
     return (
         <View style={styles.wrapper}>
@@ -40,6 +44,8 @@ export const PagerBody: React.FC<PagerBodyProps> = ({
                             onMenu={onMenu}
                             onNavigateLeft={onNavigateLeft}
                             onNavigateRight={onNavigateRight}
+                            onNumberPress={onNumberPress}
+                            onCall={onCall}
                         />
                     </View>
                 </LinearGradient>
