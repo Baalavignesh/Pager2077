@@ -29,8 +29,8 @@ export const FriendRequestConfirmationScreen: React.FC<FriendRequestConfirmation
 
   return (
     <PagerScreen title="CONFIRM REQUEST">
-      <PagerText>─────────────</PagerText>
       <PagerText>FROM: {request.sixDigitCode}</PagerText>
+      <PagerText>─────────────</PagerText>
       <PagerText> </PagerText>
       <PagerText>ACCEPT THIS REQUEST?</PagerText>
       <PagerText> </PagerText>
@@ -38,7 +38,7 @@ export const FriendRequestConfirmationScreen: React.FC<FriendRequestConfirmation
         {focusedButton === 'no' ? '◄ NO' : '  NO'}
       </PagerText>
       <PagerText selected={focusedButton === 'yes'}>
-        {focusedButton === 'yes' ? 'YES ►' : 'YES  '}
+        {focusedButton === 'yes' ? '  YES ►' : '  YES'}
       </PagerText>
     </PagerScreen>
   );
