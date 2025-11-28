@@ -181,6 +181,10 @@ interface NumPadProps {
   
   // Call button callback
   onCall?: () => void;
+  
+  // Settings
+  soundEnabled?: boolean;
+  vibrateEnabled?: boolean;
 }
 
 export const NumPad: React.FC<NumPadProps> = ({
@@ -192,7 +196,9 @@ export const NumPad: React.FC<NumPadProps> = ({
   onNavigateLeft,
   onNavigateRight,
   onNumberPress,
-  onCall
+  onCall,
+  soundEnabled = true,
+  vibrateEnabled = true
 }) => {
   // Load click sound on mount, unload on unmount
   useEffect(() => {
@@ -236,6 +242,8 @@ export const NumPad: React.FC<NumPadProps> = ({
 
   // Trigger haptic feedback
   const triggerHaptic = async () => {
+    if (!vibrateEnabled) return;
+    
     try {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch (error) {
@@ -245,6 +253,8 @@ export const NumPad: React.FC<NumPadProps> = ({
 
   // Play click sound
   const playClickSound = async () => {
+    if (!soundEnabled) return;
+    
     try {
       await audioService.playSound('click');
     } catch (error) {
@@ -254,10 +264,19 @@ export const NumPad: React.FC<NumPadProps> = ({
 
   // Trigger both feedback types concurrently
   const triggerFeedback = async () => {
-    await Promise.allSettled([
-      triggerHaptic(),
-      playClickSound()
-    ]);
+    const feedbackPromises = [];
+    
+    if (vibrateEnabled) {
+      feedbackPromises.push(triggerHaptic());
+    }
+    
+    if (soundEnabled) {
+      feedbackPromises.push(playClickSound());
+    }
+    
+    if (feedbackPromises.length > 0) {
+      await Promise.allSettled(feedbackPromises);
+    }
   };
 
   // Number buttons configuration with navigation mapping
