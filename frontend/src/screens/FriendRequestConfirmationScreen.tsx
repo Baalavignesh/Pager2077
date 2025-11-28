@@ -35,10 +35,10 @@ export const FriendRequestConfirmationScreen: React.FC<FriendRequestConfirmation
       <PagerText>ACCEPT THIS REQUEST?</PagerText>
       <PagerText> </PagerText>
       <PagerText selected={focusedButton === 'no'}>
-        {focusedButton === 'no' ? '◄ NO' : '  NO'}
+        {focusedButton === 'no' ? '  NO' : '  NO'}
       </PagerText>
       <PagerText selected={focusedButton === 'yes'}>
-        {focusedButton === 'yes' ? '  YES ►' : '  YES'}
+        {focusedButton === 'yes' ? '  YES' : '  YES'}
       </PagerText>
     </PagerScreen>
   );

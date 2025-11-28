@@ -42,6 +42,13 @@ When creating or modifying UI components:
 - Grey text (#888888) with darker grey on press (#0a0a0a background)
 - Minimal borders (0.5px) between buttons
 - Press animation: background color change only
+- Haptic and audio feedback on button press (configurable via soundEnabled/vibrateEnabled props)
+
+**PagerBody** - Container for NumPad interface
+- Wraps NumPad component with metallic frame styling
+- Passes through soundEnabled and vibrateEnabled settings to NumPad
+- Default values: soundEnabled=true, vibrateEnabled=true
+- Props interface includes all NumPad navigation callbacks plus settings
 
 **BatteryIndicator** - Real-time battery status display
 - Shows 0-4 bars based on battery level (25% per bar)
@@ -84,7 +91,33 @@ When creating or modifying UI components:
   - SELECT (key 5): Confirm choice
   - BACK: Return to requests list without action
 - Visual feedback: "PROCESSING..." state during API call
-- Arrows indicate focused button: "◄ NO" or "YES ►"
+- Selection indicator: PagerText selected state (inverted colors) with directional arrows (◄ for NO, ► for YES)
+
+### Settings Screens
+
+**SettingsScreen** - Multi-view settings interface
+- Main view with 4 menu items:
+  - SOUND: ON/OFF toggle
+  - VIBRATE: ON/OFF toggle
+  - ABOUT: Navigate to about screen
+  - HELP: Navigate to help screen
+- Navigation: Up/Down (keys 2/8) to move selection
+- SELECT (key 5): Toggle setting or navigate to sub-screen
+- Selection indicator: '>' prefix on selected item
+- Uses PagerText with selected prop for visual feedback
+
+**SettingsScreen (About View)** - App information
+- Displays app name, description, and features
+- Multi-line text layout with spacers (8px height)
+- Content: App description, messaging features, 6-digit code system
+- BACK: Return to main settings view
+
+**SettingsScreen (Help View)** - Control reference guide
+- Lists all numpad controls and their functions
+- Key mappings: * (home), 5 (select), 2 (up), 8 (down)
+- Icon functions: Call icon (accept), Back icon (back)
+- Multi-line layout with spacers for readability
+- BACK: Return to main settings view
 
 ### Color Usage
 
@@ -282,11 +315,50 @@ export const MyScreen: React.FC<Props> = ({ items, selectedIndex }) => {
 };
 ```
 
+**Multi-View Screens:**
+```typescript
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
+import { PagerScreen, PagerText } from '../components/PagerScreen';
+
+interface MyScreenProps {
+  currentView: 'main' | 'detail';
+  selectedIndex: number;
+}
+
+export const MyScreen: React.FC<MyScreenProps> = ({ currentView, selectedIndex }) => {
+  if (currentView === 'detail') {
+    return (
+      <PagerScreen title="DETAIL">
+        <PagerText>DETAIL CONTENT</PagerText>
+        <View style={styles.spacer} />
+        <PagerText>MORE INFO HERE</PagerText>
+      </PagerScreen>
+    );
+  }
+
+  return (
+    <PagerScreen title="MAIN">
+      <PagerText selected={selectedIndex === 0}>
+        {selectedIndex === 0 ? '>' : ' '} OPTION 1
+      </PagerText>
+    </PagerScreen>
+  );
+};
+
+const styles = StyleSheet.create({
+  spacer: {
+    height: 8,
+  },
+});
+```
+
 **Rules:**
 - ✅ Use PagerScreen wrapper for all screens
 - ✅ Use PagerText for text content
 - ✅ PagerScreen handles all LCD styling
-- ✅ Add screen-specific styles only when needed
+- ✅ Add screen-specific styles only when needed (e.g., spacers)
+- ✅ Use View with StyleSheet for layout helpers (spacers, dividers)
 - ❌ Don't duplicate LCD styling in individual screens
 
 ## Component Examples
