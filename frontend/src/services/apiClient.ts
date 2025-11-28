@@ -115,3 +115,82 @@ export async function updateUserStatus(
     throw new Error(data.error?.message || 'Failed to update status');
   }
 }
+
+/**
+ * Send a text message to a friend
+ */
+export async function sendMessage(
+  token: string,
+  recipientId: string,
+  text: string
+): Promise<{ messageId: string; timestamp: string }> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+  try {
+    const response = await fetch(`${API_URL}/api/messages`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ recipientId, text }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    const data: ApiResponse<{ messageId: string; timestamp: string }> = await response.json();
+
+    if (!data.success || !data.data) {
+      throw new Error(data.error?.message || 'Failed to send message');
+    }
+
+    return data.data;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    
+    // Handle timeout
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('TIMEOUT');
+    }
+    
+    // Handle network error
+    if (error instanceof TypeError && error.message.includes('Network request failed')) {
+      throw new Error('NETWORK_ERROR');
+    }
+    
+    throw error;
+  }
+}
+
+/**
+ * Get message history with a friend
+ */
+export async function getMessageHistory(
+  token: string,
+  friendId: string,
+  limit: number = 50
+): Promise<Array<{
+  id: string;
+  senderId: string;
+  recipientId: string;
+  text: string;
+  timestamp: string;
+  createdAt: string;
+}>> {
+  const response = await fetch(`${API_URL}/api/messages/${friendId}?limit=${limit}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  const data: ApiResponse<{ messages: Array<any> }> = await response.json();
+
+  if (!data.success || !data.data) {
+    throw new Error(data.error?.message || 'Failed to get message history');
+  }
+
+  return data.data.messages;
+}

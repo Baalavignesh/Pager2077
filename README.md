@@ -128,19 +128,29 @@ The backend server will start on `http://localhost:3000` with hot reload enabled
   - EditNameScreen for changing display name
   - Local storage for display name mappings
   - Display names shown throughout app (friends, requests, messages)
+- Messaging system:
+  - IndividualChatScreen for one-on-one text messaging
+  - T9 text input for message composition (500 character limit)
+  - Message history display with sent/received indicators
+  - Message validation and sanitization
+  - Error handling with user-friendly messages
+  - Haptic feedback for send/success/error states
 - Backend project structure
 - TypeScript interfaces for data models
 
 **To Do:**
 
 - Audio recording integration
-- API client setup
+- Complete messaging API integration (sendMessage and getMessageHistory endpoints)
 - Backend API endpoints
 - Database schema and migrations
 - AWS infrastructure (Terraform)
 - Push notifications
 - Status management
 - Backend display name sync
+- Message composer component (MessageComposer.tsx)
+- Message history component (MessageHistory.tsx)
+- Message bubble component (MessageBubble.tsx)
 
 ## Development Notes
 

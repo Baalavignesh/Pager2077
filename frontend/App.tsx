@@ -7,6 +7,7 @@ import * as Font from 'expo-font';
 import { PagerDisplay } from './src/components/PagerDisplay';
 import { MainMenuScreen } from './src/screens/MainMenuScreen';
 import { MessagesScreen } from './src/screens/MessagesScreen';
+import { IndividualChatScreen } from './src/screens/IndividualChatScreen';
 import { FriendsListScreen } from './src/screens/FriendsListScreen';
 import { AddFriendScreen } from './src/screens/AddFriendScreen';
 import { FriendRequestsScreen } from './src/screens/FriendRequestsScreen';
@@ -15,6 +16,7 @@ import { MyHexScreen } from './src/screens/MyHexScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { NameEntryScreen, NameEntryScreenHandle } from './src/screens/NameEntryScreen';
 import { EditNameScreen, EditNameScreenHandle } from './src/screens/EditNameScreen';
+import { IndividualChatScreenHandle } from './src/screens/IndividualChatScreen';
 import { PagerBody } from './src/components/PagerBody';
 import { ChatPagerBody } from './src/components/ChatPagerBody';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
@@ -22,7 +24,7 @@ import { useNotifications } from './src/hooks/useNotifications';
 import { hasDisplayName, getAllDisplayNameMappings } from './src/services/storageService';
 import { setCurrentUserDisplayName } from './src/services/displayNameService';
 
-type Screen = 'main' | 'messages' | 'friends' | 'addFriend' | 'friendRequests' | 'friendRequestConfirmation' | 'myhex' | 'settings' | 'editName';
+type Screen = 'main' | 'messages' | 'chat' | 'friends' | 'addFriend' | 'friendRequests' | 'friendRequestConfirmation' | 'myhex' | 'settings' | 'editName';
 
 const mainMenu = [
   { id: 'messages', label: '1. MESSAGES', screen: 'messages' as Screen },
@@ -42,9 +44,11 @@ const mockFriendRequests = [
   { sixDigitCode: '333444', timestamp: '2024-11-19T09:15:00' },
 ];
 
+// Mock unread messages - in real app, this would come from API
+// Only shows friends who have sent you unread messages
 const mockMessages = [
-  { from: 'F1E2D3C4', text: 'HELLO THERE!', time: '14:30' },
-  { from: 'B5A6C7D8', text: 'HOW ARE YOU?', time: '12:15' },
+  { from: '123456', text: 'HELLO THERE!', time: '14:30' },
+  { from: '789012', text: 'HOW ARE YOU?', time: '12:15' },
 ];
 
 function AppContent() {
@@ -53,11 +57,15 @@ function AppContent() {
   const [fontLoaded, setFontLoaded] = useState(false);
   const { isLoading, isAuthenticated, hexCode } = useAuth();
   
+  // Selected friend for chat
+  const [selectedFriend, setSelectedFriend] = useState<{ sixDigitCode: string; displayName?: string } | null>(null);
+  
   // Display name state
   const [needsDisplayName, setNeedsDisplayName] = useState(false);
   const [displayNameMap, setDisplayNameMap] = useState<Record<string, string>>({});
   const nameEntryRef = useRef<NameEntryScreenHandle>(null);
   const editNameRef = useRef<EditNameScreenHandle>(null);
+  const chatScreenRef = useRef<IndividualChatScreenHandle>(null);
   
   // Add friend state
   const [friendRequestInput, setFriendRequestInput] = useState('');
@@ -341,9 +349,18 @@ function AppContent() {
       const selected = mainMenu[selectedIndex];
       setCurrentScreen(selected.screen);
       setSelectedIndex(0);
+    } else if (currentScreen === 'messages') {
+      // Navigate to chat with selected message sender
+      const message = mockMessages[selectedIndex];
+      if (message) {
+        setSelectedFriend({ sixDigitCode: message.from });
+        setCurrentScreen('chat');
+      }
     } else if (currentScreen === 'friends') {
       // Handle friends list selection
       const hasRequests = mockFriendRequests.length > 0;
+      const menuItemsCount = 1 + (hasRequests ? 1 : 0);
+      
       if (selectedIndex === 0) {
         // ADD FRIEND selected
         setCurrentScreen('addFriend');
@@ -353,8 +370,15 @@ function AppContent() {
         // REQUESTS selected
         setCurrentScreen('friendRequests');
         setSelectedIndex(0);
+      } else if (selectedIndex >= menuItemsCount) {
+        // Friend selected - navigate to chat
+        const friendIndex = selectedIndex - menuItemsCount;
+        const friend = mockFriends[friendIndex];
+        if (friend) {
+          setSelectedFriend({ sixDigitCode: friend.sixDigitCode });
+          setCurrentScreen('chat');
+        }
       }
-      // Individual friend selection can be handled later
     } else if (currentScreen === 'friendRequests') {
       // Navigate to confirmation screen
       const request = mockFriendRequests[selectedIndex];
@@ -395,6 +419,14 @@ function AppContent() {
   };
 
   const handleBack = () => {
+    if (currentScreen === 'chat') {
+      // Return to messages screen
+      setCurrentScreen('messages');
+      setSelectedFriend(null);
+      setSelectedIndex(0);
+      return;
+    }
+    
     if (currentScreen === 'friendRequestConfirmation') {
       // Return to friend requests screen without action
       setCurrentScreen('friendRequests');
@@ -465,6 +497,9 @@ function AppContent() {
         editNameRef.current?.handleNumberPress(number);
       }
     }
+    
+    // Chat screen handles its own number presses via IndividualChatScreen
+    // No need to handle here
   };
 
   const handleCall = () => {
@@ -477,6 +512,22 @@ function AppContent() {
     if (currentScreen === 'settings' && settingsView === 'editName') {
       editNameRef.current?.handleSubmit();
     }
+    
+    // Chat screen handles its own call button via IndividualChatScreen
+    // No need to handle here
+  };
+
+  // Chat screen specific handlers
+  const handleChatNumberPress = (key: string) => {
+    chatScreenRef.current?.handleNumberPress(key);
+  };
+
+  const handleChatCall = () => {
+    chatScreenRef.current?.handleCall();
+  };
+
+  const handleConfirm = () => {
+    chatScreenRef.current?.handleConfirm();
   };
 
   const handleSendFriendRequest = async (sixDigitCode: string) => {
@@ -531,6 +582,17 @@ function AppContent() {
         return <MainMenuScreen menuItems={mainMenu} selectedIndex={selectedIndex} />;
       case 'messages':
         return <MessagesScreen messages={mockMessages} selectedIndex={selectedIndex} displayNameMap={displayNameMap} />;
+      case 'chat':
+        return selectedFriend ? (
+          <IndividualChatScreen
+            ref={chatScreenRef}
+            friend={selectedFriend}
+            onBack={handleBack}
+            soundEnabled={soundEnabled}
+            vibrateEnabled={vibrateEnabled}
+            displayNameMap={displayNameMap}
+          />
+        ) : null;
       case 'friends':
         return (
           <FriendsListScreen 
@@ -608,8 +670,18 @@ function AppContent() {
           {renderScreen()}
         </PagerDisplay>
 
-        {/* Use ChatPagerBody for edit name mode, regular PagerBody otherwise */}
-        {currentScreen === 'settings' && settingsView === 'editName' ? (
+        {/* Use ChatPagerBody for chat and text input screens, regular PagerBody otherwise */}
+        {currentScreen === 'chat' ? (
+          <ChatPagerBody
+            onConfirm={handleConfirm}
+            onBack={handleBack}
+            onMenu={handleMenu}
+            onNumberPress={handleChatNumberPress}
+            onCall={handleChatCall}
+            soundEnabled={soundEnabled}
+            vibrateEnabled={vibrateEnabled}
+          />
+        ) : currentScreen === 'settings' && settingsView === 'editName' ? (
           <ChatPagerBody
             onConfirm={() => editNameRef.current?.handleSubmit()}
             onBack={handleBack}
