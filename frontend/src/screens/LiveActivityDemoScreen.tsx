@@ -73,23 +73,41 @@ export const LiveActivityDemoScreen = forwardRef<LiveActivityDemoScreenHandle, L
     }
   };
 
-  const handleUpdateActivity = async () => {
+  const handleNextMessage = async () => {
     if (!activityId) return;
     
     setActivityState('updating');
     setLastError(null);
     
-    const nextIndex = (messageIndex + 1) % demoMessages.length;
-    const result = await updateDemoActivity(activityId, demoMessages[nextIndex]);
+    const nextIndex = Math.min(messageIndex + 1, demoMessages.length - 1);
+    const result = await updateDemoActivity(activityId, nextIndex + 1);
     
     if (result.success) {
       setMessageIndex(nextIndex);
       setActivityState('active');
-      console.log('[Demo] Updated activity');
+      console.log('[Demo] Next message:', nextIndex + 1);
     } else {
       setActivityState('active');
       setLastError(result.error || 'Failed to update');
-      console.log('[Demo] Failed to update:', result.error);
+    }
+  };
+
+  const handlePrevMessage = async () => {
+    if (!activityId) return;
+    
+    setActivityState('updating');
+    setLastError(null);
+    
+    const prevIndex = Math.max(messageIndex - 1, 0);
+    const result = await updateDemoActivity(activityId, prevIndex + 1);
+    
+    if (result.success) {
+      setMessageIndex(prevIndex);
+      setActivityState('active');
+      console.log('[Demo] Prev message:', prevIndex + 1);
+    } else {
+      setActivityState('active');
+      setLastError(result.error || 'Failed to update');
     }
   };
 
@@ -140,15 +158,20 @@ export const LiveActivityDemoScreen = forwardRef<LiveActivityDemoScreenHandle, L
         break;
       case 1:
         if (activityState === 'active') {
-          handleUpdateActivity();
+          handlePrevMessage();
         }
         break;
       case 2:
         if (activityState === 'active') {
-          handleEndActivity();
+          handleNextMessage();
         }
         break;
       case 3:
+        if (activityState === 'active') {
+          handleEndActivity();
+        }
+        break;
+      case 4:
         handleEndAllActivities();
         break;
     }
@@ -211,18 +234,30 @@ export const LiveActivityDemoScreen = forwardRef<LiveActivityDemoScreenHandle, L
       
       <View style={styles.spacer} />
       
+      {/* Message counter */}
+      {activityState === 'active' && (
+        <PagerText>
+          MSG: {messageIndex + 1}/{demoMessages.length}
+        </PagerText>
+      )}
+      
+      <View style={styles.spacer} />
+      
       {/* Menu options */}
       <PagerText selected={selectedIndex === 0}>
         {selectedIndex === 0 ? '>' : ' '} START DEMO
       </PagerText>
       <PagerText selected={selectedIndex === 1}>
-        {selectedIndex === 1 ? '>' : ' '} UPDATE MSG
+        {selectedIndex === 1 ? '>' : ' '} {'<'} PREV MSG
       </PagerText>
       <PagerText selected={selectedIndex === 2}>
-        {selectedIndex === 2 ? '>' : ' '} END ACTIVITY
+        {selectedIndex === 2 ? '>' : ' '} NEXT MSG {'>'}
       </PagerText>
       <PagerText selected={selectedIndex === 3}>
-        {selectedIndex === 3 ? '>' : ' '} END ALL
+        {selectedIndex === 3 ? '>' : ' '} END ACTIVITY
+      </PagerText>
+      <PagerText selected={selectedIndex === 4}>
+        {selectedIndex === 4 ? '>' : ' '} END ALL
       </PagerText>
       
       {/* Error display */}

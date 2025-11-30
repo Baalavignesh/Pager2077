@@ -37,7 +37,7 @@ yarn-error.*
 *.tsbuildinfo
 
 # generated native folders
-/ios
+# /ios  # Commented out - we need to track ios/ for Widget Extension
 /android
 yarn.lock
 # Expo

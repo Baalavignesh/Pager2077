@@ -44,7 +44,8 @@
           "color": "#C7D3C0"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "./plugins/withLiveActivity"
     ]
   }
 }

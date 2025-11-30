@@ -299,7 +299,7 @@ function AppContent() {
     } else if (currentScreen === 'settings') {
       maxIndex = 4; // Sound, Vibrate, Edit Name, About, Help
     } else if (currentScreen === 'liveActivityDemo') {
-      maxIndex = 3; // Start, Update, End, End All
+      maxIndex = 4; // Start, Prev, Next, End, End All
     }
 
     if (direction === 'up' && selectedIndex > 0) {

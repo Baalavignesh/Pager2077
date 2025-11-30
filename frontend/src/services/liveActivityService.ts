@@ -24,6 +24,10 @@ export interface LiveActivityContent {
   timestamp?: number;
   /** Whether this is a demo/test activity */
   isDemo?: boolean;
+  /** Current message index (1-based) */
+  messageIndex?: number;
+  /** Total number of messages */
+  totalMessages?: number;
 }
 
 export interface LiveActivityResult {
@@ -89,6 +93,8 @@ export async function startActivity(content: LiveActivityContent): Promise<LiveA
       message: content.message,
       timestamp: content.timestamp ?? Date.now(),
       isDemo: content.isDemo ?? false,
+      messageIndex: content.messageIndex ?? 1,
+      totalMessages: content.totalMessages ?? 1,
     });
     
     console.log('[LiveActivity] Start result:', result);
@@ -133,6 +139,8 @@ export async function updateActivity(
       message: content.message,
       timestamp: content.timestamp ?? Date.now(),
       isDemo: content.isDemo ?? false,
+      messageIndex: content.messageIndex ?? 1,
+      totalMessages: content.totalMessages ?? 1,
     });
     
     console.log('[LiveActivity] Update result:', result);
@@ -226,6 +234,15 @@ export async function getCurrentActivityId(): Promise<string | null> {
 
 // MARK: - Demo/Testing Helpers
 
+// Demo messages for testing
+const DEMO_MESSAGES = [
+  'MAJOR UPDATE: NEW VOICE MESSAGE RECEIVED',
+  'REMINDER: CHECK YOUR INBOX FOR URGENT MSG',
+  'ALERT: FRIEND REQUEST FROM 123456',
+  'NOTICE: YOUR MESSAGE WAS DELIVERED',
+  'INFO: 3 NEW MESSAGES WAITING',
+];
+
 /**
  * Start a demo Live Activity for testing purposes.
  * Uses placeholder content with "DEMO" sender.
@@ -233,21 +250,26 @@ export async function getCurrentActivityId(): Promise<string | null> {
 export async function startDemoActivity(): Promise<LiveActivityResult> {
   return startActivity({
     sender: 'DEMO',
-    message: 'This is a demo Live Activity for testing. Tap to open the app!',
+    message: DEMO_MESSAGES[0],
     isDemo: true,
+    messageIndex: 1,
+    totalMessages: DEMO_MESSAGES.length,
   });
 }
 
 /**
- * Update the demo activity with a new message.
+ * Update the demo activity with a new message by index.
  */
 export async function updateDemoActivity(
   activityId: string,
-  message: string
+  messageIndex: number
 ): Promise<LiveActivityResult> {
+  const index = Math.max(0, Math.min(messageIndex - 1, DEMO_MESSAGES.length - 1));
   return updateActivity(activityId, {
     sender: 'DEMO',
-    message,
+    message: DEMO_MESSAGES[index],
     isDemo: true,
+    messageIndex: index + 1,
+    totalMessages: DEMO_MESSAGES.length,
   });
 }

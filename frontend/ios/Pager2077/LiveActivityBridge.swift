@@ -8,7 +8,7 @@
 import Foundation
 import ActivityKit
 
-// MARK: - Activity Attributes (must match Widget Extension)
+// MARK: - Activity Attributes (must match Widget Extension exactly)
 
 struct PagerActivityAttributes: ActivityAttributes {
     public struct ContentState: Codable, Hashable {
@@ -16,12 +16,16 @@ struct PagerActivityAttributes: ActivityAttributes {
         var message: String
         var timestamp: Date
         var isDemo: Bool
+        var messageIndex: Int
+        var totalMessages: Int
         
-        init(sender: String, message: String, timestamp: Date = Date(), isDemo: Bool = false) {
+        init(sender: String, message: String, timestamp: Date = Date(), isDemo: Bool = false, messageIndex: Int = 1, totalMessages: Int = 1) {
             self.sender = sender
             self.message = String(message.prefix(100))
             self.timestamp = timestamp
             self.isDemo = isDemo
+            self.messageIndex = messageIndex
+            self.totalMessages = totalMessages
         }
     }
     
@@ -76,13 +80,17 @@ class LiveActivityBridge: NSObject {
         
         let timestamp = content["timestamp"] as? Double ?? Date().timeIntervalSince1970 * 1000
         let isDemo = content["isDemo"] as? Bool ?? false
+        let messageIndex = content["messageIndex"] as? Int ?? 1
+        let totalMessages = content["totalMessages"] as? Int ?? 1
         
         let attributes = PagerActivityAttributes()
         let contentState = PagerActivityAttributes.ContentState(
             sender: sender,
             message: message,
             timestamp: Date(timeIntervalSince1970: timestamp / 1000),
-            isDemo: isDemo
+            isDemo: isDemo,
+            messageIndex: messageIndex,
+            totalMessages: totalMessages
         )
         
         do {
@@ -128,6 +136,8 @@ class LiveActivityBridge: NSObject {
         
         let timestamp = content["timestamp"] as? Double ?? Date().timeIntervalSince1970 * 1000
         let isDemo = content["isDemo"] as? Bool ?? false
+        let messageIndex = content["messageIndex"] as? Int ?? 1
+        let totalMessages = content["totalMessages"] as? Int ?? 1
         
         let activities = Activity<PagerActivityAttributes>.activities
         guard let activity = activities.first(where: { $0.id == activityId }) else {
@@ -139,7 +149,9 @@ class LiveActivityBridge: NSObject {
             sender: sender,
             message: message,
             timestamp: Date(timeIntervalSince1970: timestamp / 1000),
-            isDemo: isDemo
+            isDemo: isDemo,
+            messageIndex: messageIndex,
+            totalMessages: totalMessages
         )
         
         Task {
