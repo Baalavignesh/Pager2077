@@ -1,0 +1,90 @@
+# Implementation Plan
+
+- [x] 1. Set up iOS Widget Extension and ActivityKit configuration
+  - [x] 1.1 Create PagerActivityAttributes.swift shared data model
+    - Define ActivityAttributes struct with ContentState (sender, message, timestamp)
+    - Place in shared location accessible by both main app and Widget Extension
+    - _Requirements: 4.1, 4.2_
+  - [x] 1.2 Create Widget Extension target in Xcode
+    - Add new Widget Extension target named "PagerWidgetExtension"
+    - Configure for iOS 16.1+ deployment target
+    - Add ActivityKit and WidgetKit frameworks
+    - Enable NSSupportsLiveActivities in Info.plist
+    - _Requirements: 4.1, 4.2_
+  - [x] 1.3 Implement LiveActivityView.swift for lock screen display
+    - Create SwiftUI view with retro pager aesthetic (dark background, LCD-style text)
+    - Display sender identifier, message preview, and timestamp
+    - Implement compact and expanded Dynamic Island views
+    - _Requirements: 1.2, 2.1, 2.2, 2.3_
+  - [x] 1.4 Update app.json with Widget Extension config plugin
+    - Add ios.infoPlist NSSupportsLiveActivities entry
+    - Configure entitlements for Live Activities
+    - _Requirements: 4.2_
+
+- [x] 2. Implement native bridge module for React Native
+  - [x] 2.1 Create LiveActivityBridge.swift native module
+    - Implement RCTBridgeModule with startActivity, updateActivity, endActivity methods
+    - Add areActivitiesEnabled method to check device support
+    - Handle ActivityKit API calls and error handling
+    - Return consistent result format (success, activityId, error)
+    - _Requirements: 3.1, 3.2, 3.3, 3.4_
+  - [x] 2.2 Create LiveActivityBridge.m Objective-C bridge file
+    - Export native module methods to React Native
+    - Define method signatures for JavaScript bridge
+    - _Requirements: 3.1_
+  - [x] 2.3 Register native module in AppDelegate
+    - Ensure module is available to React Native runtime
+    - Register for Live Activity push token updates on app launch
+    - _Requirements: 4.4_
+
+- [x] 3. Implement React Native service layer
+  - [x] 3.1 Create liveActivityService.ts TypeScript service
+    - Define LiveActivityContent and LiveActivityResult interfaces
+    - Implement startActivity, updateActivity, endActivity wrapper functions
+    - Add areActivitiesEnabled check function
+    - Handle platform check (iOS only, graceful no-op on Android/web)
+    - _Requirements: 3.1, 3.2, 3.3, 3.4_
+  - [ ]* 3.2 Write property test for start activity result format
+    - **Property 1: Start activity returns valid result**
+    - **Validates: Requirements 3.1, 3.4**
+  - [ ]* 3.3 Write property test for update activity behavior
+    - **Property 2: Update activity succeeds for active activities**
+    - **Validates: Requirements 3.2, 3.4**
+  - [ ]* 3.4 Write property test for end activity deactivation
+    - **Property 3: End activity deactivates the activity**
+    - **Validates: Requirements 3.3, 3.4**
+
+- [x] 4. Implement demo UI for testing
+  - [x] 4.1 Create LiveActivityDemo component for testing
+    - Add buttons to start, update, and end demo Live Activity
+    - Display current activity state and ID
+    - Use placeholder content (sender: "DEMO", message: "Test message")
+    - _Requirements: 5.1, 5.2_
+  - [x] 4.2 Add demo screen to app navigation (temporary)
+    - Create accessible entry point for testing Live Activity
+    - Add logging for activity state changes
+    - _Requirements: 5.2, 5.3_
+  - [ ]* 4.3 Write unit tests for demo functionality
+    - Test demo activity creation with expected placeholder values
+    - Test update and end actions on demo activity
+    - _Requirements: 5.1, 5.2_
+
+- [x] 5. Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [ ] 6. Integration and cleanup
+  - [ ] 6.1 Integrate Live Activity with notification service
+    - Trigger Live Activity when message notification is received
+    - End Live Activity when user opens the chat
+    - _Requirements: 1.1, 1.4_
+  - [ ] 6.2 Add deep link handling for Live Activity tap
+    - Configure URL scheme for Live Activity tap action
+    - Navigate to relevant chat screen when tapped
+    - _Requirements: 1.3_
+  - [ ] 6.3 Remove demo UI and finalize
+    - Remove temporary demo screen from navigation
+    - Clean up any debug logging
+    - _Requirements: 5.3_
+
+- [ ] 7. Final Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.

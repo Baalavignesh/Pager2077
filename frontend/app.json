@@ -19,7 +19,8 @@
       "infoPlist": {
         "UIBackgroundModes": [
           "remote-notification"
-        ]
+        ],
+        "NSSupportsLiveActivities": true
       }
     },
     "android": {

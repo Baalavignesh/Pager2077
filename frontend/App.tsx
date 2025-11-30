@@ -17,6 +17,7 @@ import { SettingsScreen } from './src/screens/SettingsScreen';
 import { NameEntryScreen, NameEntryScreenHandle } from './src/screens/NameEntryScreen';
 import { EditNameScreen, EditNameScreenHandle } from './src/screens/EditNameScreen';
 import { IndividualChatScreenHandle } from './src/screens/IndividualChatScreen';
+import { LiveActivityDemoScreen, LiveActivityDemoScreenHandle } from './src/screens/LiveActivityDemoScreen';
 import { PagerBody } from './src/components/PagerBody';
 import { ChatPagerBody } from './src/components/ChatPagerBody';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
@@ -24,13 +25,14 @@ import { useNotifications } from './src/hooks/useNotifications';
 import { hasDisplayName, getAllDisplayNameMappings } from './src/services/storageService';
 import { setCurrentUserDisplayName } from './src/services/displayNameService';
 
-type Screen = 'main' | 'messages' | 'chat' | 'friends' | 'addFriend' | 'friendRequests' | 'friendRequestConfirmation' | 'myhex' | 'settings' | 'editName';
+type Screen = 'main' | 'messages' | 'chat' | 'friends' | 'addFriend' | 'friendRequests' | 'friendRequestConfirmation' | 'myhex' | 'settings' | 'editName' | 'liveActivityDemo';
 
 const mainMenu = [
   { id: 'messages', label: '1. MESSAGES', screen: 'messages' as Screen },
   { id: 'friends', label: '2. FRIENDS', screen: 'friends' as Screen },
   { id: 'myhex', label: '3. MY HEX', screen: 'myhex' as Screen },
   { id: 'settings', label: '4. SETTINGS', screen: 'settings' as Screen },
+  { id: 'liveActivity', label: '5. LIVE ACTIVITY', screen: 'liveActivityDemo' as Screen },
 ];
 
 const mockFriends = [
@@ -66,6 +68,7 @@ function AppContent() {
   const nameEntryRef = useRef<NameEntryScreenHandle>(null);
   const editNameRef = useRef<EditNameScreenHandle>(null);
   const chatScreenRef = useRef<IndividualChatScreenHandle>(null);
+  const liveActivityDemoRef = useRef<LiveActivityDemoScreenHandle>(null);
   
   // Add friend state
   const [friendRequestInput, setFriendRequestInput] = useState('');
@@ -295,6 +298,8 @@ function AppContent() {
       maxIndex = mockMessages.length - 1;
     } else if (currentScreen === 'settings') {
       maxIndex = 4; // Sound, Vibrate, Edit Name, About, Help
+    } else if (currentScreen === 'liveActivityDemo') {
+      maxIndex = 3; // Start, Update, End, End All
     }
 
     if (direction === 'up' && selectedIndex > 0) {
@@ -415,6 +420,9 @@ function AppContent() {
           setSettingsView('help');
           break;
       }
+    } else if (currentScreen === 'liveActivityDemo') {
+      // Delegate to Live Activity demo screen
+      liveActivityDemoRef.current?.handleSelect();
     }
   };
 
@@ -629,6 +637,8 @@ function AppContent() {
         ) : null;
       case 'myhex':
         return <MyHexScreen />;
+      case 'liveActivityDemo':
+        return <LiveActivityDemoScreen ref={liveActivityDemoRef} selectedIndex={selectedIndex} />;
       case 'settings':
         if (settingsView === 'editName') {
           return (
