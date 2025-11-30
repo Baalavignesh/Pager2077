@@ -1,14 +1,17 @@
 /**
  * Pager 2077 Backend
  * 
- * Bun API server with SQLite database
+ * Bun API server with SQLite database using proper Bun routing
  */
 
-import { initDatabase, getDatabase } from './db';
+import { initDatabase } from './db';
 import { UserRepository } from './repositories/UserRepository';
 import { FriendshipRepository } from './repositories/FriendshipRepository';
+import { MessageRepository } from './repositories/MessageRepository';
 import { UserService } from './services/UserService';
 import { FriendshipService } from './services/FriendshipService';
+import { MessageService } from './services/MessageService';
+import { NotificationService } from './services/NotificationService';
 import { AppError } from './utils/errors';
 import { verifyJWT } from './utils/jwt';
 import type { ApiResponse, RegisterUserRequest, SendFriendRequestRequest } from './models';
@@ -21,20 +24,28 @@ const db = initDatabase();
 // Initialize Redis and notification queue
 import { initRedis } from './queue/redis';
 import { initNotificationQueue, startNotificationWorker } from './queue/notificationQueue';
-import { NotificationService } from './services/NotificationService';
 
-// initRedis();
-// initNotificationQueue();
-// startNotificationWorker();
+initRedis();
+initNotificationQueue();
+startNotificationWorker();
 
 // Initialize repositories
 const userRepo = new UserRepository(db);
 const friendshipRepo = new FriendshipRepository(db);
+const messageRepo = new MessageRepository(db);
 
 // Initialize services
 const userService = new UserService(userRepo);
 const friendshipService = new FriendshipService(userRepo, friendshipRepo);
 const notificationService = new NotificationService();
+const messageService = new MessageService(messageRepo, userRepo, friendshipRepo, notificationService);
+
+// CORS headers
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
 
 /**
  * Extract user ID from Authorization header
@@ -51,7 +62,7 @@ function getUserIdFromAuth(req: Request): string {
   try {
     const payload = verifyJWT(token);
     return payload.userId;
-  } catch (error) {
+  } catch {
     throw new AppError(401, 'INVALID_TOKEN', 'Invalid or expired token');
   }
 }
@@ -72,9 +83,9 @@ function handleError(error: unknown): Response {
       },
     };
 
-    return new Response(JSON.stringify(response), {
+    return Response.json(response, {
       status: error.statusCode,
-      headers: { 'Content-Type': 'application/json' },
+      headers: corsHeaders,
     });
   }
 
@@ -87,251 +98,354 @@ function handleError(error: unknown): Response {
     },
   };
 
-  return new Response(JSON.stringify(response), {
+  return Response.json(response, {
     status: 500,
-    headers: { 'Content-Type': 'application/json' },
+    headers: corsHeaders,
   });
 }
 
 /**
- * Main server
+ * Main server with Bun routing
  */
 const server = Bun.serve({
   port: 3000,
-  async fetch(req) {
-    const url = new URL(req.url);
-    const path = url.pathname;
+  routes: {
+    // Health check
+    "/health": () => Response.json({ status: 'ok' }, { headers: corsHeaders }),
+    
+    // Queue metrics
+    "/api/queue/metrics": async () => {
+      try {
+        const { getQueueMetrics } = await import('./queue/notificationQueue');
+        const metrics = await getQueueMetrics();
+        return Response.json({ success: true, data: metrics }, { headers: corsHeaders });
+      } catch (error) {
+        return handleError(error);
+      }
+    },
+    
+    // User routes
+    "/api/users/register": {
+      POST: async (req) => {
+        try {
+          const body = await req.json() as RegisterUserRequest;
+          const result = userService.registerUser(body.deviceToken);
+          return Response.json({ success: true, data: result }, { status: 201, headers: corsHeaders });
+        } catch (error) {
+          return handleError(error);
+        }
+      },
+    },
+    
+    "/api/users/me": {
+      GET: async (req) => {
+        try {
+          const userId = getUserIdFromAuth(req);
+          const user = userService.getUserById(userId);
+          return Response.json({ success: true, data: user }, { headers: corsHeaders });
+        } catch (error) {
+          return handleError(error);
+        }
+      },
+    },
+    
+    "/api/users/status": {
+      PUT: async (req) => {
+        try {
+          const userId = getUserIdFromAuth(req);
+          const body = await req.json() as { status: 'online' | 'offline' };
+          
+          userService.updateUserStatus(userId, body.status);
+
+          const user = userService.getUserById(userId);
+          const friends = friendshipService.getUserFriends(userId);
+          await notificationService.broadcastStatusToFriends(friends, user.hexCode, body.status);
+
+          return Response.json({ success: true, data: { success: true } }, { headers: corsHeaders });
+        } catch (error) {
+          return handleError(error);
+        }
+      },
+    },
+    
+    "/api/users/display-name": {
+      PUT: async (req) => {
+        try {
+          const userId = getUserIdFromAuth(req);
+          const body = await req.json() as { displayName: string };
+          
+          if (body.displayName === undefined) {
+            throw new AppError(400, 'INVALID_INPUT', 'Display name is required');
+          }
+          
+          const updatedUser = userService.updateDisplayName(userId, body.displayName);
+
+          return Response.json({
+            success: true,
+            data: {
+              userId: updatedUser.id,
+              hexCode: updatedUser.hexCode,
+              displayName: updatedUser.displayName,
+            },
+          }, { headers: corsHeaders });
+        } catch (error) {
+          return handleError(error);
+        }
+      },
+    },
+    
+    "/api/users/live-activity-token": {
+      PUT: async (req) => {
+        try {
+          const userId = getUserIdFromAuth(req);
+          const body = await req.json() as { liveActivityToken: string | null };
+          
+          const token = body.liveActivityToken ?? null;
+          userService.updateLiveActivityToken(userId, token);
+
+          return Response.json({ success: true, data: { success: true } }, { headers: corsHeaders });
+        } catch (error) {
+          return handleError(error);
+        }
+      },
+    },
+    
+    // Friend routes
+    "/api/friends/request": {
+      POST: async (req) => {
+        try {
+          const userId = getUserIdFromAuth(req);
+          const body = await req.json() as SendFriendRequestRequest;
+          
+          const request = friendshipService.sendFriendRequest(userId, body.toHexCode);
+
+          const sender = userService.getUserById(userId);
+          const recipient = userService.getUserByHexCode(body.toHexCode.toUpperCase());
+          if (recipient) {
+            // Notification is best-effort, don't fail the request if it fails
+            try {
+              await notificationService.notifyFriendRequest(recipient, sender.hexCode, request.id);
+            } catch (notifError) {
+              console.error('Failed to send friend request notification:', notifError);
+            }
+          }
+
+          return Response.json({ success: true, data: request }, { status: 201, headers: corsHeaders });
+        } catch (error) {
+          return handleError(error);
+        }
+      },
+    },
+    
+    // GET /api/friends/requests/pending
+    // Requirements: 13.2 - Include requester's display name
+    "/api/friends/requests/pending": {
+      GET: async (req) => {
+        try {
+          const userId = getUserIdFromAuth(req);
+          const requests = friendshipService.getPendingRequestsWithDisplayNames(userId);
+
+          return Response.json({ success: true, data: { requests } }, { headers: corsHeaders });
+        } catch (error) {
+          return handleError(error);
+        }
+      },
+    },
+    
+    // Dynamic route: POST /api/friends/requests/:id/accept
+    "/api/friends/requests/:id/accept": {
+      POST: async (req) => {
+        try {
+          const requestId = req.params.id;
+          const userId = getUserIdFromAuth(req);
+          
+          const friend = friendshipService.acceptFriendRequest(requestId, userId);
+          const accepter = userService.getUserById(userId);
+          
+          // Notification is best-effort, don't fail the request if it fails
+          try {
+            await notificationService.notifyFriendRequestAccepted(friend, accepter.hexCode);
+          } catch (notifError) {
+            console.error('Failed to send friend request accepted notification:', notifError);
+          }
+
+          return Response.json({ success: true, data: { friend } }, { headers: corsHeaders });
+        } catch (error) {
+          return handleError(error);
+        }
+      },
+    },
+    
+    // Dynamic route: POST /api/friends/requests/:id/reject
+    "/api/friends/requests/:id/reject": {
+      POST: async (req) => {
+        try {
+          const requestId = req.params.id;
+          const userId = getUserIdFromAuth(req);
+          
+          friendshipService.rejectFriendRequest(requestId, userId);
+
+          return Response.json({ success: true, data: { success: true } }, { headers: corsHeaders });
+        } catch (error) {
+          return handleError(error);
+        }
+      },
+    },
+    
+    // GET /api/friends
+    // Requirements: 13.1 - Include display names for each friend
+    "/api/friends": {
+      GET: async (req) => {
+        try {
+          const userId = getUserIdFromAuth(req);
+          const friends = friendshipService.getUserFriends(userId);
+
+          // Map to include displayName explicitly in response
+          const friendsWithDisplayNames = friends.map(friend => ({
+            id: friend.id,
+            hexCode: friend.hexCode,
+            displayName: friend.displayName,
+            status: friend.status,
+            lastSeen: friend.lastSeen,
+          }));
+
+          return Response.json({ success: true, data: { friends: friendsWithDisplayNames } }, { headers: corsHeaders });
+        } catch (error) {
+          return handleError(error);
+        }
+      },
+    },
+    
+    // Dynamic route: DELETE /api/friends/:friendId
+    "/api/friends/:friendId": {
+      DELETE: async (req) => {
+        try {
+          const friendId = req.params.friendId;
+          const userId = getUserIdFromAuth(req);
+          
+          friendshipService.removeFriend(userId, friendId);
+
+          return Response.json({ success: true, data: { success: true } }, { headers: corsHeaders });
+        } catch (error) {
+          return handleError(error);
+        }
+      },
+    },
+    
+    // Message routes
+    "/api/messages": {
+      POST: async (req) => {
+        try {
+          const userId = getUserIdFromAuth(req);
+          const body = await req.json() as { recipientId: string; text: string };
+          
+          if (!body.recipientId) {
+            throw new AppError(400, 'INVALID_INPUT', 'Recipient ID is required');
+          }
+          
+          if (!body.text) {
+            throw new AppError(400, 'INVALID_INPUT', 'Message text is required');
+          }
+          
+          const message = await messageService.createMessage(userId, body.recipientId, body.text);
+
+          return Response.json({
+            success: true,
+            data: {
+              messageId: message.id,
+              timestamp: message.createdAt.toISOString(),
+            },
+          }, { status: 201, headers: corsHeaders });
+        } catch (error) {
+          return handleError(error);
+        }
+      },
+    },
+    
+    // Dynamic route: GET /api/messages/:friendId
+    "/api/messages/:friendId": {
+      GET: async (req) => {
+        try {
+          const friendId = req.params.friendId;
+          const userId = getUserIdFromAuth(req);
+          const url = new URL(req.url);
+          
+          const limitParam = url.searchParams.get('limit');
+          const limit = limitParam ? parseInt(limitParam, 10) : 50;
+          
+          if (isNaN(limit) || limit < 1 || limit > 100) {
+            throw new AppError(400, 'INVALID_INPUT', 'Limit must be between 1 and 100');
+          }
+          
+          const messages = messageService.getMessageHistory(userId, friendId, limit);
+          const friend = userService.getUserById(friendId);
+          const user = userService.getUserById(userId);
+          
+          const messagesWithNames = messages.map(msg => ({
+            id: msg.id,
+            senderId: msg.senderId,
+            recipientId: msg.recipientId,
+            text: msg.text,
+            isRead: msg.isRead,
+            timestamp: msg.createdAt.toISOString(),
+            senderDisplayName: msg.senderId === userId 
+              ? (user?.displayName || user?.hexCode || null)
+              : (friend?.displayName || friend?.hexCode || null),
+          }));
+
+          return Response.json({ success: true, data: { messages: messagesWithNames } }, { headers: corsHeaders });
+        } catch (error) {
+          return handleError(error);
+        }
+      },
+    },
+    
+    // Conversations route
+    "/api/conversations": {
+      GET: async (req) => {
+        try {
+          const userId = getUserIdFromAuth(req);
+          
+          const conversations = messageService.getConversationsWithUnread(userId);
+          
+          const conversationsResponse = conversations.map(conv => ({
+            friendId: conv.friendId,
+            friendHexCode: conv.friendHexCode,
+            friendDisplayName: conv.friendDisplayName,
+            unreadCount: conv.unreadCount,
+            lastMessage: conv.lastMessage ? {
+              id: conv.lastMessage.id,
+              senderId: conv.lastMessage.senderId,
+              text: conv.lastMessage.text,
+              timestamp: conv.lastMessage.createdAt.toISOString(),
+            } : null,
+          }));
+
+          return Response.json({ success: true, data: { conversations: conversationsResponse } }, { headers: corsHeaders });
+        } catch (error) {
+          return handleError(error);
+        }
+      },
+    },
+  },
+  
+  // Handle OPTIONS preflight and unmatched routes
+  fetch(req) {
     const method = req.method;
 
-    // CORS headers
-    const corsHeaders = {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    };
-
-    // Handle OPTIONS preflight
+    // Handle OPTIONS preflight for all routes
     if (method === 'OPTIONS') {
       return new Response(null, { headers: corsHeaders });
     }
 
-    try {
-      // Health check
-      if (path === '/health' && method === 'GET') {
-        return new Response(JSON.stringify({ status: 'ok' }), {
-          headers: { 'Content-Type': 'application/json', ...corsHeaders },
-        });
-      }
-
-      // Queue metrics
-      if (path === '/api/queue/metrics' && method === 'GET') {
-        const { getQueueMetrics } = await import('./queue/notificationQueue');
-        const metrics = await getQueueMetrics();
-
-        const response: ApiResponse<typeof metrics> = {
-          success: true,
-          data: metrics,
-        };
-
-        return new Response(JSON.stringify(response), {
-          headers: { 'Content-Type': 'application/json', ...corsHeaders },
-        });
-      }
-
-      // POST /api/users/register
-      if (path === '/api/users/register' && method === 'POST') {
-        const body = await req.json() as RegisterUserRequest;
-        const result = userService.registerUser(body.deviceToken);
-
-        const response: ApiResponse<typeof result> = {
-          success: true,
-          data: result,
-        };
-
-        return new Response(JSON.stringify(response), {
-          status: 201,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders },
-        });
-      }
-
-      // GET /api/users/me
-      if (path === '/api/users/me' && method === 'GET') {
-        const userId = getUserIdFromAuth(req);
-        const user = userService.getUserById(userId);
-
-        const response: ApiResponse<typeof user> = {
-          success: true,
-          data: user,
-        };
-
-        return new Response(JSON.stringify(response), {
-          headers: { 'Content-Type': 'application/json', ...corsHeaders },
-        });
-      }
-
-      // PUT /api/users/status
-      if (path === '/api/users/status' && method === 'PUT') {
-        const userId = getUserIdFromAuth(req);
-        const body = await req.json() as { status: 'online' | 'offline' };
-        
-        userService.updateUserStatus(userId, body.status);
-
-        // Broadcast status change to all friends (silent notifications)
-        const user = userService.getUserById(userId);
-        const friends = friendshipService.getUserFriends(userId);
-        await notificationService.broadcastStatusToFriends(friends, user.hexCode, body.status);
-
-        const response: ApiResponse<{ success: boolean }> = {
-          success: true,
-          data: { success: true },
-        };
-
-        return new Response(JSON.stringify(response), {
-          headers: { 'Content-Type': 'application/json', ...corsHeaders },
-        });
-      }
-
-      // POST /api/friends/request
-      if (path === '/api/friends/request' && method === 'POST') {
-        const userId = getUserIdFromAuth(req);
-        const body = await req.json() as SendFriendRequestRequest;
-        
-        const request = friendshipService.sendFriendRequest(userId, body.toHexCode);
-
-        // Send notification to recipient
-        const sender = userService.getUserById(userId);
-        const recipient = userService.getUserByHexCode(body.toHexCode.toUpperCase());
-        if (recipient) {
-          await notificationService.notifyFriendRequest(recipient, sender.hexCode, request.id);
-        }
-
-        const response: ApiResponse<typeof request> = {
-          success: true,
-          data: request,
-        };
-
-        return new Response(JSON.stringify(response), {
-          status: 201,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders },
-        });
-      }
-
-      // GET /api/friends/requests/pending
-      if (path === '/api/friends/requests/pending' && method === 'GET') {
-        const userId = getUserIdFromAuth(req);
-        const requests = friendshipService.getPendingRequests(userId);
-
-        const response: ApiResponse<{ requests: typeof requests }> = {
-          success: true,
-          data: { requests },
-        };
-
-        return new Response(JSON.stringify(response), {
-          headers: { 'Content-Type': 'application/json', ...corsHeaders },
-        });
-      }
-
-      // POST /api/friends/requests/:id/accept
-      if (path.match(/^\/api\/friends\/requests\/[^/]+\/accept$/) && method === 'POST') {
-        const userId = getUserIdFromAuth(req);
-        const pathParts = path.split('/');
-        const requestId = pathParts[4];
-        
-        if (!requestId) {
-          throw new AppError(400, 'INVALID_INPUT', 'Request ID is required');
-        }
-        
-        const friend = friendshipService.acceptFriendRequest(requestId, userId);
-
-        // Notify the requester that their request was accepted
-        const accepter = userService.getUserById(userId);
-        await notificationService.notifyFriendRequestAccepted(friend, accepter.hexCode);
-
-        const response: ApiResponse<{ friend: typeof friend }> = {
-          success: true,
-          data: { friend },
-        };
-
-        return new Response(JSON.stringify(response), {
-          headers: { 'Content-Type': 'application/json', ...corsHeaders },
-        });
-      }
-
-      // POST /api/friends/requests/:id/reject
-      if (path.match(/^\/api\/friends\/requests\/[^/]+\/reject$/) && method === 'POST') {
-        const userId = getUserIdFromAuth(req);
-        const pathParts = path.split('/');
-        const requestId = pathParts[4];
-        
-        if (!requestId) {
-          throw new AppError(400, 'INVALID_INPUT', 'Request ID is required');
-        }
-        
-        friendshipService.rejectFriendRequest(requestId, userId);
-
-        const response: ApiResponse<{ success: boolean }> = {
-          success: true,
-          data: { success: true },
-        };
-
-        return new Response(JSON.stringify(response), {
-          headers: { 'Content-Type': 'application/json', ...corsHeaders },
-        });
-      }
-
-      // GET /api/friends
-      if (path === '/api/friends' && method === 'GET') {
-        const userId = getUserIdFromAuth(req);
-        const friends = friendshipService.getUserFriends(userId);
-
-        const response: ApiResponse<{ friends: typeof friends }> = {
-          success: true,
-          data: { friends },
-        };
-
-        return new Response(JSON.stringify(response), {
-          headers: { 'Content-Type': 'application/json', ...corsHeaders },
-        });
-      }
-
-      // DELETE /api/friends/:friendId
-      if (path.match(/^\/api\/friends\/[^/]+$/) && method === 'DELETE') {
-        const userId = getUserIdFromAuth(req);
-        const pathParts = path.split('/');
-        const friendId = pathParts[3];
-        
-        if (!friendId) {
-          throw new AppError(400, 'INVALID_INPUT', 'Friend ID is required');
-        }
-        
-        friendshipService.removeFriend(userId, friendId);
-
-        const response: ApiResponse<{ success: boolean }> = {
-          success: true,
-          data: { success: true },
-        };
-
-        return new Response(JSON.stringify(response), {
-          headers: { 'Content-Type': 'application/json', ...corsHeaders },
-        });
-      }
-
-      // 404 Not Found
-      throw new AppError(404, 'NOT_FOUND', 'Endpoint not found');
-
-    } catch (error) {
-      const errorResponse = handleError(error);
-      // Add CORS headers to error responses
-      const headers = new Headers(errorResponse.headers);
-      Object.entries(corsHeaders).forEach(([key, value]) => {
-        headers.set(key, value);
-      });
-      
-      return new Response(errorResponse.body, {
-        status: errorResponse.status,
-        headers,
-      });
-    }
+    // 404 Not Found
+    return Response.json({
+      success: false,
+      error: {
+        code: 'NOT_FOUND',
+        message: 'Endpoint not found',
+      },
+    }, { status: 404, headers: corsHeaders });
   },
 });
 

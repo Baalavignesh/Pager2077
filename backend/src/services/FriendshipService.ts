@@ -6,6 +6,15 @@ import { FriendshipRepository } from '../repositories/FriendshipRepository';
 import type { FriendRequest, User } from '../models';
 import { AppError } from '../utils/errors';
 
+/**
+ * Friend request with requester's display name
+ * Requirements: 13.2
+ */
+export interface FriendRequestWithDisplayName extends FriendRequest {
+  fromUserHexCode: string;
+  fromUserDisplayName: string | null;
+}
+
 export class FriendshipService {
   constructor(
     private userRepo: UserRepository,
@@ -52,6 +61,23 @@ export class FriendshipService {
    */
   getPendingRequests(userId: string): FriendRequest[] {
     return this.friendshipRepo.getPendingRequests(userId);
+  }
+
+  /**
+   * Get pending friend requests with requester's display name
+   * Requirements: 13.2 - Include requester's display name in response
+   */
+  getPendingRequestsWithDisplayNames(userId: string): FriendRequestWithDisplayName[] {
+    const requests = this.friendshipRepo.getPendingRequests(userId);
+    
+    return requests.map(request => {
+      const fromUser = this.userRepo.getUserById(request.fromUserId);
+      return {
+        ...request,
+        fromUserHexCode: fromUser?.hexCode || '',
+        fromUserDisplayName: fromUser?.displayName || null,
+      };
+    });
   }
 
   /**

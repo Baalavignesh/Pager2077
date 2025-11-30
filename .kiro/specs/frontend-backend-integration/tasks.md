@@ -64,28 +64,28 @@
 
 ## Phase 2: Backend API Endpoints
 
-- [ ] 6. Add messaging API endpoints
-  - [ ] 6.1 Add POST /api/messages endpoint in backend/src/index.ts
+- [x] 6. Add messaging API endpoints
+  - [x] 6.1 Add POST /api/messages endpoint in backend/src/index.ts
     - Validate sender and recipient are friends
     - Create message via MessageService
     - Return message ID and timestamp
     - _Requirements: 15.1_
-  - [ ] 6.2 Add GET /api/messages/:friendId endpoint
+  - [x] 6.2 Add GET /api/messages/:friendId endpoint
     - Fetch message history with limit parameter
     - Include sender display names in response
     - _Requirements: 15.2, 13.3_
-  - [ ] 6.3 Add GET /api/conversations endpoint
+  - [x] 6.3 Add GET /api/conversations endpoint
     - Return conversations with unread messages
     - Include friend display names
     - _Requirements: 10.1, 10.2_
 
-- [ ] 7. Add user management API endpoints
-  - [ ] 7.1 Add PUT /api/users/display-name endpoint
+- [x] 7. Add user management API endpoints
+  - [x] 7.1 Add PUT /api/users/display-name endpoint
     - Validate display name format
     - Update user's display name
     - Return updated user data
     - _Requirements: 17.1, 17.2, 17.3_
-  - [ ] 7.2 Add PUT /api/users/live-activity-token endpoint
+  - [x] 7.2 Add PUT /api/users/live-activity-token endpoint
     - Store Live Activity push token
     - Allow null to clear token
     - _Requirements: 16.1_
@@ -93,18 +93,18 @@
     - **Property 6: Live Activity Token Storage Round Trip**
     - **Validates: Requirements 9.3, 16.1, 16.2**
 
-- [ ] 8. Enhance existing API responses with display names
-  - [ ] 8.1 Update GET /api/friends to include display names
+- [x] 8. Enhance existing API responses with display names
+  - [x] 8.1 Update GET /api/friends to include display names
     - Add displayName field to each friend in response
     - _Requirements: 13.1_
-  - [ ] 8.2 Update GET /api/friends/requests/pending to include display names
+  - [x] 8.2 Update GET /api/friends/requests/pending to include display names
     - Add displayName field for each requester
     - _Requirements: 13.2_
   - [ ]* 8.3 Write property test for display names in API responses
     - **Property 8: Display Name in API Responses**
     - **Validates: Requirements 13.1, 13.2, 13.3**
 
-- [ ] 9. Checkpoint - Ensure all tests pass
+- [-] 9. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Phase 3: Frontend API Client and Services
