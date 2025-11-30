@@ -20,8 +20,8 @@ export function useNotifications({
   onNotificationReceived,
   onNotificationTapped,
 }: UseNotificationsProps = {}) {
-  const notificationListener = useRef<Notifications.Subscription>();
-  const responseListener = useRef<Notifications.Subscription>();
+  const notificationListener = useRef<Notifications.Subscription | undefined>(undefined);
+  const responseListener = useRef<Notifications.Subscription | undefined>(undefined);
 
   useEffect(() => {
     // Register for push notifications

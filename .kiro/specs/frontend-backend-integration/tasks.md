@@ -19,8 +19,8 @@
     - Define Conversation type for unread messages
     - _Requirements: 15.1, 15.2_
 
-- [ ] 2. Implement Message Repository
-  - [ ] 2.1 Create backend/src/repositories/MessageRepository.ts
+- [x] 2. Implement Message Repository
+  - [x] 2.1 Create backend/src/repositories/MessageRepository.ts
     - Implement create() method for new messages
     - Implement getByConversation() for message history
     - Implement getUnreadCount() for unread message counts
@@ -30,8 +30,8 @@
     - **Property 4: Message Creation and Retrieval**
     - **Validates: Requirements 6.1, 15.1, 15.2**
 
-- [ ] 3. Implement Message Service
-  - [ ] 3.1 Create backend/src/services/MessageService.ts
+- [x] 3. Implement Message Service
+  - [x] 3.1 Create backend/src/services/MessageService.ts
     - Implement createMessage() with notification logic
     - Implement getMessageHistory() for fetching messages
     - Implement getConversationsWithUnread() for unread list
@@ -41,14 +41,14 @@
     - **Property 5: Live Activity Priority Over Push Notifications**
     - **Validates: Requirements 8.1, 8.5, 9.4, 15.3, 15.4**
 
-- [ ] 4. Enhance User Repository and Service
-  - [ ] 4.1 Update UserRepository with display name and LA token methods
+- [x] 4. Enhance User Repository and Service
+  - [x] 4.1 Update UserRepository with display name and LA token methods
     - Add updateDisplayName() method
     - Add updateLiveActivityToken() method
     - Add getLiveActivityToken() method
     - Update mapRowToUser() to include new fields
     - _Requirements: 11.2, 16.1, 17.1_
-  - [ ] 4.2 Update UserService with display name validation
+  - [x] 4.2 Update UserService with display name validation
     - Add updateDisplayName() with validation (1-20 chars, valid characters)
     - Add updateLiveActivityToken() method
     - _Requirements: 11.2, 16.1, 17.1, 17.3_
@@ -59,7 +59,7 @@
     - **Property 10: Display Name Validation**
     - **Validates: Requirements 17.3**
 
-- [ ] 5. Checkpoint - Ensure all tests pass
+- [x] 5. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Phase 2: Backend API Endpoints

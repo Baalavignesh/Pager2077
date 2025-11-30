@@ -79,7 +79,8 @@ export class APNSProvider {
       
       if (result.failed.length > 0) {
         console.error('❌ APNS send failed:', result.failed);
-        throw new Error(`APNS send failed: ${result.failed[0].response?.reason}`);
+        const failedItem = result.failed[0];
+        throw new Error(`APNS send failed: ${failedItem?.response?.reason || 'Unknown error'}`);
       }
 
       console.log('✅ Alert notification sent:', notification.deviceToken.substring(0, 10) + '...');
@@ -102,7 +103,7 @@ export class APNSProvider {
     
     // Silent notification settings
     note.contentAvailable = true;
-    note.pushType = 'background';
+    (note as any).pushType = 'background'; // Type assertion for pushType
     note.priority = 5; // Lower priority for background updates
     note.topic = process.env.APNS_BUNDLE_ID || 'com.pager2077.app';
     note.payload = notification.data || {};
@@ -112,7 +113,8 @@ export class APNSProvider {
       
       if (result.failed.length > 0) {
         console.error('❌ APNS silent send failed:', result.failed);
-        throw new Error(`APNS send failed: ${result.failed[0].response?.reason}`);
+        const failedItem = result.failed[0];
+        throw new Error(`APNS send failed: ${failedItem?.response?.reason || 'Unknown error'}`);
       }
 
       console.log('✅ Silent notification sent:', notification.deviceToken.substring(0, 10) + '...');

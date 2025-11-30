@@ -52,7 +52,7 @@ export const IndividualChatScreen = forwardRef<IndividualChatScreenHandle, Indiv
   displayNameMap = {},
 }, ref) => {
   // Auth context
-  const { token, hexCode } = useAuth();
+  const { authToken: token, hexCode } = useAuth();
 
   // State management
   const [messageText, setMessageText] = useState('');

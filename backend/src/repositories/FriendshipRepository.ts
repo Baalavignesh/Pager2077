@@ -5,6 +5,13 @@ import type { Database } from 'bun:sqlite';
 import { randomBytes } from 'crypto';
 import type { FriendRequest, Friendship, User } from '../models';
 
+/**
+ * Helper to sort two user IDs consistently (smaller ID first)
+ */
+function sortUserIds(userId1: string, userId2: string): [string, string] {
+  return userId1 < userId2 ? [userId1, userId2] : [userId2, userId1];
+}
+
 export class FriendshipRepository {
   constructor(private db: Database) {}
 
@@ -98,7 +105,7 @@ export class FriendshipRepository {
     const now = new Date().toISOString();
 
     // Ensure consistent ordering (smaller ID first)
-    const [smallerId, largerId] = [userId1, userId2].sort();
+    const [smallerId, largerId] = sortUserIds(userId1, userId2);
 
     const stmt = this.db.prepare(`
       INSERT INTO friendships (id, user_id_1, user_id_2, created_at)
@@ -119,7 +126,7 @@ export class FriendshipRepository {
    * Check if friendship exists between two users
    */
   friendshipExists(userId1: string, userId2: string): boolean {
-    const [smallerId, largerId] = [userId1, userId2].sort();
+    const [smallerId, largerId] = sortUserIds(userId1, userId2);
 
     const stmt = this.db.prepare(`
       SELECT COUNT(*) as count FROM friendships 
@@ -151,7 +158,7 @@ export class FriendshipRepository {
    * Delete friendship
    */
   deleteFriendship(userId1: string, userId2: string): void {
-    const [smallerId, largerId] = [userId1, userId2].sort();
+    const [smallerId, largerId] = sortUserIds(userId1, userId2);
 
     const stmt = this.db.prepare(`
       DELETE FROM friendships 
@@ -183,6 +190,8 @@ export class FriendshipRepository {
       id: row.id,
       hexCode: row.hex_code,
       deviceToken: row.device_token,
+      displayName: row.display_name || null,
+      liveActivityToken: row.live_activity_token || null,
       status: row.status,
       lastSeen: new Date(row.last_seen),
       createdAt: new Date(row.created_at),

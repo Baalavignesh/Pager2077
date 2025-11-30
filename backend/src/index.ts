@@ -234,7 +234,12 @@ const server = Bun.serve({
       // POST /api/friends/requests/:id/accept
       if (path.match(/^\/api\/friends\/requests\/[^/]+\/accept$/) && method === 'POST') {
         const userId = getUserIdFromAuth(req);
-        const requestId = path.split('/')[4];
+        const pathParts = path.split('/');
+        const requestId = pathParts[4];
+        
+        if (!requestId) {
+          throw new AppError(400, 'INVALID_INPUT', 'Request ID is required');
+        }
         
         const friend = friendshipService.acceptFriendRequest(requestId, userId);
 
@@ -255,7 +260,12 @@ const server = Bun.serve({
       // POST /api/friends/requests/:id/reject
       if (path.match(/^\/api\/friends\/requests\/[^/]+\/reject$/) && method === 'POST') {
         const userId = getUserIdFromAuth(req);
-        const requestId = path.split('/')[4];
+        const pathParts = path.split('/');
+        const requestId = pathParts[4];
+        
+        if (!requestId) {
+          throw new AppError(400, 'INVALID_INPUT', 'Request ID is required');
+        }
         
         friendshipService.rejectFriendRequest(requestId, userId);
 
@@ -287,7 +297,12 @@ const server = Bun.serve({
       // DELETE /api/friends/:friendId
       if (path.match(/^\/api\/friends\/[^/]+$/) && method === 'DELETE') {
         const userId = getUserIdFromAuth(req);
-        const friendId = path.split('/')[3];
+        const pathParts = path.split('/');
+        const friendId = pathParts[3];
+        
+        if (!friendId) {
+          throw new AppError(400, 'INVALID_INPUT', 'Friend ID is required');
+        }
         
         friendshipService.removeFriend(userId, friendId);
 

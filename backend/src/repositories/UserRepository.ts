@@ -54,6 +54,8 @@ export class UserRepository {
       id,
       hexCode,
       deviceToken,
+      displayName: null,
+      liveActivityToken: null,
       status: 'offline',
       lastSeen: new Date(now),
       createdAt: new Date(now),
@@ -132,6 +134,48 @@ export class UserRepository {
   }
 
   /**
+   * Update user's display name
+   */
+  updateDisplayName(userId: string, displayName: string | null): void {
+    const now = new Date().toISOString();
+    const stmt = this.db.prepare(`
+      UPDATE users 
+      SET display_name = ?, updated_at = ?
+      WHERE id = ?
+    `);
+
+    stmt.run(displayName, now, userId);
+  }
+
+  /**
+   * Update user's Live Activity token
+   */
+  updateLiveActivityToken(userId: string, liveActivityToken: string | null): void {
+    const now = new Date().toISOString();
+    const stmt = this.db.prepare(`
+      UPDATE users 
+      SET live_activity_token = ?, updated_at = ?
+      WHERE id = ?
+    `);
+
+    stmt.run(liveActivityToken, now, userId);
+  }
+
+  /**
+   * Get user's Live Activity token
+   */
+  getLiveActivityToken(userId: string): string | null {
+    const stmt = this.db.prepare('SELECT live_activity_token FROM users WHERE id = ?');
+    const row = stmt.get(userId) as { live_activity_token: string | null } | undefined;
+
+    if (!row) {
+      return null;
+    }
+
+    return row.live_activity_token;
+  }
+
+  /**
    * Map database row to User object
    */
   private mapRowToUser(row: any): User {
@@ -139,6 +183,8 @@ export class UserRepository {
       id: row.id,
       hexCode: row.hex_code,
       deviceToken: row.device_token,
+      displayName: row.display_name || null,
+      liveActivityToken: row.live_activity_token || null,
       status: row.status,
       lastSeen: new Date(row.last_seen),
       createdAt: new Date(row.created_at),

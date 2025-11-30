@@ -11,6 +11,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
@@ -113,5 +115,9 @@ export async function clearAllNotifications(): Promise<void> {
 export function getNotificationData(
   notification: Notifications.Notification
 ): NotificationData | null {
-  return notification.request.content.data as NotificationData;
+  const data = notification.request.content.data;
+  if (!data || typeof data !== 'object' || !('type' in data)) {
+    return null;
+  }
+  return data as unknown as NotificationData;
 }
