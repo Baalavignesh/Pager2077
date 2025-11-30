@@ -2,6 +2,7 @@
 export interface User {
   id: string;
   hexCode: string;
+  displayName: string | null;
   status: 'online' | 'offline';
 }
 
@@ -9,8 +10,10 @@ export interface User {
 export interface Friend {
   id: string;
   hexCode: string;
+  displayName: string | null;
   status: 'online' | 'offline';
-  friendshipId: string;
+  lastSeen?: string;
+  friendshipId?: string;
 }
 
 // Friend Request Types
@@ -19,9 +22,24 @@ export interface FriendRequest {
   fromUser: {
     id: string;
     hexCode: string;
+    displayName?: string | null;
   };
   status: 'pending' | 'accepted' | 'rejected';
   createdAt: string;
+}
+
+// Conversation Types
+export interface Conversation {
+  friendId: string;
+  friendHexCode: string;
+  friendDisplayName: string | null;
+  unreadCount: number;
+  lastMessage: {
+    id: string;
+    senderId: string;
+    text: string;
+    timestamp: string;
+  } | null;
 }
 
 // Voice Note Types

@@ -15,42 +15,53 @@ const KEYS = {
 
 /**
  * Save user credentials after registration
+ * @param displayName - Optional display name (can be set later during onboarding)
  */
 export async function saveUserCredentials(
   userId: string,
   hexCode: string,
   authToken: string,
-  deviceToken: string
+  deviceToken: string,
+  displayName?: string | null
 ): Promise<void> {
-  await Promise.all([
+  const saveOperations = [
     SecureStore.setItemAsync(KEYS.USER_ID, userId),
     SecureStore.setItemAsync(KEYS.HEX_CODE, hexCode),
     SecureStore.setItemAsync(KEYS.AUTH_TOKEN, authToken),
     SecureStore.setItemAsync(KEYS.DEVICE_TOKEN, deviceToken),
-  ]);
+  ];
+
+  // Save display name if provided
+  if (displayName) {
+    saveOperations.push(SecureStore.setItemAsync(KEYS.DISPLAY_NAME, displayName));
+  }
+
+  await Promise.all(saveOperations);
 }
 
 /**
- * Get stored user credentials
+ * Get stored user credentials including display name
  */
 export async function getUserCredentials(): Promise<{
   userId: string | null;
   hexCode: string | null;
   authToken: string | null;
   deviceToken: string | null;
+  displayName: string | null;
 }> {
-  const [userId, hexCode, authToken, deviceToken] = await Promise.all([
+  const [userId, hexCode, authToken, deviceToken, displayName] = await Promise.all([
     SecureStore.getItemAsync(KEYS.USER_ID),
     SecureStore.getItemAsync(KEYS.HEX_CODE),
     SecureStore.getItemAsync(KEYS.AUTH_TOKEN),
     SecureStore.getItemAsync(KEYS.DEVICE_TOKEN),
+    SecureStore.getItemAsync(KEYS.DISPLAY_NAME),
   ]);
 
-  return { userId, hexCode, authToken, deviceToken };
+  return { userId, hexCode, authToken, deviceToken, displayName };
 }
 
 /**
- * Clear all stored credentials (logout)
+ * Clear all stored credentials including display name (logout)
  */
 export async function clearUserCredentials(): Promise<void> {
   await Promise.all([
@@ -58,6 +69,7 @@ export async function clearUserCredentials(): Promise<void> {
     SecureStore.deleteItemAsync(KEYS.HEX_CODE),
     SecureStore.deleteItemAsync(KEYS.AUTH_TOKEN),
     SecureStore.deleteItemAsync(KEYS.DEVICE_TOKEN),
+    SecureStore.deleteItemAsync(KEYS.DISPLAY_NAME),
   ]);
 }
 

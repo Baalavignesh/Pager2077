@@ -221,4 +221,42 @@ class LiveActivityBridge: NSObject {
             resolve(nil)
         }
     }
+    
+    /// Get the push token for Live Activity remote start/update
+    /// This token is used by the backend to send push-to-start notifications
+    /// Requirements: 9.2, 9.3
+    @objc
+    func getPushToken(_ resolve: @escaping RCTPromiseResolveBlock,
+                      reject: @escaping RCTPromiseRejectBlock) {
+        
+        guard #available(iOS 17.2, *) else {
+            // Push tokens for Live Activities require iOS 17.2+
+            print("[LiveActivityBridge] getPushToken: iOS version < 17.2, push tokens not supported")
+            resolve(nil)
+            return
+        }
+        
+        guard ActivityAuthorizationInfo().areActivitiesEnabled else {
+            print("[LiveActivityBridge] getPushToken: Live Activities are not enabled")
+            resolve(nil)
+            return
+        }
+        
+        Task {
+            do {
+                // Request a push-to-start token for the activity type
+                // This allows the backend to start a Live Activity remotely
+                for await data in Activity<PagerActivityAttributes>.pushToStartTokenUpdates {
+                    let tokenString = data.map { String(format: "%02x", $0) }.joined()
+                    print("[LiveActivityBridge] Got push-to-start token: \(tokenString.prefix(20))...")
+                    resolve(tokenString)
+                    return
+                }
+                
+                // If we get here, no token was available
+                print("[LiveActivityBridge] getPushToken: No push token available")
+                resolve(nil)
+            }
+        }
+    }
 }

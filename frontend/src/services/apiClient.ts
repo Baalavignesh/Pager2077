@@ -1,7 +1,7 @@
 /**
  * API Client - Backend communication
  */
-import type { ApiResponse, RegistrationResponse, User } from '../types';
+import type { ApiResponse, RegistrationResponse, User, Friend, FriendRequest, Conversation } from '../types';
 
 const API_URL = __DEV__ 
   ? 'http://localhost:3000' 
@@ -177,7 +177,7 @@ export async function getMessageHistory(
   recipientId: string;
   text: string;
   timestamp: string;
-  createdAt: string;
+  senderDisplayName: string | null;
 }>> {
   const response = await fetch(`${API_URL}/api/messages/${friendId}?limit=${limit}`, {
     method: 'GET',
@@ -193,4 +193,220 @@ export async function getMessageHistory(
   }
 
   return data.data.messages;
+}
+
+// ============================================
+// Friends API Methods
+// Requirements: 3.1, 4.1, 5.1, 5.3, 5.4
+// ============================================
+
+/**
+ * Get friends list
+ * Requirements: 3.1 - Fetch friends list from backend API
+ */
+export async function getFriends(token: string): Promise<Friend[]> {
+  const response = await fetch(`${API_URL}/api/friends`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  const data: ApiResponse<{ friends: Friend[] }> = await response.json();
+
+  if (!data.success || !data.data) {
+    throw new Error(data.error?.message || 'Failed to get friends list');
+  }
+
+  return data.data.friends;
+}
+
+/**
+ * Send friend request
+ * Requirements: 4.1 - Send friend request to backend
+ */
+export async function sendFriendRequest(
+  token: string,
+  hexCode: string
+): Promise<FriendRequest> {
+  const response = await fetch(`${API_URL}/api/friends/request`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ toHexCode: hexCode }),
+  });
+
+  const data: ApiResponse<FriendRequest> = await response.json();
+
+  if (!data.success || !data.data) {
+    // Map backend error codes to user-friendly messages
+    const errorCode = data.error?.code;
+    if (errorCode === 'USER_NOT_FOUND') {
+      throw new Error('USER_NOT_FOUND');
+    }
+    if (errorCode === 'DUPLICATE_REQUEST') {
+      throw new Error('REQUEST_ALREADY_SENT');
+    }
+    if (errorCode === 'FRIENDSHIP_EXISTS') {
+      throw new Error('ALREADY_FRIENDS');
+    }
+    throw new Error(data.error?.message || 'Failed to send friend request');
+  }
+
+  return data.data;
+}
+
+/**
+ * Get pending friend requests
+ * Requirements: 5.1 - Fetch pending requests from backend
+ */
+export async function getPendingRequests(token: string): Promise<FriendRequest[]> {
+  const response = await fetch(`${API_URL}/api/friends/requests/pending`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  const data: ApiResponse<{ requests: FriendRequest[] }> = await response.json();
+
+  if (!data.success || !data.data) {
+    throw new Error(data.error?.message || 'Failed to get pending requests');
+  }
+
+  return data.data.requests;
+}
+
+/**
+ * Accept friend request
+ * Requirements: 5.3 - Send accept request to backend
+ */
+export async function acceptFriendRequest(
+  token: string,
+  requestId: string
+): Promise<Friend> {
+  const response = await fetch(`${API_URL}/api/friends/requests/${requestId}/accept`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  const data: ApiResponse<{ friend: Friend }> = await response.json();
+
+  if (!data.success || !data.data) {
+    throw new Error(data.error?.message || 'Failed to accept friend request');
+  }
+
+  return data.data.friend;
+}
+
+/**
+ * Reject friend request
+ * Requirements: 5.4 - Send reject request to backend
+ */
+export async function rejectFriendRequest(
+  token: string,
+  requestId: string
+): Promise<void> {
+  const response = await fetch(`${API_URL}/api/friends/requests/${requestId}/reject`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  const data: ApiResponse<{ success: boolean }> = await response.json();
+
+  if (!data.success) {
+    throw new Error(data.error?.message || 'Failed to reject friend request');
+  }
+}
+
+// ============================================
+// Conversations API Methods
+// Requirements: 10.1
+// ============================================
+
+/**
+ * Get conversations with unread messages
+ * Requirements: 10.1 - Fetch conversations with unread messages from backend
+ */
+export async function getConversations(token: string): Promise<Conversation[]> {
+  const response = await fetch(`${API_URL}/api/conversations`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  const data: ApiResponse<{ conversations: Conversation[] }> = await response.json();
+
+  if (!data.success || !data.data) {
+    throw new Error(data.error?.message || 'Failed to get conversations');
+  }
+
+  return data.data.conversations;
+}
+
+// ============================================
+// User Management API Methods
+// Requirements: 11.1, 12.1, 9.3
+// ============================================
+
+/**
+ * Update user display name
+ * Requirements: 11.1, 12.1 - Send display name to backend
+ */
+export async function updateDisplayName(
+  token: string,
+  displayName: string
+): Promise<{ userId: string; hexCode: string; displayName: string | null }> {
+  const response = await fetch(`${API_URL}/api/users/display-name`, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ displayName }),
+  });
+
+  const data: ApiResponse<{ userId: string; hexCode: string; displayName: string | null }> = await response.json();
+
+  if (!data.success || !data.data) {
+    // Map backend error codes to user-friendly messages
+    const errorCode = data.error?.code;
+    if (errorCode === 'INVALID_DISPLAY_NAME') {
+      throw new Error('INVALID_NAME');
+    }
+    throw new Error(data.error?.message || 'Failed to update display name');
+  }
+
+  return data.data;
+}
+
+/**
+ * Update Live Activity token
+ * Requirements: 9.3 - Send Live Activity push token to backend for storage
+ */
+export async function updateLiveActivityToken(
+  token: string,
+  liveActivityToken: string | null
+): Promise<void> {
+  const response = await fetch(`${API_URL}/api/users/live-activity-token`, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ liveActivityToken }),
+  });
+
+  const data: ApiResponse<{ success: boolean }> = await response.json();
+
+  if (!data.success) {
+    throw new Error(data.error?.message || 'Failed to update Live Activity token');
+  }
 }

@@ -232,6 +232,76 @@ export async function getCurrentActivityId(): Promise<string | null> {
   }
 }
 
+/**
+ * Get the push token for Live Activity remote start/update.
+ * This token is used by the backend to send push-to-start notifications.
+ * 
+ * Requirements: 9.2, 9.3
+ * 
+ * Note: Push tokens for Live Activities require iOS 17.2+.
+ * Returns null on Android/web, iOS < 17.2, or if Live Activities are disabled.
+ * 
+ * @returns The push token string or null if not available
+ */
+export async function getPushToken(): Promise<string | null> {
+  if (Platform.OS !== 'ios' || !LiveActivityBridge) {
+    console.log('[LiveActivity] getPushToken: Not iOS or bridge not available');
+    return null;
+  }
+  
+  try {
+    // First check if Live Activities are enabled
+    const enabled = await areActivitiesEnabled();
+    if (!enabled) {
+      console.log('[LiveActivity] getPushToken: Live Activities not enabled');
+      return null;
+    }
+    
+    const token = await LiveActivityBridge.getPushToken();
+    if (token) {
+      console.log('[LiveActivity] Got push token:', token.substring(0, 20) + '...');
+    } else {
+      console.log('[LiveActivity] No push token available (requires iOS 17.2+)');
+    }
+    return token;
+  } catch (error) {
+    console.error('[LiveActivity] Failed to get push token:', error);
+    return null;
+  }
+}
+
+/**
+ * Register the Live Activity push token with the backend.
+ * This allows the backend to send push-to-start notifications for new messages.
+ * 
+ * Requirements: 9.2, 9.3
+ * 
+ * @param authToken - The user's authentication token
+ * @returns true if registration succeeded, false otherwise
+ */
+export async function registerPushTokenWithBackend(authToken: string): Promise<boolean> {
+  try {
+    // Get the push token from the native module
+    const pushToken = await getPushToken();
+    
+    if (!pushToken) {
+      console.log('[LiveActivity] No push token to register');
+      return false;
+    }
+    
+    // Import the API client dynamically to avoid circular dependencies
+    const { updateLiveActivityToken } = await import('./apiClient');
+    
+    // Send the token to the backend
+    await updateLiveActivityToken(authToken, pushToken);
+    console.log('[LiveActivity] Successfully registered push token with backend');
+    return true;
+  } catch (error) {
+    console.error('[LiveActivity] Failed to register push token with backend:', error);
+    return false;
+  }
+}
+
 // MARK: - Demo/Testing Helpers
 
 // Demo messages for testing

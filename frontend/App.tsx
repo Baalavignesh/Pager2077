@@ -24,6 +24,7 @@ import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { useNotifications } from './src/hooks/useNotifications';
 import { hasDisplayName, getAllDisplayNameMappings } from './src/services/storageService';
 import { setCurrentUserDisplayName } from './src/services/displayNameService';
+import { areActivitiesEnabled, registerPushTokenWithBackend } from './src/services/liveActivityService';
 
 type Screen = 'main' | 'messages' | 'chat' | 'friends' | 'addFriend' | 'friendRequests' | 'friendRequestConfirmation' | 'myhex' | 'settings' | 'editName' | 'liveActivityDemo';
 
@@ -147,6 +148,46 @@ function AppContent() {
   //     });
   //   }
   // }, [isLoading, isAuthenticated, fontLoaded]);
+
+  // Register Live Activity push token with backend on startup
+  // Requirements: 9.1, 9.2, 9.3
+  const { authToken } = useAuth();
+  
+  useEffect(() => {
+    async function registerLiveActivityToken() {
+      // Only register if authenticated and have an auth token
+      if (!isAuthenticated || !authToken) {
+        console.log('[LiveActivity] Skipping token registration - not authenticated');
+        return;
+      }
+      
+      try {
+        // Check if Live Activities are enabled on this device
+        const enabled = await areActivitiesEnabled();
+        if (!enabled) {
+          console.log('[LiveActivity] Live Activities not enabled on this device');
+          return;
+        }
+        
+        console.log('[LiveActivity] Live Activities enabled, registering push token...');
+        
+        // Register the push token with the backend
+        const success = await registerPushTokenWithBackend(authToken);
+        if (success) {
+          console.log('[LiveActivity] Push token registered successfully');
+        } else {
+          console.log('[LiveActivity] Push token registration failed or not available');
+        }
+      } catch (error) {
+        console.error('[LiveActivity] Error registering push token:', error);
+      }
+    }
+    
+    // Only run after fonts are loaded and auth state is determined
+    if (fontLoaded && !isLoading) {
+      registerLiveActivityToken();
+    }
+  }, [isAuthenticated, authToken, fontLoaded, isLoading]);
 
   // Handle display name set
   const handleDisplayNameSet = async (displayName: string) => {

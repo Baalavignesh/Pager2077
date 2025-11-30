@@ -31,4 +31,7 @@ RCT_EXTERN_METHOD(endAllActivities:(RCTPromiseResolveBlock)resolve
 RCT_EXTERN_METHOD(getCurrentActivityId:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(getPushToken:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+
 @end

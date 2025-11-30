@@ -104,23 +104,23 @@
     - **Property 8: Display Name in API Responses**
     - **Validates: Requirements 13.1, 13.2, 13.3**
 
-- [-] 9. Checkpoint - Ensure all tests pass
+- [x] 9. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Phase 3: Frontend API Client and Services
 
-- [ ] 10. Enhance API client with new endpoints
-  - [ ] 10.1 Add friends API methods to frontend/src/services/apiClient.ts
+- [x] 10. Enhance API client with new endpoints
+  - [x] 10.1 Add friends API methods to frontend/src/services/apiClient.ts
     - Add getFriends() method
     - Add sendFriendRequest() method
     - Add getPendingRequests() method
     - Add acceptFriendRequest() method
     - Add rejectFriendRequest() method
     - _Requirements: 3.1, 4.1, 5.1, 5.3, 5.4_
-  - [ ] 10.2 Add conversations API method
+  - [x] 10.2 Add conversations API method
     - Add getConversations() method for unread messages
     - _Requirements: 10.1_
-  - [ ] 10.3 Add user management API methods
+  - [x] 10.3 Add user management API methods
     - Add updateDisplayName() method
     - Add updateLiveActivityToken() method
     - _Requirements: 11.1, 12.1, 9.3_
@@ -128,25 +128,25 @@
     - **Property 2: Friend Request API Format**
     - **Validates: Requirements 4.1**
 
-- [ ] 11. Enhance Live Activity service
-  - [ ] 11.1 Add push token retrieval to frontend/src/services/liveActivityService.ts
+- [x] 11. Enhance Live Activity service
+  - [x] 11.1 Add push token retrieval to frontend/src/services/liveActivityService.ts
     - Implement getPushToken() to get Live Activity push token
     - Register token with backend on app start
     - _Requirements: 9.2, 9.3_
-  - [ ] 11.2 Update App.tsx to register Live Activity token on startup
+  - [x] 11.2 Update App.tsx to register Live Activity token on startup
     - Check if Live Activities are enabled
     - Get push token and send to backend
     - _Requirements: 9.1, 9.2, 9.3_
 
-- [ ] 12. Enhance storage service
-  - [ ] 12.1 Update frontend/src/services/storageService.ts
+- [x] 12. Enhance storage service
+  - [x] 12.1 Update frontend/src/services/storageService.ts
     - Add display name to credentials storage
     - _Requirements: 1.4, 11.1_
   - [ ]* 12.2 Write property test for credential storage
     - **Property 1: Credential Storage Round Trip**
     - **Validates: Requirements 1.4, 2.1, 2.2**
 
-- [ ] 13. Checkpoint - Ensure all tests pass
+- [x] 13. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Phase 4: Frontend Auth and Display Name Flow
