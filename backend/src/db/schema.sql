@@ -5,6 +5,8 @@ CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY,
   hex_code TEXT UNIQUE NOT NULL,
   device_token TEXT UNIQUE NOT NULL,
+  display_name TEXT,
+  live_activity_token TEXT,
   status TEXT DEFAULT 'offline' CHECK(status IN ('online', 'offline')),
   last_seen TEXT DEFAULT CURRENT_TIMESTAMP,
   created_at TEXT DEFAULT CURRENT_TIMESTAMP,
@@ -63,3 +65,18 @@ CREATE TABLE IF NOT EXISTS voice_notes (
 
 CREATE INDEX IF NOT EXISTS idx_voice_notes_recipient ON voice_notes(recipient_id, status);
 CREATE INDEX IF NOT EXISTS idx_voice_notes_expires ON voice_notes(expires_at);
+
+-- Messages Table
+CREATE TABLE IF NOT EXISTS messages (
+  id TEXT PRIMARY KEY,
+  sender_id TEXT NOT NULL,
+  recipient_id TEXT NOT NULL,
+  text TEXT NOT NULL,
+  is_read INTEGER DEFAULT 0,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (recipient_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_messages_conversation ON messages(sender_id, recipient_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_messages_recipient_unread ON messages(recipient_id, is_read);

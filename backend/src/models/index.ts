@@ -6,6 +6,8 @@ export interface User {
   id: string;
   hexCode: string;
   deviceToken: string;
+  displayName: string | null;
+  liveActivityToken: string | null;
   status: 'online' | 'offline';
   lastSeen: Date;
   createdAt: Date;
@@ -38,6 +40,23 @@ export interface VoiceNote {
   createdAt: Date;
   expiresAt: Date;
   playedAt?: Date;
+}
+
+export interface Message {
+  id: string;
+  senderId: string;
+  recipientId: string;
+  text: string;
+  isRead: boolean;
+  createdAt: Date;
+}
+
+export interface Conversation {
+  friendId: string;
+  friendHexCode: string;
+  friendDisplayName: string | null;
+  lastMessage: Message | null;
+  unreadCount: number;
 }
 
 // API Request/Response Types
