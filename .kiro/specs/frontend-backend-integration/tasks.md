@@ -151,23 +151,23 @@
 
 ## Phase 4: Frontend Auth and Display Name Flow
 
-- [ ] 14. Enhance AuthContext
-  - [ ] 14.1 Update frontend/src/context/AuthContext.tsx
+- [x] 14. Enhance AuthContext
+  - [x] 14.1 Update frontend/src/context/AuthContext.tsx
     - Add displayName to context state
     - Add updateDisplayName() method that calls backend
     - Load display name from stored credentials
     - _Requirements: 11.1, 12.1, 12.3_
-  - [ ] 14.2 Update registration flow to save display name
+  - [x] 14.2 Update registration flow to save display name
     - After name entry, send display name to backend
     - Store display name in secure storage
     - _Requirements: 11.1, 11.2_
 
-- [ ] 15. Update name entry and edit screens
-  - [ ] 15.1 Update frontend/src/screens/NameEntryScreen.tsx
+- [x] 15. Update name entry and edit screens
+  - [x] 15.1 Update frontend/src/screens/NameEntryScreen.tsx
     - Call backend API to save display name on completion
     - Handle API errors with retry option
     - _Requirements: 11.1, 11.4_
-  - [ ] 15.2 Update frontend/src/screens/EditNameScreen.tsx
+  - [x] 15.2 Update frontend/src/screens/EditNameScreen.tsx
     - Call backend API to update display name
     - Update local state on success
     - _Requirements: 12.1, 12.2, 12.3_
@@ -177,13 +177,13 @@
 
 ## Phase 5: Frontend Friends Integration
 
-- [ ] 16. Replace mock friends data with real API calls
-  - [ ] 16.1 Create frontend/src/hooks/useFriends.ts hook
+- [x] 16. Replace mock friends data with real API calls
+  - [x] 16.1 Create frontend/src/hooks/useFriends.ts hook
     - Fetch friends list from backend
     - Manage loading and error states
     - Provide refresh function
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
-  - [ ] 16.2 Update App.tsx to use real friends data
+  - [x] 16.2 Update App.tsx to use real friends data
     - Replace mockFriends with useFriends hook
     - Pass real data to FriendsListScreen
     - _Requirements: 3.1, 3.2_

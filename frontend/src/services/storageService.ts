@@ -62,6 +62,7 @@ export async function getUserCredentials(): Promise<{
 
 /**
  * Clear all stored credentials including display name (logout)
+ * Clears both SecureStore credentials and AsyncStorage mappings
  */
 export async function clearUserCredentials(): Promise<void> {
   await Promise.all([
@@ -70,6 +71,7 @@ export async function clearUserCredentials(): Promise<void> {
     SecureStore.deleteItemAsync(KEYS.AUTH_TOKEN),
     SecureStore.deleteItemAsync(KEYS.DEVICE_TOKEN),
     SecureStore.deleteItemAsync(KEYS.DISPLAY_NAME),
+    AsyncStorage.removeItem(KEYS.DISPLAY_NAME_MAPPINGS),
   ]);
 }
 

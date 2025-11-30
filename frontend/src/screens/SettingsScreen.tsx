@@ -66,6 +66,9 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
       <PagerText selected={selectedIndex === 4}>
         {selectedIndex === 4 ? '>' : ' '} HELP
       </PagerText>
+      <PagerText selected={selectedIndex === 5}>
+        {selectedIndex === 5 ? '>' : ' '} LOGOUT
+      </PagerText>
     </PagerScreen>
   );
 };

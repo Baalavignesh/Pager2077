@@ -1,3 +1,8 @@
+/**
+ * Edit Name Screen - Update display name from settings
+ * Requirements: 12.1, 12.2, 12.3 - Call backend API to update display name
+ *                                 Update local state on success
+ */
 import React, { useState, useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { PagerScreen, PagerText } from '../components/PagerScreen';
@@ -14,6 +19,7 @@ export interface EditNameScreenHandle {
   handleNumberPress: (key: string) => void;
   handleBackspace: () => void;
   handleSubmit: () => void;
+  handleRetry: () => void;
 }
 
 export const EditNameScreen = forwardRef<EditNameScreenHandle, EditNameScreenProps>(({ 
@@ -24,6 +30,7 @@ export const EditNameScreen = forwardRef<EditNameScreenHandle, EditNameScreenPro
   const [input, setInput] = useState(currentDisplayName);
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [canRetry, setCanRetry] = useState(false);
   const t9Handler = useRef(new T9InputHandler());
 
   useEffect(() => {
@@ -37,32 +44,72 @@ export const EditNameScreen = forwardRef<EditNameScreenHandle, EditNameScreenPro
   }, [currentDisplayName]);
 
   const handleNumberPress = (key: string) => {
-    setError(null);
+    // If in error state with retry option, clear error first
+    if (canRetry) {
+      setError(null);
+      setCanRetry(false);
+    }
     const newInput = t9Handler.current.handleKeyPress(key);
     setInput(newInput);
   };
 
   const handleBackspace = () => {
-    setError(null);
+    // If in error state with retry option, clear error first
+    if (canRetry) {
+      setError(null);
+      setCanRetry(false);
+    }
     const newInput = t9Handler.current.handleBackspace();
     setInput(newInput);
   };
 
+  /**
+   * Submit updated display name to backend
+   * Requirements: 12.1 - Send updated display name to backend
+   */
   const handleSubmit = async () => {
-    // Validate
+    // Validate locally first
     const validation = validateDisplayName(input);
     if (!validation.valid) {
       setError(validation.error || 'INVALID NAME');
+      setCanRetry(false);
       return;
     }
 
-    // Submit
+    // Submit to backend via parent handler
     setIsProcessing(true);
+    setError(null);
+    setCanRetry(false);
+    
     try {
+      // Requirements: 12.2, 12.3 - Backend updates and local state update handled by parent
       await onSave(input);
+      // Success - parent will handle navigation and state update
     } catch (err) {
-      setError('FAILED TO SAVE NAME');
+      console.error('Failed to update display name:', err);
+      
+      // Determine error message based on error type
+      let errorMessage = 'SAVE FAILED';
+      if (err instanceof Error) {
+        if (err.message.includes('Network') || err.message.includes('fetch')) {
+          errorMessage = 'NETWORK ERROR';
+        } else if (err.message === 'INVALID_NAME') {
+          errorMessage = 'INVALID NAME';
+        }
+      }
+      
+      setError(errorMessage);
+      setCanRetry(true);
       setIsProcessing(false);
+    }
+  };
+
+  /**
+   * Retry saving display name after error
+   */
+  const handleRetry = () => {
+    if (canRetry) {
+      handleSubmit();
     }
   };
 
@@ -75,6 +122,7 @@ export const EditNameScreen = forwardRef<EditNameScreenHandle, EditNameScreenPro
     handleNumberPress,
     handleBackspace,
     handleSubmit,
+    handleRetry,
   }));
 
   // Format input for display
@@ -86,6 +134,23 @@ export const EditNameScreen = forwardRef<EditNameScreenHandle, EditNameScreenPro
         <PagerText> </PagerText>
         <PagerText> </PagerText>
         <PagerText style={{ textAlign: 'center' }}>SAVING...</PagerText>
+      </PagerScreen>
+    );
+  }
+
+  // Show error state with retry option
+  if (error && canRetry) {
+    return (
+      <PagerScreen title="EDIT NAME">
+        <PagerText> </PagerText>
+        <PagerText style={{ textAlign: 'center' }}>ERROR:</PagerText>
+        <PagerText style={{ textAlign: 'center' }}>{error}</PagerText>
+        <PagerText> </PagerText>
+        <PagerText style={{ textAlign: 'center' }}>NAME: {displayInput}</PagerText>
+        <PagerText> </PagerText>
+        <PagerText>CALL: RETRY</PagerText>
+        <PagerText>BACK: CANCEL</PagerText>
+        <PagerText>0-9: EDIT NAME</PagerText>
       </PagerScreen>
     );
   }
