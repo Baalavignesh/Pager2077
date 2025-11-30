@@ -26,6 +26,7 @@ import { useFriends } from './src/hooks/useFriends';
 import { getAllDisplayNameMappings } from './src/services/storageService';
 import { setCurrentUserDisplayName } from './src/services/displayNameService';
 import { areActivitiesEnabled, registerPushTokenWithBackend } from './src/services/liveActivityService';
+import { sendFriendRequest } from './src/services/apiClient';
 
 type Screen = 'main' | 'messages' | 'chat' | 'friends' | 'addFriend' | 'friendRequests' | 'friendRequestConfirmation' | 'myhex' | 'settings' | 'editName' | 'liveActivityDemo';
 
@@ -75,6 +76,29 @@ function AppContent() {
   const [friendRequestInput, setFriendRequestInput] = useState('');
   const [friendRequestError, setFriendRequestError] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
+  
+  // Hex T9 input state (for cycling through hex chars on same key)
+  const hexT9State = useRef({
+    currentKey: null as string | null,
+    keyPressCount: 0,
+    lastKeyPressTime: 0,
+    timeoutId: null as NodeJS.Timeout | null,
+  });
+  
+  // Hex T9 map: key -> [chars to cycle through]
+  // Number first, then letters (2 → A → B → C)
+  const HEX_T9_MAP: Record<string, string[]> = {
+    '0': ['0', ' '],
+    '1': ['1'],
+    '2': ['2', 'A', 'B', 'C'],
+    '3': ['3', 'D', 'E', 'F'],
+    '4': ['4', 'G', 'H', 'I'],
+    '5': ['5', 'J', 'K', 'L'],
+    '6': ['6', 'M', 'N', 'O'],
+    '7': ['7', 'P', 'Q', 'R', 'S'],
+    '8': ['8', 'T', 'U', 'V'],
+    '9': ['9', 'W', 'X', 'Y', 'Z'],
+  };
   
   // Friend request confirmation state
   const [confirmingRequest, setConfirmingRequest] = useState<{ sixDigitCode: string; timestamp: string } | null>(null);
@@ -343,17 +367,6 @@ function AppContent() {
   }
 
   const navigate = (direction: 'up' | 'down') => {
-    // On Add Friend screen, up/down keys should enter numbers, not navigate
-    if (currentScreen === 'addFriend') {
-      // Handle as number input instead
-      if (direction === 'up') {
-        handleNumberPress('2');
-      } else if (direction === 'down') {
-        handleNumberPress('8');
-      }
-      return;
-    }
-    
     // On confirmation screen, up/down toggles between yes and no
     if (currentScreen === 'friendRequestConfirmation') {
       if (confirmationFocusedButton === 'yes') {
@@ -371,7 +384,7 @@ function AppContent() {
     } else if (currentScreen === 'friends') {
       // ADD FRIEND + REQUESTS (if any) + friends list
       const menuItems = 1 + (mockFriendRequests.length > 0 ? 1 : 0);
-      maxIndex = menuItems + realFriends.length - 1;
+      maxIndex = Math.max(0, menuItems + realFriends.length - 1);
     } else if (currentScreen === 'friendRequests') {
       maxIndex = mockFriendRequests.length - 1;
     } else if (currentScreen === 'messages') {
@@ -390,12 +403,6 @@ function AppContent() {
   };
 
   const handleNavigateLeft = () => {
-    // On Add Friend screen, key 4 should enter number
-    if (currentScreen === 'addFriend') {
-      handleNumberPress('4');
-      return;
-    }
-    
     // On confirmation screen, focus "NO"
     if (currentScreen === 'friendRequestConfirmation') {
       setConfirmationFocusedButton('no');
@@ -407,12 +414,6 @@ function AppContent() {
   };
 
   const handleNavigateRight = () => {
-    // On Add Friend screen, key 6 should enter number
-    if (currentScreen === 'addFriend') {
-      handleNumberPress('6');
-      return;
-    }
-    
     // On confirmation screen, focus "YES"
     if (currentScreen === 'friendRequestConfirmation') {
       setConfirmationFocusedButton('yes');
@@ -424,12 +425,6 @@ function AppContent() {
   };
 
   const handleSelect = () => {
-    // On Add Friend screen, key 5 should enter number
-    if (currentScreen === 'addFriend') {
-      handleNumberPress('5');
-      return;
-    }
-    
     if (currentScreen === 'main') {
       const selected = mainMenu[selectedIndex];
       setCurrentScreen(selected.screen);
@@ -460,7 +455,10 @@ function AppContent() {
         const friendIndex = selectedIndex - menuItemsCount;
         const friend = realFriends[friendIndex];
         if (friend) {
-          setSelectedFriend({ sixDigitCode: friend.sixDigitCode, displayName: friend.displayName });
+          setSelectedFriend({ 
+            sixDigitCode: friend.sixDigitCode, 
+            displayName: friend.displayName || undefined 
+          });
           setCurrentScreen('chat');
         }
       }
@@ -564,20 +562,65 @@ function AppContent() {
     setSelectedIndex(0);
   };
 
+  const HEX_T9_TIMEOUT_MS = 1000; // 1 second between key presses
+
   const handleNumberPress = (number: string) => {
-    // Handle number presses on Add Friend screen
+    // Handle number presses on Add Friend screen (8-char hex code with T9-style input)
     if (currentScreen === 'addFriend') {
       if (number === '#') {
-        // Backspace - remove last digit
+        // Backspace - remove last character
         if (friendRequestInput.length > 0) {
           setFriendRequestInput(friendRequestInput.slice(0, -1));
         }
-      } else if (number >= '0' && number <= '9') {
-        // Append digit if less than 6 digits
-        if (friendRequestInput.length < 6) {
-          setFriendRequestInput(friendRequestInput + number);
+        // Reset T9 state
+        if (hexT9State.current.timeoutId) {
+          clearTimeout(hexT9State.current.timeoutId);
         }
+        hexT9State.current.currentKey = null;
+        hexT9State.current.keyPressCount = 0;
+      } else if (number >= '0' && number <= '9') {
+        const now = Date.now();
+        const state = hexT9State.current;
+        const chars = HEX_T9_MAP[number];
+        
+        // Safety check - if no mapping, just use the number
+        if (!chars || chars.length === 0) {
+          if (friendRequestInput.length < 8) {
+            setFriendRequestInput(prev => prev + number);
+          }
+          return;
+        }
+        
+        // Clear existing timeout
+        if (state.timeoutId) {
+          clearTimeout(state.timeoutId);
+        }
+        
+        // Check if same key pressed within timeout
+        if (number === state.currentKey && (now - state.lastKeyPressTime) < HEX_T9_TIMEOUT_MS) {
+          // Cycle to next character
+          state.keyPressCount++;
+          const charIndex = state.keyPressCount % chars.length;
+          // Replace last character with new one
+          setFriendRequestInput(prev => prev.slice(0, -1) + chars[charIndex]);
+        } else {
+          // New key or timeout expired - add first character (if room)
+          if (friendRequestInput.length < 8) {
+            state.currentKey = number;
+            state.keyPressCount = 0;
+            setFriendRequestInput(prev => prev + chars[0]);
+          }
+        }
+        
+        state.lastKeyPressTime = now;
+        
+        // Set timeout to finalize character
+        state.timeoutId = setTimeout(() => {
+          state.currentKey = null;
+          state.keyPressCount = 0;
+        }, HEX_T9_TIMEOUT_MS);
       }
+      return; // Don't process further for addFriend screen
     }
     
     // Handle number presses on Edit Name screen
@@ -594,8 +637,8 @@ function AppContent() {
   };
 
   const handleCall = () => {
-    // On Add Friend screen, call button sends the friend request
-    if (currentScreen === 'addFriend' && friendRequestInput.length === 6) {
+    // On Add Friend screen, call button sends the friend request (8-char hex code)
+    if (currentScreen === 'addFriend' && friendRequestInput.length === 8) {
       handleSendFriendRequest(friendRequestInput);
     }
     
@@ -621,20 +664,55 @@ function AppContent() {
     chatScreenRef.current?.handleConfirm();
   };
 
-  const handleSendFriendRequest = async (sixDigitCode: string) => {
-    console.log('Sending friend request to:', sixDigitCode);
+  const handleSendFriendRequest = async (hexCode: string) => {
+    // Uppercase the hex code before sending to backend
+    const uppercaseHexCode = hexCode.toUpperCase();
+    console.log('📤 Sending friend request to:', uppercaseHexCode);
     setIsProcessing(true);
-    
-    // Simulate API call with delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // TODO: Implement actual API call
-    // For now, just clear and navigate
-    setIsProcessing(false);
-    setFriendRequestInput('');
     setFriendRequestError('');
-    setCurrentScreen('friends');
-    setSelectedIndex(0);
+    
+    try {
+      // Get auth token
+      if (!authToken) {
+        throw new Error('NOT_AUTHENTICATED');
+      }
+      
+      // Send friend request via API
+      await sendFriendRequest(authToken, uppercaseHexCode);
+      
+      console.log('✅ Friend request sent successfully');
+      
+      // Clear and navigate back to friends list
+      setFriendRequestInput('');
+      setFriendRequestError('');
+      setCurrentScreen('friends');
+      setSelectedIndex(0);
+      
+      // Refresh friends list
+      refreshFriends();
+    } catch (error) {
+      console.error('❌ Failed to send friend request:', error);
+      
+      // Map error to user-friendly message
+      let errorMessage = 'SEND FAILED';
+      if (error instanceof Error) {
+        if (error.message === 'USER_NOT_FOUND') {
+          errorMessage = 'USER NOT FOUND';
+        } else if (error.message === 'REQUEST_ALREADY_SENT') {
+          errorMessage = 'ALREADY SENT';
+        } else if (error.message === 'ALREADY_FRIENDS') {
+          errorMessage = 'ALREADY FRIENDS';
+        } else if (error.message === 'NOT_AUTHENTICATED') {
+          errorMessage = 'NOT LOGGED IN';
+        } else if (error.message.includes('Network')) {
+          errorMessage = 'NETWORK ERROR';
+        }
+      }
+      
+      setFriendRequestError(errorMessage);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleAcceptRequest = async (sixDigitCode: string) => {
@@ -696,7 +774,7 @@ function AppContent() {
       case 'addFriend':
         return (
           <AddFriendScreen 
-            digitInput={friendRequestInput}
+            hexInput={friendRequestInput}
             error={friendRequestError}
             isProcessing={isProcessing}
           />
@@ -777,6 +855,23 @@ function AppContent() {
         ) : currentScreen === 'settings' && settingsView === 'editName' ? (
           <ChatPagerBody
             onConfirm={() => editNameRef.current?.handleSubmit()}
+            onBack={handleBack}
+            onMenu={handleMenu}
+            onNumberPress={handleNumberPress}
+            onCall={handleCall}
+            soundEnabled={soundEnabled}
+            vibrateEnabled={vibrateEnabled}
+          />
+        ) : currentScreen === 'addFriend' ? (
+          <ChatPagerBody
+            onConfirm={() => {
+              // Confirm button finalizes current T9 character (moves to next position)
+              if (hexT9State.current.timeoutId) {
+                clearTimeout(hexT9State.current.timeoutId);
+              }
+              hexT9State.current.currentKey = null;
+              hexT9State.current.keyPressCount = 0;
+            }}
             onBack={handleBack}
             onMenu={handleMenu}
             onNumberPress={handleNumberPress}

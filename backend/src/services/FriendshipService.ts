@@ -29,7 +29,7 @@ export class FriendshipService {
     if (!/^[0-9A-Fa-f]{8}$/.test(toHexCode)) {
       throw new AppError(400, 'INVALID_HEX_CODE', 'Invalid hex code format');
     }
-
+    console.log(toHexCode)
     // Get recipient user
     const toUser = this.userRepo.getUserByHexCode(toHexCode.toUpperCase());
     

@@ -2,18 +2,18 @@ import React from 'react';
 import { PagerScreen, PagerText } from '../components/PagerScreen';
 
 interface AddFriendScreenProps {
-  digitInput: string;
+  hexInput: string;
   error?: string;
   isProcessing?: boolean;
 }
 
 export const AddFriendScreen: React.FC<AddFriendScreenProps> = ({ 
-  digitInput,
+  hexInput,
   error,
   isProcessing = false
 }) => {
-  // Format the input with underscores for empty digits
-  const formattedInput = digitInput.padEnd(6, '_');
+  // Format the input with underscores for empty characters (8-char hex code)
+  const formattedInput = hexInput.toUpperCase().padEnd(8, '_');
   const displayInput = formattedInput.split('').join(' ');
 
   if (isProcessing) {
@@ -28,7 +28,7 @@ export const AddFriendScreen: React.FC<AddFriendScreenProps> = ({
 
   return (
     <PagerScreen title="ADD FRIEND">
-      <PagerText>ENTER 6-DIGIT CODE:</PagerText>
+      <PagerText>ENTER HEX CODE:</PagerText>
       <PagerText> </PagerText>
       
       <PagerText style={{ textAlign: 'center' }}>
@@ -44,8 +44,12 @@ export const AddFriendScreen: React.FC<AddFriendScreenProps> = ({
         </>
       ) : null}
       
-      <PagerText>CALL BUTTON: SEND</PagerText>
-      <PagerText>Backspace - #</PagerText>
+      <PagerText>USE NUMPAD TO TYPE</PagerText>
+      <PagerText>PRESS KEY MULTIPLE</PagerText>
+      <PagerText>TIMES FOR LETTERS</PagerText>
+      <PagerText> </PagerText>
+      <PagerText>#: BACKSPACE</PagerText>
+      <PagerText>CALL: SEND</PagerText>
     </PagerScreen>
   );
 };
