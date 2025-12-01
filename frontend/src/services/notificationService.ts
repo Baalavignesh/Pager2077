@@ -17,12 +17,16 @@ Notifications.setNotificationHandler({
 });
 
 export interface NotificationData {
-  type: 'VOICE_NOTE' | 'FRIEND_REQUEST' | 'FRIEND_ACCEPTED' | 'FRIEND_STATUS';
+  type: 'VOICE_NOTE' | 'FRIEND_REQUEST' | 'FRIEND_ACCEPTED' | 'FRIEND_STATUS' | 'MESSAGE' | 'LIVE_ACTIVITY_START';
   voiceNoteId?: string;
   requestId?: string;
   senderId?: string;
   senderHexCode?: string;
+  senderName?: string;
   friendHexCode?: string;
+  friendId?: string;
+  messageId?: string;
+  messageText?: string;
   status?: 'online' | 'offline';
 }
 

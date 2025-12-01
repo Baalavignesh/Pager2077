@@ -5,11 +5,12 @@
 import { Queue, Worker, Job } from 'bullmq';
 import { getRedis } from './redis';
 import { getAPNSProvider } from '../services/APNSProvider';
-import type { APNSNotification } from '../services/APNSProvider';
+import type { APNSNotification, LiveActivityNotification } from '../services/APNSProvider';
 
 export interface NotificationJob {
-  type: 'alert' | 'silent';
+  type: 'alert' | 'silent' | 'liveactivity';
   notification: APNSNotification;
+  liveActivityNotification?: LiveActivityNotification;
   userId: string;
   retryCount?: number;
 }
@@ -64,7 +65,7 @@ export function startNotificationWorker(): Worker<NotificationJob> {
   notificationWorker = new Worker<NotificationJob>(
     'notifications',
     async (job: Job<NotificationJob>) => {
-      const { type, notification, userId } = job.data;
+      const { type, notification, liveActivityNotification, userId } = job.data;
 
       console.log(`📤 Processing ${type} notification for user ${userId}`);
 
@@ -73,6 +74,8 @@ export function startNotificationWorker(): Worker<NotificationJob> {
           await apnsProvider.sendAlertNotification(notification);
         } else if (type === 'silent') {
           await apnsProvider.sendSilentNotification(notification);
+        } else if (type === 'liveactivity' && liveActivityNotification) {
+          await apnsProvider.sendLiveActivityNotification(liveActivityNotification);
         }
 
         console.log(`✅ Notification sent successfully (job ${job.id})`);

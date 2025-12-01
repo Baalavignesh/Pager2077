@@ -222,41 +222,80 @@ class LiveActivityBridge: NSObject {
         }
     }
     
-    /// Get the push token for Live Activity remote start/update
-    /// This token is used by the backend to send push-to-start notifications
-    /// Requirements: 9.2, 9.3
     @objc
     func getPushToken(_ resolve: @escaping RCTPromiseResolveBlock,
                       reject: @escaping RCTPromiseRejectBlock) {
         
+        print("[LiveActivityBridge] getPushToken: Starting token retrieval...")
+        
+        // Push tokens for Live Activities require iOS 17.2+
+        // Requirements: 2.4 - Gracefully handle iOS < 17.2
         guard #available(iOS 17.2, *) else {
-            // Push tokens for Live Activities require iOS 17.2+
-            print("[LiveActivityBridge] getPushToken: iOS version < 17.2, push tokens not supported")
+            print("[LiveActivityBridge] getPushToken: iOS version < 17.2, push-to-start tokens not supported")
+            print("[LiveActivityBridge] getPushToken: Push-to-start requires iOS 17.2 or later")
             resolve(nil)
             return
         }
         
-        guard ActivityAuthorizationInfo().areActivitiesEnabled else {
-            print("[LiveActivityBridge] getPushToken: Live Activities are not enabled")
+        // Check if Live Activities are enabled
+        let authInfo = ActivityAuthorizationInfo()
+        print("[LiveActivityBridge] getPushToken: Activities enabled: \(authInfo.areActivitiesEnabled)")
+        print("[LiveActivityBridge] getPushToken: Frequent push enabled: \(authInfo.frequentPushesEnabled)")
+        
+        guard authInfo.areActivitiesEnabled else {
+            print("[LiveActivityBridge] getPushToken: Live Activities not enabled on this device")
+            print("[LiveActivityBridge] getPushToken: User may need to enable Live Activities in Settings")
             resolve(nil)
             return
+        }
+        
+        // Use a flag to track if we've already resolved
+        var hasResolved = false
+        let resolveOnce: (Any?) -> Void = { value in
+            guard !hasResolved else {
+                print("[LiveActivityBridge] getPushToken: Already resolved, ignoring duplicate")
+                return
+            }
+            hasResolved = true
+            if let token = value as? String {
+                print("[LiveActivityBridge] getPushToken: Resolving with token (length: \(token.count))")
+            } else {
+                print("[LiveActivityBridge] getPushToken: Resolving with nil")
+            }
+            resolve(value)
         }
         
         Task {
-            do {
-                // Request a push-to-start token for the activity type
-                // This allows the backend to start a Live Activity remotely
-                for await data in Activity<PagerActivityAttributes>.pushToStartTokenUpdates {
-                    let tokenString = data.map { String(format: "%02x", $0) }.joined()
-                    print("[LiveActivityBridge] Got push-to-start token: \(tokenString.prefix(20))...")
-                    resolve(tokenString)
-                    return
+            // Set a timeout - if no token received within 10 seconds, return nil
+            // Requirements: 2.4 - Increased timeout from 5s to 10s for better reliability
+            let timeoutTask = Task {
+                try? await Task.sleep(nanoseconds: 10_000_000_000) // 10 seconds
+                if !hasResolved {
+                    print("[LiveActivityBridge] getPushToken: Timeout after 10 seconds waiting for push token")
+                    print("[LiveActivityBridge] getPushToken: This may happen on first launch or after reinstall")
+                    print("[LiveActivityBridge] getPushToken: Token should be available on next app launch")
+                    resolveOnce(nil)
                 }
-                
-                // If we get here, no token was available
-                print("[LiveActivityBridge] getPushToken: No push token available")
-                resolve(nil)
             }
+            
+            print("[LiveActivityBridge] getPushToken: Waiting for pushToStartTokenUpdates...")
+            
+            // Try to get the push-to-start token
+            for await tokenData in Activity<PagerActivityAttributes>.pushToStartTokenUpdates {
+                timeoutTask.cancel()
+                let tokenString = tokenData.map { String(format: "%02x", $0) }.joined()
+                print("[LiveActivityBridge] getPushToken: Received push-to-start token")
+                print("[LiveActivityBridge] getPushToken: Token preview: \(tokenString.prefix(20))...")
+                print("[LiveActivityBridge] getPushToken: Token length: \(tokenString.count) characters")
+                resolveOnce(tokenString)
+                return
+            }
+            
+            // If we get here, the async sequence completed without emitting a token
+            timeoutTask.cancel()
+            print("[LiveActivityBridge] getPushToken: pushToStartTokenUpdates completed without emitting token")
+            print("[LiveActivityBridge] getPushToken: This is unexpected - token should be available")
+            resolveOnce(nil)
         }
     }
 }

@@ -63,8 +63,12 @@ export async function getUserCredentials(): Promise<{
 /**
  * Clear all stored credentials including display name (logout)
  * Clears both SecureStore credentials and AsyncStorage mappings
+ * Also clears Live Activity token registration status
  */
 export async function clearUserCredentials(): Promise<void> {
+  // Import dynamically to avoid circular dependencies
+  const { clearTokenRegistrationStatus } = await import('./liveActivityService');
+  
   await Promise.all([
     SecureStore.deleteItemAsync(KEYS.USER_ID),
     SecureStore.deleteItemAsync(KEYS.HEX_CODE),
@@ -72,6 +76,7 @@ export async function clearUserCredentials(): Promise<void> {
     SecureStore.deleteItemAsync(KEYS.DEVICE_TOKEN),
     SecureStore.deleteItemAsync(KEYS.DISPLAY_NAME),
     AsyncStorage.removeItem(KEYS.DISPLAY_NAME_MAPPINGS),
+    clearTokenRegistrationStatus(),
   ]);
 }
 

@@ -238,12 +238,12 @@
     - **Property 11: Status Change Notifications**
     - **Validates: Requirements 14.3**
 
-- [ ] 22. Implement notification handling
-  - [ ] 22.1 Update useNotifications hook for message notifications
+- [x] 22. Implement notification handling
+  - [x] 22.1 Update useNotifications hook for message notifications
     - Handle message notification type
     - Navigate to chat on notification tap
     - _Requirements: 8.3, 8.4_
-  - [ ] 22.2 Update backend notification service for Live Activity fallback
+  - [x] 22.2 Update backend notification service for Live Activity fallback
     - Check if LA token is valid before sending
     - Fall back to regular push if LA fails
     - _Requirements: 9.7, 12_
@@ -254,20 +254,33 @@
 - [ ] 23. Final Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-## Phase 8: Enable Auto-Registration
+## Phase 8: Main Menu Notification Indicators
 
-- [ ] 24. Enable auto-registration flow
-  - [ ] 24.1 Uncomment auto-registration in App.tsx
+- [ ] 26. Add notification indicators to main menu
+  - [ ] 26.1 Update MainMenuScreen to accept notification counts
+    - Add props for unreadMessagesCount and pendingRequestsCount
+    - Display asterisk (*) prefix on "MESSAGES" row when unreadMessagesCount > 0
+    - Display asterisk (*) prefix on "FRIENDS" row when pendingRequestsCount > 0
+    - Update menu item labels dynamically (e.g., "* 1. MESSAGES" or "1. MESSAGES")
+  - [ ] 26.2 Update App.tsx to pass notification counts to MainMenuScreen
+    - Calculate total unread messages from realConversations
+    - Pass realFriendRequests.length as pendingRequestsCount
+    - Refresh data when returning to main menu
+
+## Phase 9: Enable Auto-Registration
+
+- [ ] 27. Enable auto-registration flow
+  - [ ] 27.1 Uncomment auto-registration in App.tsx
     - Enable the useEffect that triggers registration
     - Test full registration flow on fresh install
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6_
-  - [ ] 24.2 Test credential persistence
+  - [ ] 27.2 Test credential persistence
     - Verify credentials persist across app restarts
     - Test token validation on app launch
     - _Requirements: 2.1, 2.2, 2.3, 2.4_
 
-- [ ] 25. Final integration testing
-  - [ ] 25.1 End-to-end test: Registration → Name Entry → Friends → Messaging
+- [ ] 28. Final integration testing
+  - [ ] 28.1 End-to-end test: Registration → Name Entry → Friends → Messaging
     - Test complete user flow from fresh install
     - Verify all screens show real data
     - _Requirements: All_

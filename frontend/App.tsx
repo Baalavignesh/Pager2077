@@ -27,7 +27,7 @@ import { useFriendRequests } from './src/hooks/useFriendRequests';
 import { useConversations } from './src/hooks/useConversations';
 import { getAllDisplayNameMappings } from './src/services/storageService';
 import { setCurrentUserDisplayName } from './src/services/displayNameService';
-import { areActivitiesEnabled, registerPushTokenWithBackend } from './src/services/liveActivityService';
+import { areActivitiesEnabled, registerPushTokenWithBackend, isTokenRegistered } from './src/services/liveActivityService';
 import { sendFriendRequest, updateUserStatus } from './src/services/apiClient';
 
 type Screen = 'main' | 'messages' | 'chat' | 'friends' | 'addFriend' | 'friendRequests' | 'friendRequestConfirmation' | 'myhex' | 'settings' | 'editName' | 'liveActivityDemo';
@@ -129,14 +129,65 @@ function AppContent() {
   const [currentDisplayName, setCurrentDisplayName] = useState<string>('');
 
   // Set up notification handlers
+  // Requirements: 8.3, 8.4 - Handle message notifications and navigate to chat on tap
   useNotifications({
     onNotificationReceived: (data) => {
       console.log('📬 Notification received:', data);
-      // TODO: Handle different notification types
+      // Refresh conversations when a new message notification arrives
+      if (data.type === 'MESSAGE' || data.type === 'LIVE_ACTIVITY_START') {
+        refreshConversations();
+      }
+      // Refresh friend requests when a friend request notification arrives
+      if (data.type === 'FRIEND_REQUEST') {
+        refreshRequests();
+      }
+      // Refresh friends list when a friend request is accepted
+      if (data.type === 'FRIEND_ACCEPTED') {
+        refreshFriends();
+      }
     },
     onNotificationTapped: (data) => {
       console.log('👆 Notification tapped:', data);
-      // TODO: Navigate to appropriate screen
+      // Navigate to appropriate screen based on notification type
+      if (data.type === 'FRIEND_REQUEST') {
+        setCurrentScreen('friendRequests');
+        setSelectedIndex(0);
+        refreshRequests();
+      } else if (data.type === 'FRIEND_ACCEPTED') {
+        setCurrentScreen('friends');
+        setSelectedIndex(0);
+        refreshFriends();
+      }
+    },
+    // Requirements: 8.3 - Handle message notification received
+    onMessageReceived: (messageData) => {
+      console.log('📟 Message notification received:', messageData);
+      // Refresh conversations to show new message
+      refreshConversations();
+    },
+    // Requirements: 8.4 - Navigate to chat on notification tap
+    onMessageTapped: (messageData) => {
+      console.log('📟 Message notification tapped, navigating to chat:', messageData);
+      // Navigate to chat with the sender
+      if (messageData.senderId) {
+        // Find the friend in our friends list to get their hex code
+        const friend = realFriends.find(f => f.id === messageData.senderId);
+        if (friend && friend.id) {
+          setSelectedFriend({
+            id: friend.id,
+            sixDigitCode: friend.sixDigitCode,
+            displayName: friend.displayName || messageData.senderName || undefined,
+          });
+          setChatEnteredFrom('messages');
+          setCurrentScreen('chat');
+        } else {
+          // Friend not found in list, try to navigate to messages screen
+          // and refresh to get the latest data
+          refreshConversations();
+          setCurrentScreen('messages');
+          setSelectedIndex(0);
+        }
+      }
     },
   });
 
@@ -197,8 +248,8 @@ function AppContent() {
   // No auto-registration - user must enter name first
   // Registration happens when user submits their name
 
-  // Register Live Activity push token with backend on startup
-  // Requirements: 9.1, 9.2, 9.3
+  // Register Live Activity push token with backend on startup and after login
+  // Requirements: 2.3, 2.4, 9.1, 9.2, 9.3
   const { authToken } = useAuth();
   
   useEffect(() => {
@@ -210,10 +261,21 @@ function AppContent() {
       }
       
       try {
+        // Small delay to ensure the system is ready after authentication
+        // This helps when user logs out and logs back in
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         // Check if Live Activities are enabled on this device
         const enabled = await areActivitiesEnabled();
         if (!enabled) {
           console.log('[LiveActivity] Live Activities not enabled on this device');
+          return;
+        }
+        
+        // Check if already registered (Requirements: 2.3, 2.4)
+        const alreadyRegistered = await isTokenRegistered();
+        if (alreadyRegistered) {
+          console.log('[LiveActivity] Token already registered, skipping initial registration');
           return;
         }
         
@@ -225,6 +287,15 @@ function AppContent() {
           console.log('[LiveActivity] Push token registered successfully');
         } else {
           console.log('[LiveActivity] Push token registration failed or not available');
+          // Retry once after a delay if first attempt fails
+          console.log('[LiveActivity] Retrying token registration in 2 seconds...');
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          const retrySuccess = await registerPushTokenWithBackend(authToken);
+          if (retrySuccess) {
+            console.log('[LiveActivity] Push token registered successfully on retry');
+          } else {
+            console.log('[LiveActivity] Push token registration failed on retry');
+          }
         }
       } catch (error) {
         console.error('[LiveActivity] Error registering push token:', error);
@@ -236,6 +307,66 @@ function AppContent() {
       registerLiveActivityToken();
     }
   }, [isAuthenticated, authToken, fontLoaded, isLoading]);
+
+  // Re-register Live Activity token when app comes to foreground
+  // Requirements: 2.3 - Re-register token when app becomes active
+  useEffect(() => {
+    // Only track if authenticated
+    if (!isAuthenticated || !authToken) {
+      return;
+    }
+
+    // Debounce to avoid excessive API calls
+    let debounceTimeout: NodeJS.Timeout | null = null;
+    let lastRegistrationTime = 0;
+    const DEBOUNCE_MS = 5000; // 5 seconds minimum between registrations
+
+    const handleAppStateChange = async (nextAppState: AppStateStatus) => {
+      if (nextAppState === 'active') {
+        // Check if enough time has passed since last registration
+        const now = Date.now();
+        if (now - lastRegistrationTime < DEBOUNCE_MS) {
+          console.log('[LiveActivity] Skipping foreground re-registration (debounced)');
+          return;
+        }
+
+        // Clear any pending debounce
+        if (debounceTimeout) {
+          clearTimeout(debounceTimeout);
+        }
+
+        // Debounce the registration
+        debounceTimeout = setTimeout(async () => {
+          try {
+            const enabled = await areActivitiesEnabled();
+            if (!enabled) {
+              return;
+            }
+
+            console.log('[LiveActivity] App became active, re-registering token...');
+            lastRegistrationTime = Date.now();
+            
+            // Force refresh to ensure token is up-to-date
+            const success = await registerPushTokenWithBackend(authToken, true);
+            if (success) {
+              console.log('[LiveActivity] Token re-registered on foreground');
+            }
+          } catch (error) {
+            console.error('[LiveActivity] Failed to re-register token on foreground:', error);
+          }
+        }, 500); // Small delay to let the system settle
+      }
+    };
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+
+    return () => {
+      subscription.remove();
+      if (debounceTimeout) {
+        clearTimeout(debounceTimeout);
+      }
+    };
+  }, [isAuthenticated, authToken]);
 
   // Track app state for online/offline status updates
   // Requirements: 14.1, 14.2 - Update status when app becomes active/background
@@ -448,8 +579,13 @@ function AppContent() {
 
           <ChatPagerBody
             onConfirm={() => nameEntryRef.current?.handleSubmit()}
-            onBack={handleSkipDisplayName}
-            onMenu={() => {}}
+            onBack={() => {
+              // Back button does nothing on registration screen
+              // User must complete registration or skip
+            }}
+            onMenu={() => {
+              // Menu button does nothing on registration screen
+            }}
             onNumberPress={(key) => {
               if (key === '#') {
                 nameEntryRef.current?.handleBackspace();

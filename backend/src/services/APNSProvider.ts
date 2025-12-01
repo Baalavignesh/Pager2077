@@ -1,8 +1,10 @@
 /**
  * APNS Provider - Manages Apple Push Notification connections
- * Inspired by Apollo Server architecture
+ * Using native http2 module for reliable APNS communication
  */
-import apn from 'apn';
+import http2 from 'http2';
+import jwt from 'jsonwebtoken';
+import { readFileSync } from 'fs';
 
 export interface APNSNotification {
   deviceToken: string;
@@ -12,124 +14,349 @@ export interface APNSNotification {
     sound?: string;
   };
   badge?: number;
-  contentAvailable?: boolean; // For silent notifications
+  contentAvailable?: boolean;
   data?: Record<string, any>;
 }
 
+export interface LiveActivityNotification {
+  pushToken: string;
+  contentState: {
+    sender: string;
+    message: string;
+    timestamp: string;
+    isDemo: boolean;
+    messageIndex: number;
+    totalMessages: number;
+  };
+  alert?: {
+    title: string;
+    body: string;
+    sound?: string;
+  };
+}
+
+// Constants
+const CONNECTION_TIMEOUT = 5000;
+const REQUEST_TIMEOUT = 10000;
+
+const ENDPOINTS = {
+  development: 'https://api.sandbox.push.apple.com',
+  production: 'https://api.push.apple.com'
+};
+
+// Invalid token status codes
+const INVALID_TOKEN_STATUS_CODES = new Set([400, 410]);
+const INVALID_TOKEN_REASONS = new Set([
+  'BadDeviceToken',
+  'Unregistered',
+  'DeviceTokenNotForTopic'
+]);
+
+
 export class APNSProvider {
-  private provider: apn.Provider | null = null;
+  private client: http2.ClientHttp2Session | null = null;
   private isProduction: boolean;
+  private bundleId: string;
+  private signingKey: string | null = null;
+  private keyId: string | null = null;
+  private teamId: string | null = null;
+  private jwtToken: string | null = null;
+  private jwtIssuedAt: number = 0;
 
   constructor() {
     this.isProduction = process.env.NODE_ENV === 'production';
+    this.bundleId = process.env.APNS_BUNDLE_ID || 'com.pager2077.app';
   }
 
-  /**
-   * Initialize APNS provider with certificates
-   */
   initialize(): void {
     const keyPath = process.env.APNS_KEY_PATH;
-    const keyId = process.env.APNS_KEY_ID;
-    const teamId = process.env.APNS_TEAM_ID;
-    const bundleId = process.env.APNS_BUNDLE_ID || 'com.pager2077.app';
+    this.keyId = process.env.APNS_KEY_ID || null;
+    this.teamId = process.env.APNS_TEAM_ID || null;
 
-    if (!keyPath || !keyId || !teamId) {
+    if (!keyPath || !this.keyId || !this.teamId) {
       console.warn('⚠️  APNS credentials not configured. Notifications will be mocked.');
       return;
     }
 
-    const options: apn.ProviderOptions = {
-      token: {
-        key: keyPath,
-        keyId: keyId,
-        teamId: teamId,
-      },
-      production: this.isProduction,
-    };
-
-    this.provider = new apn.Provider(options);
-    console.log(`✅ APNS Provider initialized (${this.isProduction ? 'production' : 'development'})`);
+    try {
+      this.signingKey = readFileSync(keyPath, 'utf8');
+      console.log(`✅ APNS Provider initialized (${this.isProduction ? 'production' : 'sandbox'})`);
+    } catch (error) {
+      console.error('❌ Failed to read APNS key:', error);
+      this.signingKey = null;
+    }
   }
 
-  /**
-   * Send an alert notification (with sound and banner)
-   */
+  private getJwtToken(): string {
+    const now = Math.floor(Date.now() / 1000);
+    
+    // Refresh JWT if older than 50 minutes (Apple requires refresh within 1 hour)
+    if (!this.jwtToken || now - this.jwtIssuedAt > 3000) {
+      const claims = { iss: this.teamId, iat: now };
+      this.jwtToken = jwt.sign(claims, this.signingKey!, {
+        algorithm: 'ES256',
+        keyid: this.keyId!,
+      });
+      this.jwtIssuedAt = now;
+    }
+    
+    return this.jwtToken;
+  }
+
+  private async getClient(): Promise<http2.ClientHttp2Session> {
+    if (this.client && !this.client.destroyed && !this.client.closed) {
+      return this.client;
+    }
+
+    const endpoint = this.isProduction ? ENDPOINTS.production : ENDPOINTS.development;
+    
+    return new Promise((resolve, reject) => {
+      const client = http2.connect(endpoint, {
+        settings: {
+          enablePush: false,
+          initialWindowSize: 65535,
+        },
+      });
+
+      const timeout = setTimeout(() => {
+        client.destroy();
+        reject(new Error('Connection timeout'));
+      }, CONNECTION_TIMEOUT);
+
+      client.once('connect', () => {
+        clearTimeout(timeout);
+        this.client = client;
+        resolve(client);
+      });
+
+      client.once('error', (err) => {
+        clearTimeout(timeout);
+        reject(err);
+      });
+
+      client.on('error', (err) => {
+        console.error('❌ APNS connection error:', err.message);
+      });
+
+      client.on('close', () => {
+        if (this.client === client) {
+          this.client = null;
+        }
+      });
+    });
+  }
+
+
+  private sendRequest(
+    client: http2.ClientHttp2Session,
+    deviceToken: string,
+    payload: string,
+    topic: string,
+    pushType: 'alert' | 'background' | 'liveactivity' = 'alert',
+    priority: number = 10
+  ): Promise<{ success: boolean; statusCode: number; reason?: string }> {
+    return new Promise((resolve, reject) => {
+      if (!client || client.destroyed || client.closed) {
+        return reject(new Error('Client disconnected'));
+      }
+
+      const jwtToken = this.getJwtToken();
+      let statusCode: number | null = null;
+      let responseBody = '';
+      let completed = false;
+
+      const request = client.request({
+        ':method': 'POST',
+        ':path': `/3/device/${deviceToken}`,
+        'content-type': 'application/json',
+        'content-length': Buffer.byteLength(payload),
+        'authorization': `bearer ${jwtToken}`,
+        'apns-topic': topic,
+        'apns-push-type': pushType,
+        'apns-priority': String(priority),
+        'apns-expiration': '0',
+      });
+
+      const timeout = setTimeout(() => {
+        if (!completed) {
+          completed = true;
+          try { request.close(http2.constants.NGHTTP2_CANCEL); } catch (e) {}
+          reject(new Error('Request timeout'));
+        }
+      }, REQUEST_TIMEOUT);
+
+      request.on('response', (headers) => {
+        statusCode = headers[':status'] as number;
+      });
+
+      request.on('data', (chunk) => {
+        responseBody += chunk;
+      });
+
+      request.on('error', (err) => {
+        if (!completed) {
+          completed = true;
+          clearTimeout(timeout);
+          reject(err);
+        }
+      });
+
+      request.on('end', () => {
+        if (!completed) {
+          completed = true;
+          clearTimeout(timeout);
+          
+          const success = statusCode === 200;
+          let reason: string | undefined;
+          
+          if (responseBody) {
+            try {
+              const parsed = JSON.parse(responseBody);
+              reason = parsed.reason;
+            } catch (e) {}
+          }
+
+          resolve({ success, statusCode: statusCode || 0, reason });
+        }
+      });
+
+      request.write(payload);
+      request.end();
+    });
+  }
+
   async sendAlertNotification(notification: APNSNotification): Promise<void> {
-    if (!this.provider) {
-      console.log('📱 [MOCK] Alert notification:', notification);
+    if (!this.signingKey) {
+      console.log('📱 [MOCK] Alert notification:', notification.deviceToken.substring(0, 10) + '...');
       return;
     }
 
-    const note = new apn.Notification();
-    
-    if (notification.alert) {
-      note.alert = notification.alert;
-      note.sound = notification.alert.sound || 'default';
-    }
-
-    if (notification.badge !== undefined) {
-      note.badge = notification.badge;
-    }
-
-    note.topic = process.env.APNS_BUNDLE_ID || 'com.pager2077.app';
-    note.payload = notification.data || {};
+    const payload = JSON.stringify({
+      aps: {
+        alert: notification.alert,
+        sound: notification.alert?.sound || 'default',
+        badge: notification.badge,
+      },
+      ...notification.data,
+    });
 
     try {
-      const result = await this.provider.send(note, notification.deviceToken);
-      
-      if (result.failed.length > 0) {
-        console.error('❌ APNS send failed:', result.failed);
-        const failedItem = result.failed[0];
-        throw new Error(`APNS send failed: ${failedItem?.response?.reason || 'Unknown error'}`);
+      const client = await this.getClient();
+      const result = await this.sendRequest(
+        client,
+        notification.deviceToken,
+        payload,
+        this.bundleId,
+        'alert',
+        10
+      );
+
+      if (!result.success) {
+        console.log(notification)
+        throw new Error(`APNS send failed: ${result.reason || `status ${result.statusCode}`}`);
       }
 
       console.log('✅ Alert notification sent:', notification.deviceToken.substring(0, 10) + '...');
-    } catch (error) {
-      console.error('❌ APNS error:', error);
+    } catch (error: any) {
+      console.error('❌ APNS error:', error.message);
       throw error;
     }
   }
 
-  /**
-   * Send a silent notification (background update, no alert)
-   */
+
   async sendSilentNotification(notification: APNSNotification): Promise<void> {
-    if (!this.provider) {
-      console.log('📱 [MOCK] Silent notification:', notification);
+    if (!this.signingKey) {
+      console.log('📱 [MOCK] Silent notification:', notification.deviceToken.substring(0, 10) + '...');
       return;
     }
 
-    const note = new apn.Notification();
-    
-    // Silent notification settings
-    note.contentAvailable = true;
-    (note as any).pushType = 'background'; // Type assertion for pushType
-    note.priority = 5; // Lower priority for background updates
-    note.topic = process.env.APNS_BUNDLE_ID || 'com.pager2077.app';
-    note.payload = notification.data || {};
+    const payload = JSON.stringify({
+      aps: {
+        'content-available': 1,
+      },
+      ...notification.data,
+    });
 
     try {
-      const result = await this.provider.send(note, notification.deviceToken);
-      
-      if (result.failed.length > 0) {
-        console.error('❌ APNS silent send failed:', result.failed);
-        const failedItem = result.failed[0];
-        throw new Error(`APNS send failed: ${failedItem?.response?.reason || 'Unknown error'}`);
+      const client = await this.getClient();
+      const result = await this.sendRequest(
+        client,
+        notification.deviceToken,
+        payload,
+        this.bundleId,
+        'background',
+        5  // Lower priority for background
+      );
+
+      if (!result.success) {
+        throw new Error(`APNS send failed: ${result.reason || `status ${result.statusCode}`}`);
       }
 
       console.log('✅ Silent notification sent:', notification.deviceToken.substring(0, 10) + '...');
-    } catch (error) {
-      console.error('❌ APNS error:', error);
+    } catch (error: any) {
+      console.error('❌ APNS error:', error.message);
       throw error;
     }
   }
 
-  /**
-   * Shutdown APNS provider
-   */
+  async sendLiveActivityNotification(notification: LiveActivityNotification): Promise<void> {
+    if (!this.signingKey) {
+      console.log('📱 [MOCK] Live Activity notification:', notification.pushToken.substring(0, 20) + '...');
+      return;
+    }
+
+    const issueTime = Math.floor(Date.now() / 1000);
+    
+    const payload = JSON.stringify({
+      aps: {
+        timestamp: issueTime,
+        event: 'start',
+        'content-state': notification.contentState,
+        alert: notification.alert || {
+          title: notification.contentState.sender,
+          body: notification.contentState.message,
+        },
+        sound: 'default',
+      },
+      'attributes-type': 'PagerActivityAttributes',
+      attributes: {
+        activityType: 'message',
+      },
+    });
+
+    try {
+      console.log('📟 Sending Live Activity push-to-start to:', notification.pushToken.substring(0, 20) + '...');
+      
+      const client = await this.getClient();
+      const result = await this.sendRequest(
+        client,
+        notification.pushToken,
+        payload,
+        `${this.bundleId}.push-type.liveactivity`,
+        'liveactivity',
+        10
+      );
+
+      if (!result.success) {
+        // Check if token is invalid
+        if (INVALID_TOKEN_STATUS_CODES.has(result.statusCode) || 
+            (result.reason && INVALID_TOKEN_REASONS.has(result.reason))) {
+          console.warn('⚠️ Invalid Live Activity token, should be removed');
+        }
+        throw new Error(`Live Activity push failed: ${result.reason || `status ${result.statusCode}`}`);
+      }
+
+      console.log('✅ Live Activity push-to-start sent successfully');
+    } catch (error: any) {
+      console.error('❌ Live Activity APNS error:', error.message);
+      throw error;
+    }
+  }
+
   async shutdown(): Promise<void> {
-    if (this.provider) {
-      await this.provider.shutdown();
+    if (this.client && !this.client.destroyed) {
+      this.client.close();
+      this.client = null;
       console.log('APNS Provider shutdown');
     }
   }

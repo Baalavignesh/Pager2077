@@ -233,6 +233,55 @@ class LiveActivityBridge: NSObject {
             resolve(nil)
         }
     }
+    
+    @objc
+    func getPushToken(_ resolve: @escaping RCTPromiseResolveBlock,
+                      reject: @escaping RCTPromiseRejectBlock) {
+        
+        // Push tokens for Live Activities require iOS 17.2+
+        guard #available(iOS 17.2, *) else {
+            print("[LiveActivityBridge] getPushToken: iOS version < 17.2, push tokens not supported")
+            resolve(nil)
+            return
+        }
+        
+        guard ActivityAuthorizationInfo().areActivitiesEnabled else {
+            print("[LiveActivityBridge] getPushToken: Live Activities not enabled")
+            resolve(nil)
+            return
+        }
+        
+        // Use a flag to track if we've already resolved
+        var hasResolved = false
+        let resolveOnce: (Any?) -> Void = { value in
+            guard !hasResolved else { return }
+            hasResolved = true
+            resolve(value)
+        }
+        
+        Task {
+            // Set a timeout - if no token received within 5 seconds, return nil
+            Task {
+                try? await Task.sleep(nanoseconds: 5_000_000_000) // 5 seconds
+                if !hasResolved {
+                    print("[LiveActivityBridge] getPushToken: Timeout waiting for push token")
+                    resolveOnce(nil)
+                }
+            }
+            
+            // Try to get the push-to-start token
+            for await tokenData in Activity<PagerActivityAttributes>.pushToStartTokenUpdates {
+                let tokenString = tokenData.map { String(format: "%02x", $0) }.joined()
+                print("[LiveActivityBridge] Got push-to-start token: \\(tokenString.prefix(20))...")
+                resolveOnce(tokenString)
+                return
+            }
+            
+            // If we get here, no token was available
+            print("[LiveActivityBridge] No push-to-start token available")
+            resolveOnce(nil)
+        }
+    }
 }
 `;
 
@@ -331,7 +380,7 @@ struct RetroLCDView: View {
             .padding(.vertical, 12)
             
             VStack(spacing: 0) {
-                ForEach(0..<40, id: \\\\.self) { i in
+                ForEach(0..<40, id: \\.self) { i in
                     Rectangle()
                         .fill(Color.black.opacity(i % 2 == 0 ? 0.04 : 0.0))
                         .frame(height: 2)
@@ -431,6 +480,9 @@ RCT_EXTERN_METHOD(endAllActivities:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(getCurrentActivityId:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(getPushToken:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 
 @end

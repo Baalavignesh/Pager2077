@@ -1,6 +1,7 @@
 /**
  * Message Service - Business logic for messaging operations
  * Handles message creation, retrieval, and notification logic
+ * Requirements: 9.7, 16.3 - Handle Live Activity token invalidation and fallback
  */
 import { MessageRepository } from '../repositories/MessageRepository';
 import { UserRepository } from '../repositories/UserRepository';
@@ -15,7 +16,14 @@ export class MessageService {
     private userRepo: UserRepository,
     private friendshipRepo: FriendshipRepository,
     private notificationService: NotificationService
-  ) {}
+  ) {
+    // Set up callback for clearing invalid Live Activity tokens
+    // Requirements: 9.7, 16.3 - Remove invalid tokens from storage
+    this.notificationService.setClearLATokenCallback((userId: string) => {
+      console.log(`🗑️ Clearing Live Activity token for user ${userId}`);
+      this.userRepo.updateLiveActivityToken(userId, null);
+    });
+  }
 
   /**
    * Create a new message and send appropriate notification
@@ -158,8 +166,9 @@ export class MessageService {
 
   /**
    * Send notification for a new message
-   * Requirements: 8.1, 8.5, 9.4, 15.3, 15.4
-   * - If recipient has Live Activity token: send push-to-start LA notification
+   * Requirements: 8.1, 8.5, 9.4, 9.7, 15.3, 15.4
+   * - If recipient has valid Live Activity token: send push-to-start LA notification
+   * - If LA notification fails: fall back to regular push and clear invalid token
    * - If no LA token: send regular push notification
    */
   private async sendMessageNotification(
@@ -169,47 +178,9 @@ export class MessageService {
   ): Promise<void> {
     const senderName = sender.displayName || sender.hexCode;
 
-    // Check if recipient has Live Activity token
-    if (recipient.liveActivityToken) {
-      // Send Live Activity push-to-start notification
-      await this.sendLiveActivityNotification(recipient, senderName, message);
-      console.log(`📟 Live Activity notification sent to ${recipient.hexCode}`);
-    } else {
-      // Fall back to regular push notification
-      await this.sendRegularPushNotification(recipient, senderName, message);
-      console.log(`📱 Regular push notification sent to ${recipient.hexCode}`);
-    }
-  }
-
-  /**
-   * Send Live Activity push-to-start notification
-   * Requirements: 9.4, 15.3
-   */
-  private async sendLiveActivityNotification(
-    recipient: User,
-    senderName: string,
-    message: Message
-  ): Promise<void> {
-    // Live Activity push-to-start uses the LA token, not device token
-    // The notification payload triggers iOS to start a Live Activity
-    await this.notificationService.notifyMessageReceivedViaLiveActivity(
-      recipient,
-      senderName,
-      message.text,
-      message.id
-    );
-  }
-
-  /**
-   * Send regular push notification
-   * Requirements: 8.1, 15.4
-   */
-  private async sendRegularPushNotification(
-    recipient: User,
-    senderName: string,
-    message: Message
-  ): Promise<void> {
-    await this.notificationService.notifyMessageReceived(
+    // Use the unified notification method that handles LA fallback
+    // Requirements: 9.7 - Automatic fallback if LA token is invalid
+    await this.notificationService.sendMessageNotification(
       recipient,
       senderName,
       message.text,

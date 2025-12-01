@@ -9,6 +9,13 @@
  */
 
 import { NativeModules, Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// Storage keys for token registration status
+const STORAGE_KEYS = {
+  LA_TOKEN_REGISTERED: 'la_token_registered',
+  LA_TOKEN_REGISTERED_AT: 'la_token_registered_at',
+};
 
 // Get the native module (will be undefined on non-iOS platforms)
 const { LiveActivityBridge } = NativeModules;
@@ -271,16 +278,77 @@ export async function getPushToken(): Promise<string | null> {
 }
 
 /**
+ * Check if the Live Activity token has been registered with the backend.
+ * 
+ * Requirements: 2.3, 2.4
+ * 
+ * @returns true if token was previously registered successfully
+ */
+export async function isTokenRegistered(): Promise<boolean> {
+  try {
+    const registered = await AsyncStorage.getItem(STORAGE_KEYS.LA_TOKEN_REGISTERED);
+    return registered === 'true';
+  } catch (error) {
+    console.error('[LiveActivity] Failed to check token registration status:', error);
+    return false;
+  }
+}
+
+/**
+ * Mark the Live Activity token as registered.
+ * 
+ * Requirements: 2.3, 2.4
+ */
+async function setTokenRegistered(registered: boolean): Promise<void> {
+  try {
+    if (registered) {
+      await AsyncStorage.setItem(STORAGE_KEYS.LA_TOKEN_REGISTERED, 'true');
+      await AsyncStorage.setItem(STORAGE_KEYS.LA_TOKEN_REGISTERED_AT, new Date().toISOString());
+      console.log('[LiveActivity] Token registration status saved');
+    } else {
+      await AsyncStorage.removeItem(STORAGE_KEYS.LA_TOKEN_REGISTERED);
+      await AsyncStorage.removeItem(STORAGE_KEYS.LA_TOKEN_REGISTERED_AT);
+      console.log('[LiveActivity] Token registration status cleared');
+    }
+  } catch (error) {
+    console.error('[LiveActivity] Failed to save token registration status:', error);
+  }
+}
+
+/**
+ * Clear the Live Activity token registration status.
+ * Should be called when user logs out.
+ * 
+ * Requirements: 2.3, 2.4
+ */
+export async function clearTokenRegistrationStatus(): Promise<void> {
+  await setTokenRegistered(false);
+}
+
+/**
  * Register the Live Activity push token with the backend.
  * This allows the backend to send push-to-start notifications for new messages.
  * 
- * Requirements: 9.2, 9.3
+ * Requirements: 2.3, 2.4, 9.2, 9.3
  * 
  * @param authToken - The user's authentication token
+ * @param forceRefresh - If true, re-register even if already registered
  * @returns true if registration succeeded, false otherwise
  */
-export async function registerPushTokenWithBackend(authToken: string): Promise<boolean> {
+export async function registerPushTokenWithBackend(
+  authToken: string,
+  forceRefresh: boolean = false
+): Promise<boolean> {
   try {
+    // Check if already registered (unless force refresh)
+    if (!forceRefresh) {
+      const alreadyRegistered = await isTokenRegistered();
+      if (alreadyRegistered) {
+        console.log('[LiveActivity] Token already registered, skipping');
+        return true;
+      }
+    }
+    
     // Get the push token from the native module
     const pushToken = await getPushToken();
     
@@ -289,12 +357,18 @@ export async function registerPushTokenWithBackend(authToken: string): Promise<b
       return false;
     }
     
+    console.log('[LiveActivity] Registering push token with backend...');
+    
     // Import the API client dynamically to avoid circular dependencies
     const { updateLiveActivityToken } = await import('./apiClient');
     
     // Send the token to the backend
     await updateLiveActivityToken(authToken, pushToken);
     console.log('[LiveActivity] Successfully registered push token with backend');
+    
+    // Mark as registered
+    await setTokenRegistered(true);
+    
     return true;
   } catch (error) {
     console.error('[LiveActivity] Failed to register push token with backend:', error);
