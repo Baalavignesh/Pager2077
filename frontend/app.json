@@ -2,6 +2,7 @@
   "expo": {
     "name": "Pager2077",
     "slug": "pager2077",
+    "scheme": "pager2077",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -14,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.pager2077v1.app",
+      "bundleIdentifier": "com.pager2077.app",
       "appleTeamId": "PQD3HLJC38",
       "infoPlist": {
         "UIBackgroundModes": [

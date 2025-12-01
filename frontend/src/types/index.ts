@@ -17,13 +17,14 @@ export interface Friend {
 }
 
 // Friend Request Types
+// Note: Backend returns flat fields (fromUserHexCode, fromUserDisplayName)
+// instead of nested fromUser object
 export interface FriendRequest {
   id: string;
-  fromUser: {
-    id: string;
-    hexCode: string;
-    displayName?: string | null;
-  };
+  fromUserId: string;
+  toUserId: string;
+  fromUserHexCode: string;
+  fromUserDisplayName: string | null;
   status: 'pending' | 'accepted' | 'rejected';
   createdAt: string;
 }

@@ -188,17 +188,17 @@
     - Pass real data to FriendsListScreen
     - _Requirements: 3.1, 3.2_
 
-- [ ] 17. Implement friend request functionality
-  - [ ] 17.1 Create frontend/src/hooks/useFriendRequests.ts hook
+- [x] 17. Implement friend request functionality
+  - [x] 17.1 Create frontend/src/hooks/useFriendRequests.ts hook
     - Fetch pending requests from backend
     - Provide accept/reject functions
     - Manage loading and error states
     - _Requirements: 5.1, 5.2, 5.3, 5.4_
-  - [ ] 17.2 Update App.tsx to use real friend requests
+  - [x] 17.2 Update App.tsx to use real friend requests
     - Replace mockFriendRequests with useFriendRequests hook
     - Wire up accept/reject handlers to API
     - _Requirements: 5.1, 5.5, 5.6_
-  - [ ] 17.3 Update AddFriendScreen handlers in App.tsx
+  - [x] 17.3 Update AddFriendScreen handlers in App.tsx
     - Call sendFriendRequest API on submit
     - Handle error responses (USER_NOT_FOUND, DUPLICATE_REQUEST, FRIENDSHIP_EXISTS)
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_

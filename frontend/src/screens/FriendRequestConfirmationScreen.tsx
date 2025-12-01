@@ -1,9 +1,13 @@
 import React from 'react';
 import { PagerScreen, PagerText } from '../components/PagerScreen';
 
+// Updated interface to match useFriendRequests hook output
+// Requirements: 5.3, 5.4
 interface FriendRequest {
+  id: string;
   sixDigitCode: string;
   timestamp: string;
+  displayName?: string;
 }
 
 interface FriendRequestConfirmationScreenProps {
@@ -19,7 +23,8 @@ export const FriendRequestConfirmationScreen: React.FC<FriendRequestConfirmation
   isProcessing = false,
   displayNameMap = {}
 }) => {
-  const displayName = displayNameMap[request.sixDigitCode] || request.sixDigitCode;
+  // Use displayName from request first, then fallback to displayNameMap, then hexCode
+  const displayName = request.displayName || displayNameMap[request.sixDigitCode] || request.sixDigitCode;
   if (isProcessing) {
     return (
       <PagerScreen title="CONFIRM REQUEST">

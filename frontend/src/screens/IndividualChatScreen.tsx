@@ -9,6 +9,7 @@ import { mapApiError, getErrorMessage } from '../utils/errorMessages';
 import * as Haptics from 'expo-haptics';
 
 interface Friend {
+  id: string;
   sixDigitCode: string;
   displayName?: string;
 }
@@ -129,7 +130,8 @@ export const IndividualChatScreen = forwardRef<IndividualChatScreenHandle, Indiv
       
       try {
         // Get only the latest message (limit: 1)
-        const messages = await getMessageHistory(token, friend.sixDigitCode, 1);
+        // Use friend.id (user ID) for API call, not sixDigitCode (hex code)
+        const messages = await getMessageHistory(token, friend.id, 1);
         
         if (messages.length > 0) {
           const latestMsg = messages[0];
@@ -222,8 +224,8 @@ export const IndividualChatScreen = forwardRef<IndividualChatScreenHandle, Indiv
       setSendStatus('sending');
       setErrorMessage(null);
 
-      // Send message
-      const result = await sendMessage(token, friend.sixDigitCode, sanitizedMessage);
+      // Send message - use friend.id (user ID) for API call
+      const result = await sendMessage(token, friend.id, sanitizedMessage);
 
       // Success - trigger success haptic
       if (vibrateEnabled) {

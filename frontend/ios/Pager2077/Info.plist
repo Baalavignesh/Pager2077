@@ -27,7 +27,8 @@
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.pager2077v1.app</string>
+				<string>pager2077</string>
+				<string>com.pager2077.app</string>
 			</array>
 		</dict>
 	</array>

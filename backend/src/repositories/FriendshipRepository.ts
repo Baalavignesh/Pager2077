@@ -22,12 +22,16 @@ export class FriendshipRepository {
     const id = randomBytes(16).toString('hex');
     const now = new Date().toISOString();
 
+    console.log(`[FriendshipRepo] Creating friend request: from=${fromUserId}, to=${toUserId}`);
+
     const stmt = this.db.prepare(`
       INSERT INTO friend_requests (id, from_user_id, to_user_id, status, created_at, updated_at)
       VALUES (?, ?, ?, 'pending', ?, ?)
     `);
 
     stmt.run(id, fromUserId, toUserId, now, now);
+    
+    console.log(`[FriendshipRepo] Friend request created with id: ${id}`);
 
     return {
       id,
@@ -57,6 +61,8 @@ export class FriendshipRepository {
    * Get pending friend requests for a user
    */
   getPendingRequests(userId: string): FriendRequest[] {
+    console.log(`[FriendshipRepo] Getting pending requests for user: ${userId}`);
+    
     const stmt = this.db.prepare(`
       SELECT * FROM friend_requests 
       WHERE to_user_id = ? AND status = 'pending'
@@ -64,6 +70,11 @@ export class FriendshipRepository {
     `);
 
     const rows = stmt.all(userId) as any[];
+    console.log(`[FriendshipRepo] Found ${rows.length} pending requests`);
+    rows.forEach(row => {
+      console.log(`[FriendshipRepo]   Request: from=${row.from_user_id}, to=${row.to_user_id}`);
+    });
+    
     return rows.map(row => this.mapRowToFriendRequest(row));
   }
 

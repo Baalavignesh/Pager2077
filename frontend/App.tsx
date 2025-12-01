@@ -23,6 +23,7 @@ import { ChatPagerBody } from './src/components/ChatPagerBody';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { useNotifications } from './src/hooks/useNotifications';
 import { useFriends } from './src/hooks/useFriends';
+import { useFriendRequests } from './src/hooks/useFriendRequests';
 import { getAllDisplayNameMappings } from './src/services/storageService';
 import { setCurrentUserDisplayName } from './src/services/displayNameService';
 import { areActivitiesEnabled, registerPushTokenWithBackend } from './src/services/liveActivityService';
@@ -41,10 +42,8 @@ const mainMenu = [
 // mockFriends removed - now using useFriends hook for real API data
 // Requirements: 3.1, 3.2
 
-const mockFriendRequests = [
-  { sixDigitCode: '111222', timestamp: '2024-11-19T10:30:00' },
-  { sixDigitCode: '333444', timestamp: '2024-11-19T09:15:00' },
-];
+// mockFriendRequests removed - now using useFriendRequests hook for real API data
+// Requirements: 5.1, 5.2
 
 // Mock unread messages - in real app, this would come from API
 // Only shows friends who have sent you unread messages
@@ -62,8 +61,18 @@ function AppContent() {
   // Real friends data from backend (Requirements: 3.1, 3.2)
   const { friends: realFriends, isLoading: friendsLoading, error: friendsError, refresh: refreshFriends } = useFriends();
   
+  // Real friend requests data from backend (Requirements: 5.1, 5.2)
+  const { 
+    requests: realFriendRequests, 
+    isLoading: requestsLoading, 
+    error: requestsError, 
+    refresh: refreshRequests,
+    acceptRequest: apiAcceptRequest,
+    rejectRequest: apiRejectRequest
+  } = useFriendRequests();
+  
   // Selected friend for chat
-  const [selectedFriend, setSelectedFriend] = useState<{ sixDigitCode: string; displayName?: string } | null>(null);
+  const [selectedFriend, setSelectedFriend] = useState<{ id: string; sixDigitCode: string; displayName?: string } | null>(null);
   
   // Display name state
   const [displayNameMap, setDisplayNameMap] = useState<Record<string, string>>({});
@@ -101,7 +110,8 @@ function AppContent() {
   };
   
   // Friend request confirmation state
-  const [confirmingRequest, setConfirmingRequest] = useState<{ sixDigitCode: string; timestamp: string } | null>(null);
+  // Updated to include id for API calls (Requirements: 5.3, 5.4)
+  const [confirmingRequest, setConfirmingRequest] = useState<{ id: string; sixDigitCode: string; timestamp: string; displayName?: string } | null>(null);
   const [confirmationFocusedButton, setConfirmationFocusedButton] = useState<'yes' | 'no' | null>(null);
 
   // Settings state
@@ -159,6 +169,22 @@ function AppContent() {
     }
     loadDisplayNameData();
   }, [isAuthenticated, hexCode, fontLoaded]);
+
+  // Update displayNameMap when friends data changes (from API)
+  // This ensures we show friend display names from the backend
+  useEffect(() => {
+    if (realFriends.length > 0) {
+      setDisplayNameMap(prev => {
+        const updated = { ...prev };
+        realFriends.forEach(friend => {
+          if (friend.displayName) {
+            updated[friend.sixDigitCode] = friend.displayName;
+          }
+        });
+        return updated;
+      });
+    }
+  }, [realFriends]);
 
   // No auto-registration - user must enter name first
   // Registration happens when user submits their name
@@ -383,10 +409,10 @@ function AppContent() {
       maxIndex = mainMenu.length - 1;
     } else if (currentScreen === 'friends') {
       // ADD FRIEND + REQUESTS (if any) + friends list
-      const menuItems = 1 + (mockFriendRequests.length > 0 ? 1 : 0);
+      const menuItems = 1 + (realFriendRequests.length > 0 ? 1 : 0);
       maxIndex = Math.max(0, menuItems + realFriends.length - 1);
     } else if (currentScreen === 'friendRequests') {
-      maxIndex = mockFriendRequests.length - 1;
+      maxIndex = realFriendRequests.length - 1;
     } else if (currentScreen === 'messages') {
       maxIndex = mockMessages.length - 1;
     } else if (currentScreen === 'settings') {
@@ -429,16 +455,30 @@ function AppContent() {
       const selected = mainMenu[selectedIndex];
       setCurrentScreen(selected.screen);
       setSelectedIndex(0);
+      
+      // Refresh data when navigating to friends screen
+      if (selected.screen === 'friends') {
+        refreshFriends();
+        refreshRequests();
+      }
     } else if (currentScreen === 'messages') {
       // Navigate to chat with selected message sender
       const message = mockMessages[selectedIndex];
       if (message) {
-        setSelectedFriend({ sixDigitCode: message.from });
-        setCurrentScreen('chat');
+        // Find the friend's ID from the friends list
+        const friend = realFriends.find(f => f.sixDigitCode === message.from);
+        if (friend && friend.id) {
+          setSelectedFriend({ 
+            id: friend.id,
+            sixDigitCode: message.from,
+            displayName: friend.displayName || undefined
+          });
+          setCurrentScreen('chat');
+        }
       }
     } else if (currentScreen === 'friends') {
       // Handle friends list selection
-      const hasRequests = mockFriendRequests.length > 0;
+      const hasRequests = realFriendRequests.length > 0;
       const menuItemsCount = 1 + (hasRequests ? 1 : 0);
       
       if (selectedIndex === 0) {
@@ -454,8 +494,9 @@ function AppContent() {
         // Friend selected - navigate to chat
         const friendIndex = selectedIndex - menuItemsCount;
         const friend = realFriends[friendIndex];
-        if (friend) {
+        if (friend && friend.id) {
           setSelectedFriend({ 
+            id: friend.id,
             sixDigitCode: friend.sixDigitCode, 
             displayName: friend.displayName || undefined 
           });
@@ -464,7 +505,7 @@ function AppContent() {
       }
     } else if (currentScreen === 'friendRequests') {
       // Navigate to confirmation screen
-      const request = mockFriendRequests[selectedIndex];
+      const request = realFriendRequests[selectedIndex];
       if (request) {
         setConfirmingRequest(request);
         setConfirmationFocusedButton('yes'); // Default to yes
@@ -472,11 +513,12 @@ function AppContent() {
       }
     } else if (currentScreen === 'friendRequestConfirmation') {
       // Execute accept or reject based on focused button
-      if (confirmingRequest && confirmationFocusedButton) {
+      // Requirements: 5.3, 5.4 - Use request ID for API calls
+      if (confirmingRequest && confirmationFocusedButton && 'id' in confirmingRequest) {
         if (confirmationFocusedButton === 'yes') {
-          handleAcceptRequest(confirmingRequest.sixDigitCode);
+          handleAcceptRequest(confirmingRequest.id);
         } else {
-          handleRejectRequest(confirmingRequest.sixDigitCode);
+          handleRejectRequest(confirmingRequest.id);
         }
       }
     } else if (currentScreen === 'settings') {
@@ -715,34 +757,56 @@ function AppContent() {
     }
   };
 
-  const handleAcceptRequest = async (sixDigitCode: string) => {
-    console.log('Accepting friend request from:', sixDigitCode);
+  // Handle accept friend request via API
+  // Requirements: 5.3, 5.5, 5.6
+  const handleAcceptRequest = async (requestId: string) => {
+    console.log('📤 Accepting friend request:', requestId);
     setIsProcessing(true);
     
-    // Simulate API call with delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // TODO: Implement actual API call
-    setIsProcessing(false);
-    setCurrentScreen('friendRequests');
-    setConfirmingRequest(null);
-    setConfirmationFocusedButton(null);
-    setSelectedIndex(0);
+    try {
+      const success = await apiAcceptRequest(requestId);
+      
+      if (success) {
+        console.log('✅ Friend request accepted');
+        // Refresh friends list to show new friend (Requirement 5.5)
+        refreshFriends();
+      } else {
+        console.error('❌ Failed to accept friend request');
+      }
+    } catch (error) {
+      console.error('❌ Error accepting friend request:', error);
+    } finally {
+      setIsProcessing(false);
+      setCurrentScreen('friendRequests');
+      setConfirmingRequest(null);
+      setConfirmationFocusedButton(null);
+      setSelectedIndex(0);
+    }
   };
 
-  const handleRejectRequest = async (sixDigitCode: string) => {
-    console.log('Rejecting friend request from:', sixDigitCode);
+  // Handle reject friend request via API
+  // Requirements: 5.4, 5.6
+  const handleRejectRequest = async (requestId: string) => {
+    console.log('📤 Rejecting friend request:', requestId);
     setIsProcessing(true);
     
-    // Simulate API call with delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // TODO: Implement actual API call
-    setIsProcessing(false);
-    setCurrentScreen('friendRequests');
-    setConfirmingRequest(null);
-    setConfirmationFocusedButton(null);
-    setSelectedIndex(0);
+    try {
+      const success = await apiRejectRequest(requestId);
+      
+      if (success) {
+        console.log('✅ Friend request rejected');
+      } else {
+        console.error('❌ Failed to reject friend request');
+      }
+    } catch (error) {
+      console.error('❌ Error rejecting friend request:', error);
+    } finally {
+      setIsProcessing(false);
+      setCurrentScreen('friendRequests');
+      setConfirmingRequest(null);
+      setConfirmationFocusedButton(null);
+      setSelectedIndex(0);
+    }
   };
 
   const renderScreen = () => {
@@ -767,7 +831,7 @@ function AppContent() {
           <FriendsListScreen 
             friends={realFriends} 
             selectedIndex={selectedIndex}
-            pendingRequestsCount={mockFriendRequests.length}
+            pendingRequestsCount={realFriendRequests.length}
             displayNameMap={displayNameMap}
           />
         );
@@ -782,7 +846,7 @@ function AppContent() {
       case 'friendRequests':
         return (
           <FriendRequestsScreen 
-            requests={mockFriendRequests}
+            requests={realFriendRequests}
             selectedIndex={selectedIndex}
             displayNameMap={displayNameMap}
           />
