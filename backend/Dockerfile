@@ -1,16 +1,16 @@
 # Pager2077 Backend Dockerfile
-FROM oven/bun:1.1-alpine
+FROM oven/bun:latest
 
 WORKDIR /app
 
 # Install dependencies for better-sqlite3 native compilation
-RUN apk add --no-cache python3 make g++ sqlite-dev
+RUN apt-get update && apt-get install -y python3 make g++ wget && rm -rf /var/lib/apt/lists/*
 
 # Copy package files
 COPY package.json bun.lock ./
 
-# Install dependencies
-RUN bun install --frozen-lockfile
+# Install dependencies (allow lockfile updates for version compatibility)
+RUN bun install
 
 # Copy source code
 COPY . .
