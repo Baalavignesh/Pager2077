@@ -167,7 +167,10 @@ export class APNSProvider {
       return;
     }
 
-    const timestamp = Math.floor(Date.now() / 1000);
+    const unixTimestamp = Math.floor(Date.now() / 1000);
+    // Convert Unix timestamp (since 1970) to Cocoa timestamp (since 2001-01-01)
+    // Difference is 978307200 seconds
+    const cocoaTimestamp = unixTimestamp - 978307200;
 
     // Build the Live Activity payload
     // For push-to-start, ALL fields must be inside the 'aps' object:
@@ -176,11 +179,17 @@ export class APNSProvider {
     // - content-state: The ContentState matching Swift struct
     // - attributes-type: The name of your ActivityAttributes struct (inside aps!)
     // - attributes: Static attributes for the activity (inside aps!)
+    // Update content-state timestamp to use Cocoa reference date
+    const contentStateWithCocoaTimestamp = {
+      ...notification.contentState,
+      timestamp: cocoaTimestamp,  // Swift Date expects Cocoa timestamp
+    };
+
     const payload = {
       aps: {
-        'timestamp': timestamp,
+        'timestamp': unixTimestamp,  // APNS timestamp stays as Unix
         'event': 'start',
-        'content-state': notification.contentState,
+        'content-state': contentStateWithCocoaTimestamp,
         'attributes-type': 'PagerActivityAttributes',
         'attributes': {
           activityType: 'message',
