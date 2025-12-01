@@ -12,7 +12,8 @@ import { dirname } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirnamePath = dirname(__filename);
 
-const DB_PATH = join(__dirnamePath, '../../pager.db');
+// Support configurable DB path for Docker, default to local
+const DB_PATH = process.env.DB_PATH || join(__dirnamePath, '../../pager.db');
 const SCHEMA_PATH = join(__dirnamePath, 'schema.sql');
 
 let db: Database.Database | null = null;
