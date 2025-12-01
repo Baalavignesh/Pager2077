@@ -7,7 +7,7 @@ import type { ApiResponse, RegistrationResponse, User, Friend, FriendRequest, Co
 // Find your IP: ifconfig | grep "inet " | grep -v 127.0.0.1
 const API_URL = __DEV__ 
   ? 'http://192.168.0.122:3000'  // Local network IP for physical device testing
-  : 'https://api.pager2077.app'; // Update with production URL
+  : 'https://pager.baalavignesh.com'; // Update with production URL
 
 // Log the API URL on startup
 console.log('🌐 API Client initialized with URL:', API_URL);
