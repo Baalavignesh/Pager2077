@@ -206,17 +206,17 @@
     - **Property 3: Friend Request State Transitions**
     - **Validates: Requirements 5.3, 5.4, 5.5, 5.6**
 
-- [ ] 18. Checkpoint - Ensure all tests pass
+- [x] 18. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Phase 6: Frontend Messages Integration
 
-- [ ] 19. Replace mock messages with real API calls
-  - [ ] 19.1 Create frontend/src/hooks/useConversations.ts hook
+- [x] 19. Replace mock messages with real API calls
+  - [x] 19.1 Create frontend/src/hooks/useConversations.ts hook
     - Fetch conversations with unread messages
     - Manage loading and error states
     - _Requirements: 10.1, 10.2_
-  - [ ] 19.2 Update App.tsx to use real conversations
+  - [x] 19.2 Update App.tsx to use real conversations
     - Replace mockMessages with useConversations hook
     - Pass real data to MessagesScreen
     - _Requirements: 10.1, 10.2, 10.4_

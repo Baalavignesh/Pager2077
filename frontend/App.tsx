@@ -24,6 +24,7 @@ import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { useNotifications } from './src/hooks/useNotifications';
 import { useFriends } from './src/hooks/useFriends';
 import { useFriendRequests } from './src/hooks/useFriendRequests';
+import { useConversations } from './src/hooks/useConversations';
 import { getAllDisplayNameMappings } from './src/services/storageService';
 import { setCurrentUserDisplayName } from './src/services/displayNameService';
 import { areActivitiesEnabled, registerPushTokenWithBackend } from './src/services/liveActivityService';
@@ -45,12 +46,8 @@ const mainMenu = [
 // mockFriendRequests removed - now using useFriendRequests hook for real API data
 // Requirements: 5.1, 5.2
 
-// Mock unread messages - in real app, this would come from API
-// Only shows friends who have sent you unread messages
-const mockMessages = [
-  { from: '123456', text: 'HELLO THERE!', time: '14:30' },
-  { from: '789012', text: 'HOW ARE YOU?', time: '12:15' },
-];
+// mockMessages removed - now using useConversations hook for real API data
+// Requirements: 10.1, 10.2
 
 function AppContent() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('main');
@@ -70,6 +67,14 @@ function AppContent() {
     acceptRequest: apiAcceptRequest,
     rejectRequest: apiRejectRequest
   } = useFriendRequests();
+  
+  // Real conversations data from backend (Requirements: 10.1, 10.2)
+  const {
+    conversations: realConversations,
+    isLoading: conversationsLoading,
+    error: conversationsError,
+    refresh: refreshConversations
+  } = useConversations();
   
   // Selected friend for chat
   const [selectedFriend, setSelectedFriend] = useState<{ id: string; sixDigitCode: string; displayName?: string } | null>(null);
@@ -414,7 +419,7 @@ function AppContent() {
     } else if (currentScreen === 'friendRequests') {
       maxIndex = realFriendRequests.length - 1;
     } else if (currentScreen === 'messages') {
-      maxIndex = mockMessages.length - 1;
+      maxIndex = realConversations.length - 1;
     } else if (currentScreen === 'settings') {
       maxIndex = 5; // Sound, Vibrate, Edit Name, About, Help, Logout
     } else if (currentScreen === 'liveActivityDemo') {
@@ -461,20 +466,23 @@ function AppContent() {
         refreshFriends();
         refreshRequests();
       }
+      
+      // Refresh conversations when navigating to messages screen
+      // Requirements: 10.1 - Fetch conversations with unread messages
+      if (selected.screen === 'messages') {
+        refreshConversations();
+      }
     } else if (currentScreen === 'messages') {
-      // Navigate to chat with selected message sender
-      const message = mockMessages[selectedIndex];
-      if (message) {
-        // Find the friend's ID from the friends list
-        const friend = realFriends.find(f => f.sixDigitCode === message.from);
-        if (friend && friend.id) {
-          setSelectedFriend({ 
-            id: friend.id,
-            sixDigitCode: message.from,
-            displayName: friend.displayName || undefined
-          });
-          setCurrentScreen('chat');
-        }
+      // Navigate to chat with selected conversation sender
+      // Requirements: 10.3 - Navigate to chat with that friend
+      const conversation = realConversations[selectedIndex];
+      if (conversation && conversation.friendId) {
+        setSelectedFriend({ 
+          id: conversation.friendId,
+          sixDigitCode: conversation.from,
+          displayName: conversation.displayName || undefined
+        });
+        setCurrentScreen('chat');
       }
     } else if (currentScreen === 'friends') {
       // Handle friends list selection
@@ -814,7 +822,8 @@ function AppContent() {
       case 'main':
         return <MainMenuScreen menuItems={mainMenu} selectedIndex={selectedIndex} />;
       case 'messages':
-        return <MessagesScreen messages={mockMessages} selectedIndex={selectedIndex} displayNameMap={displayNameMap} />;
+        // Requirements: 10.1, 10.2, 10.4 - Display conversations with unread messages
+        return <MessagesScreen messages={realConversations} selectedIndex={selectedIndex} displayNameMap={displayNameMap} />;
       case 'chat':
         return selectedFriend ? (
           <IndividualChatScreen

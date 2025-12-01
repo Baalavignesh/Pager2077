@@ -54,3 +54,5 @@ backend/terraform/.terraform.lock.hcl
 # Logs
 logs/
 *.log
+backend/pager.db-shm
+backend/pager.db-wal

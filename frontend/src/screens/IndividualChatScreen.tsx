@@ -118,25 +118,32 @@ export const IndividualChatScreen = forwardRef<IndividualChatScreenHandle, Indiv
     };
   }, []);
 
-  // Load latest message on mount
-  useEffect(() => {
-    const loadLatestMessage = async () => {
-      if (!token) {
-        setIsLoading(false);
-        return;
-      }
+  // Polling interval ref
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-      setIsLoading(true);
+  // Function to fetch latest message
+  const fetchLatestMessage = async (isInitialLoad = false) => {
+    if (!token) {
+      if (isInitialLoad) setIsLoading(false);
+      return;
+    }
+
+    if (isInitialLoad) setIsLoading(true);
+    
+    try {
+      // Get only the latest message (limit: 1)
+      // Use friend.id (user ID) for API call, not sixDigitCode (hex code)
+      const messages = await getMessageHistory(token, friend.id, 1);
       
-      try {
-        // Get only the latest message (limit: 1)
-        // Use friend.id (user ID) for API call, not sixDigitCode (hex code)
-        const messages = await getMessageHistory(token, friend.id, 1);
+      if (messages.length > 0) {
+        const latestMsg = messages[0];
+        const isSent = latestMsg.senderId === hexCode;
         
-        if (messages.length > 0) {
-          const latestMsg = messages[0];
-          const isSent = latestMsg.senderId === hexCode;
-          
+        // Check if this is a new message (different from current)
+        const isNewMessage = !conversationState.lastMessage || 
+          latestMsg.id !== conversationState.lastMessage.id;
+        
+        if (isNewMessage || isInitialLoad) {
           setConversationState({
             lastMessage: {
               ...latestMsg,
@@ -145,29 +152,68 @@ export const IndividualChatScreen = forwardRef<IndividualChatScreenHandle, Indiv
             isWaitingForReply: isSent, // If we sent it, we're waiting for reply
             hasUnreadMessage: !isSent, // If they sent it, it's unread
           });
-        } else {
-          // No messages - fresh conversation
-          setConversationState({
-            lastMessage: null,
-            isWaitingForReply: false,
-            hasUnreadMessage: false,
-          });
+          
+          // If we received a reply while waiting, trigger haptic feedback
+          if (!isInitialLoad && !isSent && conversationState.isWaitingForReply && vibrateEnabled) {
+            triggerSuccessHaptic();
+          }
         }
-      } catch (error) {
-        console.error('Failed to load latest message:', error);
+      } else if (isInitialLoad) {
+        // No messages - fresh conversation
+        setConversationState({
+          lastMessage: null,
+          isWaitingForReply: false,
+          hasUnreadMessage: false,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load latest message:', error);
+      if (isInitialLoad) {
         // Silently fail - show as no messages
         setConversationState({
           lastMessage: null,
           isWaitingForReply: false,
           hasUnreadMessage: false,
         });
-      } finally {
-        setIsLoading(false);
+      }
+    } finally {
+      if (isInitialLoad) setIsLoading(false);
+    }
+  };
+
+  // Load latest message on mount
+  useEffect(() => {
+    fetchLatestMessage(true);
+  }, [friend.id, token, hexCode]);
+
+  // Poll for new messages when waiting for reply
+  useEffect(() => {
+    // Clear any existing polling interval
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+
+    // Start polling if waiting for reply
+    if (conversationState.isWaitingForReply && token) {
+      console.log('[IndividualChatScreen] Starting polling for reply...');
+      
+      // Poll every 3 seconds
+      pollingIntervalRef.current = setInterval(() => {
+        console.log('[IndividualChatScreen] Polling for new messages...');
+        fetchLatestMessage(false);
+      }, 3000);
+    }
+
+    // Cleanup on unmount or when waiting state changes
+    return () => {
+      if (pollingIntervalRef.current) {
+        console.log('[IndividualChatScreen] Stopping polling');
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
       }
     };
-
-    loadLatestMessage();
-  }, [friend.sixDigitCode, token, hexCode]);
+  }, [conversationState.isWaitingForReply, token, friend.id]);
 
   // Handle number key press for T9 input
   const handleNumberPress = (key: string) => {
