@@ -1,19 +1,26 @@
 /**
  * Database connection and initialization
+ * Uses better-sqlite3 for Node.js compatibility (Bun also supports this)
  */
-import { Database } from 'bun:sqlite';
+import Database from 'better-sqlite3';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
-const DB_PATH = join(__dirname, '../../pager.db');
-const SCHEMA_PATH = join(__dirname, 'schema.sql');
+// ESM compatibility for __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirnamePath = dirname(__filename);
 
-let db: Database | null = null;
+const DB_PATH = join(__dirnamePath, '../../pager.db');
+const SCHEMA_PATH = join(__dirnamePath, 'schema.sql');
+
+let db: Database.Database | null = null;
 
 /**
  * Initialize database connection and schema
  */
-export function initDatabase(): Database {
+export function initDatabase(): Database.Database {
   if (db) {
     return db;
   }
@@ -22,10 +29,10 @@ export function initDatabase(): Database {
   db = new Database(DB_PATH);
 
   // Enable WAL mode for better concurrent read performance
-  db.run('PRAGMA journal_mode = WAL');
+  db.pragma('journal_mode = WAL');
 
   // Enable foreign keys
-  db.run('PRAGMA foreign_keys = ON');
+  db.pragma('foreign_keys = ON');
 
   // Read and execute schema
   const schema = readFileSync(SCHEMA_PATH, 'utf-8');
@@ -39,7 +46,7 @@ export function initDatabase(): Database {
 /**
  * Get database instance
  */
-export function getDatabase(): Database {
+export function getDatabase(): Database.Database {
   if (!db) {
     throw new Error('Database not initialized. Call initDatabase() first.');
   }

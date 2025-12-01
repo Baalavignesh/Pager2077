@@ -248,31 +248,52 @@ export async function getCurrentActivityId(): Promise<string | null> {
  * Note: Push tokens for Live Activities require iOS 17.2+.
  * Returns null on Android/web, iOS < 17.2, or if Live Activities are disabled.
  * 
- * @returns The push token string or null if not available
+ * IMPORTANT: This returns a PUSH-TO-START TOKEN, not a device token!
+ * - Device Token: Used for regular push notifications (alerts, badges)
+ * - Push-to-Start Token: Used to remotely start Live Activities (iOS 17.2+)
+ * 
+ * @returns The push-to-start token string or null if not available
  */
 export async function getPushToken(): Promise<string | null> {
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('[LA TOKEN FLOW] Step 2: TypeScript requesting push-to-start token from native bridge');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('[LA TOKEN FLOW] Platform:', Platform.OS);
+  console.log('[LA TOKEN FLOW] Bridge available:', !!LiveActivityBridge);
+  
   if (Platform.OS !== 'ios' || !LiveActivityBridge) {
-    console.log('[LiveActivity] getPushToken: Not iOS or bridge not available');
+    console.log('[LA TOKEN FLOW] ❌ Not iOS or bridge not available - returning null');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     return null;
   }
   
   try {
     // First check if Live Activities are enabled
     const enabled = await areActivitiesEnabled();
+    console.log('[LA TOKEN FLOW] Live Activities enabled:', enabled);
+    
     if (!enabled) {
-      console.log('[LiveActivity] getPushToken: Live Activities not enabled');
+      console.log('[LA TOKEN FLOW] ❌ Live Activities not enabled - returning null');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       return null;
     }
     
+    console.log('[LA TOKEN FLOW] Calling native LiveActivityBridge.getPushToken()...');
     const token = await LiveActivityBridge.getPushToken();
+    
     if (token) {
-      console.log('[LiveActivity] Got push token:', token.substring(0, 20) + '...');
+      console.log('[LA TOKEN FLOW] ✅ Push-to-start token received from native bridge');
+      console.log('[LA TOKEN FLOW] Token preview:', token.substring(0, 32) + '...');
+      console.log('[LA TOKEN FLOW] Token length:', token.length, 'characters');
     } else {
-      console.log('[LiveActivity] No push token available (requires iOS 17.2+)');
+      console.log('[LA TOKEN FLOW] ⚠️ No push-to-start token available');
+      console.log('[LA TOKEN FLOW] Possible reasons: iOS < 17.2, first launch, or LA disabled');
     }
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     return token;
   } catch (error) {
-    console.error('[LiveActivity] Failed to get push token:', error);
+    console.error('[LA TOKEN FLOW] ❌ Error getting push-to-start token:', error);
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     return null;
   }
 }
@@ -322,7 +343,21 @@ async function setTokenRegistered(registered: boolean): Promise<void> {
  * Requirements: 2.3, 2.4
  */
 export async function clearTokenRegistrationStatus(): Promise<void> {
+  console.log('[LiveActivity] Clearing token registration status');
   await setTokenRegistered(false);
+}
+
+/**
+ * Force clear and re-register the Live Activity token.
+ * Useful for debugging when token registration seems stuck.
+ * 
+ * @param authToken - The user's authentication token
+ * @returns true if registration succeeded, false otherwise
+ */
+export async function forceReregisterToken(authToken: string): Promise<boolean> {
+  console.log('[LiveActivity] Force re-registering token...');
+  await clearTokenRegistrationStatus();
+  return registerPushTokenWithBackend(authToken, true);
 }
 
 /**
@@ -330,6 +365,9 @@ export async function clearTokenRegistrationStatus(): Promise<void> {
  * This allows the backend to send push-to-start notifications for new messages.
  * 
  * Requirements: 2.3, 2.4, 9.2, 9.3
+ * 
+ * IMPORTANT: This sends the PUSH-TO-START TOKEN to the backend, NOT the device token!
+ * The backend stores this in the `live_activity_token` field (separate from `device_token`).
  * 
  * @param authToken - The user's authentication token
  * @param forceRefresh - If true, re-register even if already registered
@@ -339,12 +377,19 @@ export async function registerPushTokenWithBackend(
   authToken: string,
   forceRefresh: boolean = false
 ): Promise<boolean> {
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('[LA TOKEN FLOW] Step 3: Registering push-to-start token with backend');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('[LA TOKEN FLOW] Force refresh:', forceRefresh);
+  
   try {
     // Check if already registered (unless force refresh)
     if (!forceRefresh) {
       const alreadyRegistered = await isTokenRegistered();
+      console.log('[LA TOKEN FLOW] Already registered:', alreadyRegistered);
       if (alreadyRegistered) {
-        console.log('[LiveActivity] Token already registered, skipping');
+        console.log('[LA TOKEN FLOW] Skipping registration - token already registered');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         return true;
       }
     }
@@ -353,25 +398,34 @@ export async function registerPushTokenWithBackend(
     const pushToken = await getPushToken();
     
     if (!pushToken) {
-      console.log('[LiveActivity] No push token to register');
+      console.log('[LA TOKEN FLOW] ❌ No push-to-start token available to register');
+      console.log('[LA TOKEN FLOW] Backend will use regular push notifications for this user');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       return false;
     }
     
-    console.log('[LiveActivity] Registering push token with backend...');
+    console.log('[LA TOKEN FLOW] Sending push-to-start token to backend...');
+    console.log('[LA TOKEN FLOW] Endpoint: PUT /api/users/live-activity-token');
+    console.log('[LA TOKEN FLOW] Token preview:', pushToken.substring(0, 32) + '...');
     
     // Import the API client dynamically to avoid circular dependencies
     const { updateLiveActivityToken } = await import('./apiClient');
     
     // Send the token to the backend
     await updateLiveActivityToken(authToken, pushToken);
-    console.log('[LiveActivity] Successfully registered push token with backend');
+    
+    console.log('[LA TOKEN FLOW] ✅ Backend confirmed token storage');
+    console.log('[LA TOKEN FLOW] Token stored in: users.live_activity_token (NOT device_token)');
     
     // Mark as registered
     await setTokenRegistered(true);
+    console.log('[LA TOKEN FLOW] Registration status saved to AsyncStorage');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     
     return true;
   } catch (error) {
-    console.error('[LiveActivity] Failed to register push token with backend:', error);
+    console.error('[LA TOKEN FLOW] ❌ Failed to register push-to-start token:', error);
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     return false;
   }
 }

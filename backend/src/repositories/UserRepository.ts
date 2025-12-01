@@ -1,12 +1,12 @@
 /**
  * User Repository - Database operations for users
  */
-import type { Database } from 'bun:sqlite';
+import type Database from 'better-sqlite3';
 import { randomBytes } from 'crypto';
 import type { User } from '../models';
 
 export class UserRepository {
-  constructor(private db: Database) {}
+  constructor(private db: Database.Database) {}
 
   /**
    * Generate a unique 8-character hex code

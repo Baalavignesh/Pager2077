@@ -1,8 +1,15 @@
 /**
  * Pager 2077 Backend
  * 
- * Bun API server with SQLite database using proper Bun routing
+ * Node.js API server with Hono framework and SQLite database
  */
+
+// Load environment variables first
+import 'dotenv/config';
+
+import { serve } from '@hono/node-server';
+import { Hono } from 'hono';
+import { cors } from 'hono/cors';
 
 import { initDatabase } from './db';
 import { UserRepository } from './repositories/UserRepository';
@@ -40,19 +47,20 @@ const friendshipService = new FriendshipService(userRepo, friendshipRepo);
 const notificationService = new NotificationService();
 const messageService = new MessageService(messageRepo, userRepo, friendshipRepo, notificationService);
 
-// CORS headers
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-};
+// Create Hono app
+const app = new Hono();
+
+// CORS middleware
+app.use('*', cors({
+  origin: '*',
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization'],
+}));
 
 /**
  * Extract user ID from Authorization header
  */
-function getUserIdFromAuth(req: Request): string {
-  const authHeader = req.headers.get('Authorization');
-  
+function getUserIdFromAuth(authHeader: string | undefined): string {
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     throw new AppError(401, 'UNAUTHORIZED', 'No token provided');
   }
@@ -67,26 +75,20 @@ function getUserIdFromAuth(req: Request): string {
   }
 }
 
-/**
- * Handle errors and return appropriate response
- */
-function handleError(error: unknown): Response {
-  console.error('Error:', error);
+// Error handler middleware
+app.onError((err, c) => {
+  console.error('Error:', err);
 
-  if (error instanceof AppError) {
+  if (err instanceof AppError) {
     const response: ApiResponse<never> = {
       success: false,
       error: {
-        code: error.code,
-        message: error.message,
-        details: error.details,
+        code: err.code,
+        message: err.message,
+        details: err.details,
       },
     };
-
-    return Response.json(response, {
-      status: error.statusCode,
-      headers: corsHeaders,
-    });
+    return c.json(response, err.statusCode as any);
   }
 
   // Unknown error
@@ -97,357 +99,257 @@ function handleError(error: unknown): Response {
       message: 'An unexpected error occurred',
     },
   };
-
-  return Response.json(response, {
-    status: 500,
-    headers: corsHeaders,
-  });
-}
-
-/**
- * Main server with Bun routing
- */
-const server = Bun.serve({
-  port: 3000,
-  routes: {
-    // Health check
-    "/health": () => Response.json({ status: 'ok' }, { headers: corsHeaders }),
-    
-    // Queue metrics
-    "/api/queue/metrics": async () => {
-      try {
-        const { getQueueMetrics } = await import('./queue/notificationQueue');
-        const metrics = await getQueueMetrics();
-        return Response.json({ success: true, data: metrics }, { headers: corsHeaders });
-      } catch (error) {
-        return handleError(error);
-      }
-    },
-    
-    // User routes
-    "/api/users/register": {
-      POST: async (req) => {
-        try {
-          const body = await req.json() as RegisterUserRequest;
-          const result = userService.registerUser(body.deviceToken);
-          return Response.json({ success: true, data: result }, { status: 201, headers: corsHeaders });
-        } catch (error) {
-          return handleError(error);
-        }
-      },
-    },
-    
-    "/api/users/me": {
-      GET: async (req) => {
-        try {
-          const userId = getUserIdFromAuth(req);
-          const user = userService.getUserById(userId);
-          return Response.json({ success: true, data: user }, { headers: corsHeaders });
-        } catch (error) {
-          return handleError(error);
-        }
-      },
-    },
-    
-    "/api/users/status": {
-      PUT: async (req) => {
-        try {
-          const userId = getUserIdFromAuth(req);
-          const body = await req.json() as { status: 'online' | 'offline' };
-          
-          userService.updateUserStatus(userId, body.status);
-
-          const user = userService.getUserById(userId);
-          const friends = friendshipService.getUserFriends(userId);
-          await notificationService.broadcastStatusToFriends(friends, user.hexCode, body.status);
-
-          return Response.json({ success: true, data: { success: true } }, { headers: corsHeaders });
-        } catch (error) {
-          return handleError(error);
-        }
-      },
-    },
-    
-    "/api/users/display-name": {
-      PUT: async (req) => {
-        try {
-          const userId = getUserIdFromAuth(req);
-          const body = await req.json() as { displayName: string };
-          
-          if (body.displayName === undefined) {
-            throw new AppError(400, 'INVALID_INPUT', 'Display name is required');
-          }
-          
-          const updatedUser = userService.updateDisplayName(userId, body.displayName);
-
-          return Response.json({
-            success: true,
-            data: {
-              userId: updatedUser.id,
-              hexCode: updatedUser.hexCode,
-              displayName: updatedUser.displayName,
-            },
-          }, { headers: corsHeaders });
-        } catch (error) {
-          return handleError(error);
-        }
-      },
-    },
-    
-    "/api/users/live-activity-token": {
-      PUT: async (req) => {
-        try {
-          const userId = getUserIdFromAuth(req);
-          const body = await req.json() as { liveActivityToken: string | null };
-          
-          const token = body.liveActivityToken ?? null;
-          userService.updateLiveActivityToken(userId, token);
-
-          return Response.json({ success: true, data: { success: true } }, { headers: corsHeaders });
-        } catch (error) {
-          return handleError(error);
-        }
-      },
-    },
-    
-    // Friend routes
-    "/api/friends/request": {
-      POST: async (req) => {
-        try {
-          const userId = getUserIdFromAuth(req);
-          const body = await req.json() as SendFriendRequestRequest;
-          
-          const request = friendshipService.sendFriendRequest(userId, body.toHexCode);
-
-          const sender = userService.getUserById(userId);
-          const recipient = userService.getUserByHexCode(body.toHexCode.toUpperCase());
-          if (recipient) {
-            // Notification is best-effort, don't fail the request if it fails
-            try {
-              await notificationService.notifyFriendRequest(recipient, sender.hexCode, request.id);
-            } catch (notifError) {
-              console.error('Failed to send friend request notification:', notifError);
-            }
-          }
-
-          return Response.json({ success: true, data: request }, { status: 201, headers: corsHeaders });
-        } catch (error) {
-          return handleError(error);
-        }
-      },
-    },
-    
-    // GET /api/friends/requests/pending
-    // Requirements: 13.2 - Include requester's display name
-    "/api/friends/requests/pending": {
-      GET: async (req) => {
-        try {
-          const userId = getUserIdFromAuth(req);
-          const requests = friendshipService.getPendingRequestsWithDisplayNames(userId);
-
-          return Response.json({ success: true, data: { requests } }, { headers: corsHeaders });
-        } catch (error) {
-          return handleError(error);
-        }
-      },
-    },
-    
-    // Dynamic route: POST /api/friends/requests/:id/accept
-    "/api/friends/requests/:id/accept": {
-      POST: async (req) => {
-        try {
-          const requestId = req.params.id;
-          const userId = getUserIdFromAuth(req);
-          
-          const friend = friendshipService.acceptFriendRequest(requestId, userId);
-          const accepter = userService.getUserById(userId);
-          
-          // Notification is best-effort, don't fail the request if it fails
-          try {
-            await notificationService.notifyFriendRequestAccepted(friend, accepter.hexCode);
-          } catch (notifError) {
-            console.error('Failed to send friend request accepted notification:', notifError);
-          }
-
-          return Response.json({ success: true, data: { friend } }, { headers: corsHeaders });
-        } catch (error) {
-          return handleError(error);
-        }
-      },
-    },
-    
-    // Dynamic route: POST /api/friends/requests/:id/reject
-    "/api/friends/requests/:id/reject": {
-      POST: async (req) => {
-        try {
-          const requestId = req.params.id;
-          const userId = getUserIdFromAuth(req);
-          
-          friendshipService.rejectFriendRequest(requestId, userId);
-
-          return Response.json({ success: true, data: { success: true } }, { headers: corsHeaders });
-        } catch (error) {
-          return handleError(error);
-        }
-      },
-    },
-    
-    // GET /api/friends
-    // Requirements: 13.1 - Include display names for each friend
-    "/api/friends": {
-      GET: async (req) => {
-        try {
-          const userId = getUserIdFromAuth(req);
-          const friends = friendshipService.getUserFriends(userId);
-
-          // Map to include displayName explicitly in response
-          const friendsWithDisplayNames = friends.map(friend => ({
-            id: friend.id,
-            hexCode: friend.hexCode,
-            displayName: friend.displayName,
-            status: friend.status,
-            lastSeen: friend.lastSeen,
-          }));
-
-          return Response.json({ success: true, data: { friends: friendsWithDisplayNames } }, { headers: corsHeaders });
-        } catch (error) {
-          return handleError(error);
-        }
-      },
-    },
-    
-    // Dynamic route: DELETE /api/friends/:friendId
-    "/api/friends/:friendId": {
-      DELETE: async (req) => {
-        try {
-          const friendId = req.params.friendId;
-          const userId = getUserIdFromAuth(req);
-          
-          friendshipService.removeFriend(userId, friendId);
-
-          return Response.json({ success: true, data: { success: true } }, { headers: corsHeaders });
-        } catch (error) {
-          return handleError(error);
-        }
-      },
-    },
-    
-    // Message routes
-    "/api/messages": {
-      POST: async (req) => {
-        try {
-          const userId = getUserIdFromAuth(req);
-          const body = await req.json() as { recipientId: string; text: string };
-          
-          if (!body.recipientId) {
-            throw new AppError(400, 'INVALID_INPUT', 'Recipient ID is required');
-          }
-          
-          if (!body.text) {
-            throw new AppError(400, 'INVALID_INPUT', 'Message text is required');
-          }
-          
-          const message = await messageService.createMessage(userId, body.recipientId, body.text);
-
-          return Response.json({
-            success: true,
-            data: {
-              messageId: message.id,
-              timestamp: message.createdAt.toISOString(),
-            },
-          }, { status: 201, headers: corsHeaders });
-        } catch (error) {
-          return handleError(error);
-        }
-      },
-    },
-    
-    // Dynamic route: GET /api/messages/:friendId
-    "/api/messages/:friendId": {
-      GET: async (req) => {
-        try {
-          const friendId = req.params.friendId;
-          const userId = getUserIdFromAuth(req);
-          const url = new URL(req.url);
-          
-          const limitParam = url.searchParams.get('limit');
-          const limit = limitParam ? parseInt(limitParam, 10) : 50;
-          
-          if (isNaN(limit) || limit < 1 || limit > 100) {
-            throw new AppError(400, 'INVALID_INPUT', 'Limit must be between 1 and 100');
-          }
-          
-          const messages = messageService.getMessageHistory(userId, friendId, limit);
-          const friend = userService.getUserById(friendId);
-          const user = userService.getUserById(userId);
-          
-          const messagesWithNames = messages.map(msg => ({
-            id: msg.id,
-            senderId: msg.senderId,
-            recipientId: msg.recipientId,
-            text: msg.text,
-            isRead: msg.isRead,
-            timestamp: msg.createdAt.toISOString(),
-            senderDisplayName: msg.senderId === userId 
-              ? (user?.displayName || user?.hexCode || null)
-              : (friend?.displayName || friend?.hexCode || null),
-          }));
-
-          return Response.json({ success: true, data: { messages: messagesWithNames } }, { headers: corsHeaders });
-        } catch (error) {
-          return handleError(error);
-        }
-      },
-    },
-    
-    // Conversations route
-    "/api/conversations": {
-      GET: async (req) => {
-        try {
-          const userId = getUserIdFromAuth(req);
-          
-          const conversations = messageService.getConversationsWithUnread(userId);
-          
-          const conversationsResponse = conversations.map(conv => ({
-            friendId: conv.friendId,
-            friendHexCode: conv.friendHexCode,
-            friendDisplayName: conv.friendDisplayName,
-            unreadCount: conv.unreadCount,
-            lastMessage: conv.lastMessage ? {
-              id: conv.lastMessage.id,
-              senderId: conv.lastMessage.senderId,
-              text: conv.lastMessage.text,
-              timestamp: conv.lastMessage.createdAt.toISOString(),
-            } : null,
-          }));
-
-          return Response.json({ success: true, data: { conversations: conversationsResponse } }, { headers: corsHeaders });
-        } catch (error) {
-          return handleError(error);
-        }
-      },
-    },
-  },
-  
-  // Handle OPTIONS preflight and unmatched routes
-  fetch(req) {
-    const method = req.method;
-
-    // Handle OPTIONS preflight for all routes
-    if (method === 'OPTIONS') {
-      return new Response(null, { headers: corsHeaders });
-    }
-
-    // 404 Not Found
-    return Response.json({
-      success: false,
-      error: {
-        code: 'NOT_FOUND',
-        message: 'Endpoint not found',
-      },
-    }, { status: 404, headers: corsHeaders });
-  },
+  return c.json(response, 500);
 });
 
-console.log(`✅ Server running on http://localhost:${server.port}`);
-console.log(`📊 Health check: http://localhost:${server.port}/health`);
+// Health check
+app.get('/health', (c) => {
+  return c.json({ status: 'ok' });
+});
+
+// Queue metrics
+app.get('/api/queue/metrics', async (c) => {
+  const { getQueueMetrics } = await import('./queue/notificationQueue');
+  const metrics = await getQueueMetrics();
+  return c.json({ success: true, data: metrics });
+});
+
+// ============================================
+// User Routes
+// ============================================
+
+app.post('/api/users/register', async (c) => {
+  const body = await c.req.json() as RegisterUserRequest;
+  const result = userService.registerUser(body.deviceToken);
+  return c.json({ success: true, data: result }, 201);
+});
+
+app.get('/api/users/me', (c) => {
+  const userId = getUserIdFromAuth(c.req.header('Authorization'));
+  const user = userService.getUserById(userId);
+  return c.json({ success: true, data: user });
+});
+
+app.put('/api/users/status', async (c) => {
+  const userId = getUserIdFromAuth(c.req.header('Authorization'));
+  const body = await c.req.json() as { status: 'online' | 'offline' };
+  
+  userService.updateUserStatus(userId, body.status);
+
+  const user = userService.getUserById(userId);
+  const friends = friendshipService.getUserFriends(userId);
+  await notificationService.broadcastStatusToFriends(friends, user.hexCode, body.status);
+
+  return c.json({ success: true, data: { success: true } });
+});
+
+app.put('/api/users/display-name', async (c) => {
+  const userId = getUserIdFromAuth(c.req.header('Authorization'));
+  const body = await c.req.json() as { displayName: string };
+  
+  if (body.displayName === undefined) {
+    throw new AppError(400, 'INVALID_INPUT', 'Display name is required');
+  }
+  
+  const updatedUser = userService.updateDisplayName(userId, body.displayName);
+
+  return c.json({
+    success: true,
+    data: {
+      userId: updatedUser.id,
+      hexCode: updatedUser.hexCode,
+      displayName: updatedUser.displayName,
+    },
+  });
+});
+
+app.put('/api/users/live-activity-token', async (c) => {
+  const userId = getUserIdFromAuth(c.req.header('Authorization'));
+  const body = await c.req.json() as { liveActivityToken: string | null };
+  
+  const token = body.liveActivityToken ?? null;
+  userService.updateLiveActivityToken(userId, token);
+
+  return c.json({ success: true, data: { success: true } });
+});
+
+// ============================================
+// Friend Routes
+// ============================================
+
+app.post('/api/friends/request', async (c) => {
+  const userId = getUserIdFromAuth(c.req.header('Authorization'));
+  const body = await c.req.json() as SendFriendRequestRequest;
+  
+  const request = friendshipService.sendFriendRequest(userId, body.toHexCode);
+
+  const sender = userService.getUserById(userId);
+  const recipient = userService.getUserByHexCode(body.toHexCode.toUpperCase());
+  if (recipient) {
+    try {
+      await notificationService.notifyFriendRequest(recipient, sender.hexCode, request.id);
+    } catch (notifError) {
+      console.error('Failed to send friend request notification:', notifError);
+    }
+  }
+
+  return c.json({ success: true, data: request }, 201);
+});
+
+app.get('/api/friends/requests/pending', (c) => {
+  const userId = getUserIdFromAuth(c.req.header('Authorization'));
+  const requests = friendshipService.getPendingRequestsWithDisplayNames(userId);
+  return c.json({ success: true, data: { requests } });
+});
+
+app.post('/api/friends/requests/:id/accept', async (c) => {
+  const requestId = c.req.param('id');
+  const userId = getUserIdFromAuth(c.req.header('Authorization'));
+  
+  const friend = friendshipService.acceptFriendRequest(requestId, userId);
+  const accepter = userService.getUserById(userId);
+  
+  try {
+    await notificationService.notifyFriendRequestAccepted(friend, accepter.hexCode);
+  } catch (notifError) {
+    console.error('Failed to send friend request accepted notification:', notifError);
+  }
+
+  return c.json({ success: true, data: { friend } });
+});
+
+app.post('/api/friends/requests/:id/reject', (c) => {
+  const requestId = c.req.param('id');
+  const userId = getUserIdFromAuth(c.req.header('Authorization'));
+  
+  friendshipService.rejectFriendRequest(requestId, userId);
+
+  return c.json({ success: true, data: { success: true } });
+});
+
+app.get('/api/friends', (c) => {
+  const userId = getUserIdFromAuth(c.req.header('Authorization'));
+  const friends = friendshipService.getUserFriends(userId);
+
+  const friendsWithDisplayNames = friends.map(friend => ({
+    id: friend.id,
+    hexCode: friend.hexCode,
+    displayName: friend.displayName,
+    status: friend.status,
+    lastSeen: friend.lastSeen,
+  }));
+
+  return c.json({ success: true, data: { friends: friendsWithDisplayNames } });
+});
+
+app.delete('/api/friends/:friendId', (c) => {
+  const friendId = c.req.param('friendId');
+  const userId = getUserIdFromAuth(c.req.header('Authorization'));
+  
+  friendshipService.removeFriend(userId, friendId);
+
+  return c.json({ success: true, data: { success: true } });
+});
+
+// ============================================
+// Message Routes
+// ============================================
+
+app.post('/api/messages', async (c) => {
+  const userId = getUserIdFromAuth(c.req.header('Authorization'));
+  const body = await c.req.json() as { recipientId: string; text: string };
+  
+  if (!body.recipientId) {
+    throw new AppError(400, 'INVALID_INPUT', 'Recipient ID is required');
+  }
+  
+  if (!body.text) {
+    throw new AppError(400, 'INVALID_INPUT', 'Message text is required');
+  }
+  
+  const message = await messageService.createMessage(userId, body.recipientId, body.text);
+
+  return c.json({
+    success: true,
+    data: {
+      messageId: message.id,
+      timestamp: message.createdAt.toISOString(),
+    },
+  }, 201);
+});
+
+app.get('/api/messages/:friendId', (c) => {
+  const friendId = c.req.param('friendId');
+  const userId = getUserIdFromAuth(c.req.header('Authorization'));
+  
+  const limitParam = c.req.query('limit');
+  const limit = limitParam ? parseInt(limitParam, 10) : 50;
+  
+  if (isNaN(limit) || limit < 1 || limit > 100) {
+    throw new AppError(400, 'INVALID_INPUT', 'Limit must be between 1 and 100');
+  }
+  
+  const messages = messageService.getMessageHistory(userId, friendId, limit);
+  const friend = userService.getUserById(friendId);
+  const user = userService.getUserById(userId);
+  
+  const messagesWithNames = messages.map(msg => ({
+    id: msg.id,
+    senderId: msg.senderId,
+    recipientId: msg.recipientId,
+    text: msg.text,
+    isRead: msg.isRead,
+    timestamp: msg.createdAt.toISOString(),
+    senderDisplayName: msg.senderId === userId 
+      ? (user?.displayName || user?.hexCode || null)
+      : (friend?.displayName || friend?.hexCode || null),
+  }));
+
+  return c.json({ success: true, data: { messages: messagesWithNames } });
+});
+
+// ============================================
+// Conversations Route
+// ============================================
+
+app.get('/api/conversations', (c) => {
+  const userId = getUserIdFromAuth(c.req.header('Authorization'));
+  
+  const conversations = messageService.getConversationsWithUnread(userId);
+  
+  const conversationsResponse = conversations.map(conv => ({
+    friendId: conv.friendId,
+    friendHexCode: conv.friendHexCode,
+    friendDisplayName: conv.friendDisplayName,
+    unreadCount: conv.unreadCount,
+    lastMessage: conv.lastMessage ? {
+      id: conv.lastMessage.id,
+      senderId: conv.lastMessage.senderId,
+      text: conv.lastMessage.text,
+      timestamp: conv.lastMessage.createdAt.toISOString(),
+    } : null,
+  }));
+
+  return c.json({ success: true, data: { conversations: conversationsResponse } });
+});
+
+// 404 handler
+app.notFound((c) => {
+  return c.json({
+    success: false,
+    error: {
+      code: 'NOT_FOUND',
+      message: 'Endpoint not found',
+    },
+  }, 404);
+});
+
+// Start server
+const port = 3000;
+console.log(`✅ Server running on http://localhost:${port}`);
+console.log(`📊 Health check: http://localhost:${port}/health`);
+
+serve({
+  fetch: app.fetch,
+  port,
+});

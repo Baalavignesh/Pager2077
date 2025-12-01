@@ -1,12 +1,12 @@
 /**
  * Message Repository - Database operations for messages
  */
-import type { Database } from 'bun:sqlite';
+import type Database from 'better-sqlite3';
 import { randomBytes } from 'crypto';
 import type { Message } from '../models';
 
 export class MessageRepository {
-  constructor(private db: Database) {}
+  constructor(private db: Database.Database) {}
 
   /**
    * Create a new message

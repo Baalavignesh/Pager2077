@@ -201,6 +201,8 @@ export class NotificationService {
    * Send message received via Live Activity push-to-start
    * Used when recipient has Live Activity enabled
    * Requirements: 9.4, 9.5, 9.7, 16.3 - Auto-start Live Activity and handle fallback
+   * 
+   * IMPORTANT: Uses liveActivityToken (push-to-start token), NOT deviceToken!
    */
   async notifyMessageReceivedViaLiveActivity(
     recipient: User,
@@ -208,12 +210,29 @@ export class NotificationService {
     messageText: string,
     messageId: string
   ): Promise<void> {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('[LA TOKEN FLOW] Step 5: Preparing Live Activity notification');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('[LA TOKEN FLOW] Recipient:', recipient.hexCode);
+    console.log('[LA TOKEN FLOW] Sender:', senderName);
+    console.log('[LA TOKEN FLOW] Message ID:', messageId);
+    
+    // Log token information
+    console.log('[LA TOKEN FLOW] Token Check:');
+    console.log('[LA TOKEN FLOW]   - Device Token (for regular push):', recipient.deviceToken ? recipient.deviceToken.substring(0, 20) + '...' : 'null');
+    console.log('[LA TOKEN FLOW]   - Live Activity Token (push-to-start):', recipient.liveActivityToken ? recipient.liveActivityToken.substring(0, 32) + '...' : 'null');
+    
     // Requirements: 9.7 - Check if LA token is valid before sending
     if (!this.isValidLAToken(recipient.liveActivityToken)) {
-      console.log(`📱 No valid LA token for ${recipient.hexCode}, using regular push`);
+      console.log('[LA TOKEN FLOW] ❌ No valid Live Activity token for recipient');
+      console.log('[LA TOKEN FLOW] Falling back to regular push notification');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       // Fall back to regular push if no valid LA token
       return this.notifyMessageReceived(recipient, senderName, messageText, messageId);
     }
+
+    console.log('[LA TOKEN FLOW] ✅ Valid Live Activity token found');
+    console.log('[LA TOKEN FLOW] Using: liveActivityToken (NOT deviceToken)');
 
     // Truncate message to 100 characters for Live Activity display
     const truncatedMessage = messageText.length > 100 
@@ -223,6 +242,12 @@ export class NotificationService {
     try {
       // Live Activity push-to-start notification
       // Requirements: 9.4, 9.5 - Send push-to-start to auto-start Live Activity
+      console.log('[LA TOKEN FLOW] Queueing Live Activity push-to-start notification...');
+      console.log('[LA TOKEN FLOW] Content State:');
+      console.log('[LA TOKEN FLOW]   - sender:', senderName);
+      console.log('[LA TOKEN FLOW]   - message:', truncatedMessage.substring(0, 50) + (truncatedMessage.length > 50 ? '...' : ''));
+      console.log('[LA TOKEN FLOW]   - isDemo: false');
+      
       await queueNotification({
         type: 'liveactivity',
         userId: recipient.id,
@@ -235,7 +260,7 @@ export class NotificationService {
           contentState: {
             sender: senderName,
             message: truncatedMessage,
-            timestamp: new Date().toISOString(),
+            timestamp: Math.floor(Date.now() / 1000),  // Unix timestamp in seconds for Swift Date decoding
             isDemo: false,
             messageIndex: 1,
             totalMessages: 1,
@@ -247,10 +272,11 @@ export class NotificationService {
           },
         },
       });
-      console.log(`📟 Live Activity push-to-start queued for ${recipient.hexCode}`);
+      console.log('[LA TOKEN FLOW] ✅ Live Activity notification queued successfully');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     } catch (error) {
       // Requirements: 9.7, 16.3 - Handle LA token failure and fallback
-      console.error(`❌ Live Activity notification failed for ${recipient.hexCode}:`, error);
+      console.error('[LA TOKEN FLOW] ❌ Live Activity notification failed:', error);
       
       // Check if error indicates invalid token
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -262,11 +288,13 @@ export class NotificationService {
       
       if (isInvalidToken) {
         // Requirements: 16.3 - Remove invalid token from storage
+        console.log('[LA TOKEN FLOW] Token appears invalid, clearing from database');
         this.clearLiveActivityToken(recipient.id);
       }
       
       // Requirements: 9.7 - Fall back to regular push notification
-      console.log(`📱 Falling back to regular push for ${recipient.hexCode}`);
+      console.log('[LA TOKEN FLOW] Falling back to regular push notification');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       await this.notifyMessageReceived(recipient, senderName, messageText, messageId);
     }
   }

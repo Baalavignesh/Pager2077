@@ -27,7 +27,7 @@ import { useFriendRequests } from './src/hooks/useFriendRequests';
 import { useConversations } from './src/hooks/useConversations';
 import { getAllDisplayNameMappings } from './src/services/storageService';
 import { setCurrentUserDisplayName } from './src/services/displayNameService';
-import { areActivitiesEnabled, registerPushTokenWithBackend, isTokenRegistered } from './src/services/liveActivityService';
+import { areActivitiesEnabled, registerPushTokenWithBackend } from './src/services/liveActivityService';
 import { sendFriendRequest, updateUserStatus } from './src/services/apiClient';
 
 type Screen = 'main' | 'messages' | 'chat' | 'friends' | 'addFriend' | 'friendRequests' | 'friendRequestConfirmation' | 'myhex' | 'settings' | 'editName' | 'liveActivityDemo';
@@ -272,29 +272,28 @@ function AppContent() {
           return;
         }
         
-        // Check if already registered (Requirements: 2.3, 2.4)
-        const alreadyRegistered = await isTokenRegistered();
-        if (alreadyRegistered) {
-          console.log('[LiveActivity] Token already registered, skipping initial registration');
-          return;
-        }
-        
         console.log('[LiveActivity] Live Activities enabled, registering push token...');
         
-        // Register the push token with the backend
-        const success = await registerPushTokenWithBackend(authToken);
+        // Always try to register on startup - force refresh to ensure we have the latest token
+        // This is important because:
+        // 1. The token might have changed since last registration
+        // 2. The backend might have lost the token (e.g., database reset)
+        // 3. The previous registration might have failed silently
+        const success = await registerPushTokenWithBackend(authToken, true); // Force refresh
         if (success) {
           console.log('[LiveActivity] Push token registered successfully');
         } else {
           console.log('[LiveActivity] Push token registration failed or not available');
           // Retry once after a delay if first attempt fails
-          console.log('[LiveActivity] Retrying token registration in 2 seconds...');
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          const retrySuccess = await registerPushTokenWithBackend(authToken);
+          // The token might not be available immediately after app launch
+          console.log('[LiveActivity] Retrying token registration in 3 seconds...');
+          await new Promise(resolve => setTimeout(resolve, 3000));
+          const retrySuccess = await registerPushTokenWithBackend(authToken, true);
           if (retrySuccess) {
             console.log('[LiveActivity] Push token registered successfully on retry');
           } else {
             console.log('[LiveActivity] Push token registration failed on retry');
+            console.log('[LiveActivity] Token may not be available yet - will retry on next foreground');
           }
         }
       } catch (error) {

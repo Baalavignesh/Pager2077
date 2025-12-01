@@ -1,7 +1,7 @@
 /**
  * Friendship Repository - Database operations for friend requests and friendships
  */
-import type { Database } from 'bun:sqlite';
+import type Database from 'better-sqlite3';
 import { randomBytes } from 'crypto';
 import type { FriendRequest, Friendship, User } from '../models';
 
@@ -13,7 +13,7 @@ function sortUserIds(userId1: string, userId2: string): [string, string] {
 }
 
 export class FriendshipRepository {
-  constructor(private db: Database) {}
+  constructor(private db: Database.Database) {}
 
   /**
    * Create a friend request

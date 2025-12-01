@@ -19,14 +19,14 @@
     - **Property 1: Token validation before registration**
     - **Validates: Requirements 2.3, 2.4**
 
-- [ ] 2. Verify and document token flow
-  - [ ] 2.1 Add comprehensive logging throughout token flow
+- [x] 2. Verify and document token flow
+  - [x] 2.1 Add comprehensive logging throughout token flow
     - Log token obtained from ActivityKit
     - Log token sent to backend
     - Log backend response
     - Log token used when sending notifications
     - _Requirements: 1.1, 1.2, 1.3, 1.4_
-  - [ ] 2.2 Create token flow documentation
+  - [x] 2.2 Create token flow documentation
     - Document the difference between device token and push-to-start token
     - Document iOS version requirements
     - Document APNS topic formats
@@ -36,8 +36,8 @@
     - **Property 2: Correct token usage for Live Activity notifications**
     - **Validates: Requirements 3.2**
 
-- [ ] 3. Verify APNS payload format
-  - [ ] 3.1 Add payload logging in APNSProvider
+- [-] 3. Verify APNS payload format
+  - [x] 3.1 Add payload logging in APNSProvider
     - Log the full payload before sending (with token truncated)
     - Log the APNS topic and push-type
     - Log the response status and any errors
@@ -49,13 +49,13 @@
     - **Property 4: Valid push-to-start payload format**
     - **Validates: Requirements 4.1, 4.2, 4.3, 4.4, 4.5**
 
-- [ ] 4. Verify widget compatibility
-  - [ ] 4.1 Verify PagerActivityAttributes struct matches in both files
+- [x] 4. Verify widget compatibility
+  - [x] 4.1 Verify PagerActivityAttributes struct matches in both files
     - Compare LiveActivityBridge.swift and liveactivityLiveActivity.swift
     - Ensure ContentState fields match exactly
     - Verify Date decoding works with ISO 8601 strings
     - _Requirements: 5.4_
-  - [ ] 4.2 Test push-to-start notification on physical device
+  - [x] 4.2 Test push-to-start notification on physical device
     - Send test notification from backend
     - Verify Live Activity appears on lock screen
     - Verify content displays correctly

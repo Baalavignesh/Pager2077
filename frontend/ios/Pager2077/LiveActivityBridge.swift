@@ -226,25 +226,15 @@ class LiveActivityBridge: NSObject {
     func getPushToken(_ resolve: @escaping RCTPromiseResolveBlock,
                       reject: @escaping RCTPromiseRejectBlock) {
         
-        print("[LiveActivityBridge] getPushToken: Starting token retrieval...")
-        
         // Push tokens for Live Activities require iOS 17.2+
-        // Requirements: 2.4 - Gracefully handle iOS < 17.2
         guard #available(iOS 17.2, *) else {
-            print("[LiveActivityBridge] getPushToken: iOS version < 17.2, push-to-start tokens not supported")
-            print("[LiveActivityBridge] getPushToken: Push-to-start requires iOS 17.2 or later")
+            print("[LiveActivityBridge] getPushToken: iOS version < 17.2, push tokens not supported")
             resolve(nil)
             return
         }
         
-        // Check if Live Activities are enabled
-        let authInfo = ActivityAuthorizationInfo()
-        print("[LiveActivityBridge] getPushToken: Activities enabled: \(authInfo.areActivitiesEnabled)")
-        print("[LiveActivityBridge] getPushToken: Frequent push enabled: \(authInfo.frequentPushesEnabled)")
-        
-        guard authInfo.areActivitiesEnabled else {
-            print("[LiveActivityBridge] getPushToken: Live Activities not enabled on this device")
-            print("[LiveActivityBridge] getPushToken: User may need to enable Live Activities in Settings")
+        guard ActivityAuthorizationInfo().areActivitiesEnabled else {
+            print("[LiveActivityBridge] getPushToken: Live Activities not enabled")
             resolve(nil)
             return
         }
@@ -252,49 +242,31 @@ class LiveActivityBridge: NSObject {
         // Use a flag to track if we've already resolved
         var hasResolved = false
         let resolveOnce: (Any?) -> Void = { value in
-            guard !hasResolved else {
-                print("[LiveActivityBridge] getPushToken: Already resolved, ignoring duplicate")
-                return
-            }
+            guard !hasResolved else { return }
             hasResolved = true
-            if let token = value as? String {
-                print("[LiveActivityBridge] getPushToken: Resolving with token (length: \(token.count))")
-            } else {
-                print("[LiveActivityBridge] getPushToken: Resolving with nil")
-            }
             resolve(value)
         }
         
         Task {
-            // Set a timeout - if no token received within 10 seconds, return nil
-            // Requirements: 2.4 - Increased timeout from 5s to 10s for better reliability
-            let timeoutTask = Task {
-                try? await Task.sleep(nanoseconds: 10_000_000_000) // 10 seconds
+            // Set a timeout - if no token received within 5 seconds, return nil
+            Task {
+                try? await Task.sleep(nanoseconds: 5_000_000_000) // 5 seconds
                 if !hasResolved {
-                    print("[LiveActivityBridge] getPushToken: Timeout after 10 seconds waiting for push token")
-                    print("[LiveActivityBridge] getPushToken: This may happen on first launch or after reinstall")
-                    print("[LiveActivityBridge] getPushToken: Token should be available on next app launch")
+                    print("[LiveActivityBridge] getPushToken: Timeout waiting for push token")
                     resolveOnce(nil)
                 }
             }
             
-            print("[LiveActivityBridge] getPushToken: Waiting for pushToStartTokenUpdates...")
-            
             // Try to get the push-to-start token
             for await tokenData in Activity<PagerActivityAttributes>.pushToStartTokenUpdates {
-                timeoutTask.cancel()
                 let tokenString = tokenData.map { String(format: "%02x", $0) }.joined()
-                print("[LiveActivityBridge] getPushToken: Received push-to-start token")
-                print("[LiveActivityBridge] getPushToken: Token preview: \(tokenString.prefix(20))...")
-                print("[LiveActivityBridge] getPushToken: Token length: \(tokenString.count) characters")
+                print("[LiveActivityBridge] Got push-to-start token: \(tokenString.prefix(20))...")
                 resolveOnce(tokenString)
                 return
             }
             
-            // If we get here, the async sequence completed without emitting a token
-            timeoutTask.cancel()
-            print("[LiveActivityBridge] getPushToken: pushToStartTokenUpdates completed without emitting token")
-            print("[LiveActivityBridge] getPushToken: This is unexpected - token should be available")
+            // If we get here, no token was available
+            print("[LiveActivityBridge] No push-to-start token available")
             resolveOnce(nil)
         }
     }

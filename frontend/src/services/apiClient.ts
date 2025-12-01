@@ -3,11 +3,10 @@
  */
 import type { ApiResponse, RegistrationResponse, User, Friend, FriendRequest, Conversation } from '../types';
 
-// For physical device testing, replace localhost with your computer's IP address
+// For physical device testing, use your computer's local network IP
 // Find your IP: ifconfig | grep "inet " | grep -v 127.0.0.1
-// Example: 'http://192.168.1.100:3000'
 const API_URL = __DEV__ 
-  ? 'http://localhost:3000' 
+  ? 'http://192.168.0.122:3000'  // Local network IP for physical device testing
   : 'https://api.pager2077.app'; // Update with production URL
 
 // Log the API URL on startup
@@ -396,11 +395,28 @@ export async function updateDisplayName(
 /**
  * Update Live Activity token
  * Requirements: 9.3 - Send Live Activity push token to backend for storage
+ * 
+ * IMPORTANT: This sends the PUSH-TO-START TOKEN, not the device token!
+ * - Push-to-Start Token: Used to remotely start Live Activities (iOS 17.2+)
+ * - Device Token: Used for regular push notifications (stored separately)
  */
 export async function updateLiveActivityToken(
   token: string,
   liveActivityToken: string | null
 ): Promise<void> {
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('[LA TOKEN FLOW] Step 4: Sending push-to-start token to backend API');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('[LA TOKEN FLOW] API URL:', API_URL);
+  console.log('[LA TOKEN FLOW] Endpoint: PUT /api/users/live-activity-token');
+  console.log('[LA TOKEN FLOW] Token type: Push-to-Start Token (NOT device token)');
+  if (liveActivityToken) {
+    console.log('[LA TOKEN FLOW] Token preview:', liveActivityToken.substring(0, 32) + '...');
+    console.log('[LA TOKEN FLOW] Token length:', liveActivityToken.length, 'characters');
+  } else {
+    console.log('[LA TOKEN FLOW] Token: null (clearing token)');
+  }
+  
   const response = await fetch(`${API_URL}/api/users/live-activity-token`, {
     method: 'PUT',
     headers: {
@@ -410,9 +426,17 @@ export async function updateLiveActivityToken(
     body: JSON.stringify({ liveActivityToken }),
   });
 
+  console.log('[LA TOKEN FLOW] Response status:', response.status);
+  
   const data: ApiResponse<{ success: boolean }> = await response.json();
+  
+  console.log('[LA TOKEN FLOW] Response:', JSON.stringify(data));
 
   if (!data.success) {
+    console.log('[LA TOKEN FLOW] ❌ Backend rejected token update');
     throw new Error(data.error?.message || 'Failed to update Live Activity token');
   }
+  
+  console.log('[LA TOKEN FLOW] ✅ Backend confirmed: Token stored in live_activity_token field');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 }

@@ -75,6 +75,14 @@ export function startNotificationWorker(): Worker<NotificationJob> {
         } else if (type === 'silent') {
           await apnsProvider.sendSilentNotification(notification);
         } else if (type === 'liveactivity' && liveActivityNotification) {
+          // Log Live Activity token flow details
+          console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+          console.log('[LA TOKEN FLOW] Processing Live Activity notification from queue');
+          console.log('[LA TOKEN FLOW] Job ID:', job.id);
+          console.log('[LA TOKEN FLOW] User ID:', userId);
+          console.log('[LA TOKEN FLOW] Push Token (preview):', liveActivityNotification.pushToken.substring(0, 32) + '...');
+          console.log('[LA TOKEN FLOW] Content State:', JSON.stringify(liveActivityNotification.contentState, null, 2));
+          console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
           await apnsProvider.sendLiveActivityNotification(liveActivityNotification);
         }
 
