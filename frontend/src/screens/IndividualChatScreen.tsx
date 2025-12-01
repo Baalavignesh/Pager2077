@@ -53,7 +53,7 @@ export const IndividualChatScreen = forwardRef<IndividualChatScreenHandle, Indiv
   displayNameMap = {},
 }, ref) => {
   // Auth context
-  const { authToken: token, hexCode } = useAuth();
+  const { authToken: token, userId, hexCode } = useAuth();
 
   // State management
   const [messageText, setMessageText] = useState('');
@@ -137,7 +137,8 @@ export const IndividualChatScreen = forwardRef<IndividualChatScreenHandle, Indiv
       
       if (messages.length > 0) {
         const latestMsg = messages[0];
-        const isSent = latestMsg.senderId === hexCode;
+        // Compare senderId with userId (not hexCode) since API returns user IDs
+        const isSent = latestMsg.senderId === userId;
         
         // Check if this is a new message (different from current)
         const isNewMessage = !conversationState.lastMessage || 
@@ -184,7 +185,7 @@ export const IndividualChatScreen = forwardRef<IndividualChatScreenHandle, Indiv
   // Load latest message on mount
   useEffect(() => {
     fetchLatestMessage(true);
-  }, [friend.id, token, hexCode]);
+  }, [friend.id, token, userId]);
 
   // Poll for new messages when waiting for reply
   useEffect(() => {
@@ -286,7 +287,7 @@ export const IndividualChatScreen = forwardRef<IndividualChatScreenHandle, Indiv
       // Update conversation state - now waiting for reply
       const newMessage: Message = {
         id: result.messageId,
-        senderId: hexCode || 'current-user',
+        senderId: userId || 'current-user',
         recipientId: friend.sixDigitCode,
         text: sanitizedMessage,
         timestamp: result.timestamp,

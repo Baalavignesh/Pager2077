@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, Text, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, ActivityIndicator, AppState, AppStateStatus } from 'react-native';
 import { NativeBaseProvider } from 'native-base';
 import { LinearGradient } from 'expo-linear-gradient';
 import { retroTheme } from './src/theme';
@@ -28,7 +28,7 @@ import { useConversations } from './src/hooks/useConversations';
 import { getAllDisplayNameMappings } from './src/services/storageService';
 import { setCurrentUserDisplayName } from './src/services/displayNameService';
 import { areActivitiesEnabled, registerPushTokenWithBackend } from './src/services/liveActivityService';
-import { sendFriendRequest } from './src/services/apiClient';
+import { sendFriendRequest, updateUserStatus } from './src/services/apiClient';
 
 type Screen = 'main' | 'messages' | 'chat' | 'friends' | 'addFriend' | 'friendRequests' | 'friendRequestConfirmation' | 'myhex' | 'settings' | 'editName' | 'liveActivityDemo';
 
@@ -78,6 +78,9 @@ function AppContent() {
   
   // Selected friend for chat
   const [selectedFriend, setSelectedFriend] = useState<{ id: string; sixDigitCode: string; displayName?: string } | null>(null);
+  
+  // Track where chat was entered from (for proper back navigation)
+  const [chatEnteredFrom, setChatEnteredFrom] = useState<'messages' | 'friends'>('messages');
   
   // Display name state
   const [displayNameMap, setDisplayNameMap] = useState<Record<string, string>>({});
@@ -233,6 +236,75 @@ function AppContent() {
       registerLiveActivityToken();
     }
   }, [isAuthenticated, authToken, fontLoaded, isLoading]);
+
+  // Track app state for online/offline status updates
+  // Requirements: 14.1, 14.2 - Update status when app becomes active/background
+  useEffect(() => {
+    // Only track status if authenticated
+    if (!isAuthenticated || !authToken) {
+      return;
+    }
+
+    // Track the current app state to avoid duplicate updates
+    let currentAppState = AppState.currentState;
+
+    const handleAppStateChange = async (nextAppState: AppStateStatus) => {
+      // Only update if state actually changed
+      if (currentAppState === nextAppState) {
+        return;
+      }
+
+      const previousState = currentAppState;
+      currentAppState = nextAppState;
+
+      try {
+        if (nextAppState === 'active' && previousState !== 'active') {
+          // App became active - update status to online
+          // Requirements: 14.1 - Update status to "online" when app becomes active
+          console.log('[Status] App became active, updating status to online');
+          await updateUserStatus(authToken, 'online');
+          console.log('[Status] Status updated to online');
+        } else if (nextAppState === 'background' || nextAppState === 'inactive') {
+          // App went to background - update status to offline
+          // Requirements: 14.2 - Update status to "offline" when app goes to background
+          if (previousState === 'active') {
+            console.log('[Status] App went to background, updating status to offline');
+            await updateUserStatus(authToken, 'offline');
+            console.log('[Status] Status updated to offline');
+          }
+        }
+      } catch (error) {
+        // Status update is best-effort, don't crash the app
+        console.error('[Status] Failed to update status:', error);
+      }
+    };
+
+    // Set initial status to online when component mounts (user is authenticated)
+    const setInitialStatus = async () => {
+      try {
+        console.log('[Status] Setting initial status to online');
+        await updateUserStatus(authToken, 'online');
+        console.log('[Status] Initial status set to online');
+      } catch (error) {
+        console.error('[Status] Failed to set initial status:', error);
+      }
+    };
+
+    // Set initial status
+    setInitialStatus();
+
+    // Subscribe to app state changes
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+
+    // Cleanup: set status to offline when component unmounts
+    return () => {
+      subscription.remove();
+      // Note: We can't reliably await here, but we try to update status
+      updateUserStatus(authToken, 'offline').catch(error => {
+        console.error('[Status] Failed to set offline status on unmount:', error);
+      });
+    };
+  }, [isAuthenticated, authToken]);
 
   // Handle display name set during initial registration
   // Requirements: 11.1, 11.2 - Register user with backend and save display name
@@ -482,6 +554,7 @@ function AppContent() {
           sixDigitCode: conversation.from,
           displayName: conversation.displayName || undefined
         });
+        setChatEnteredFrom('messages');
         setCurrentScreen('chat');
       }
     } else if (currentScreen === 'friends') {
@@ -508,6 +581,7 @@ function AppContent() {
             sixDigitCode: friend.sixDigitCode, 
             displayName: friend.displayName || undefined 
           });
+          setChatEnteredFrom('friends');
           setCurrentScreen('chat');
         }
       }
@@ -559,8 +633,8 @@ function AppContent() {
 
   const handleBack = () => {
     if (currentScreen === 'chat') {
-      // Return to messages screen
-      setCurrentScreen('messages');
+      // Return to the screen we came from (messages or friends)
+      setCurrentScreen(chatEnteredFrom);
       setSelectedFriend(null);
       setSelectedIndex(0);
       return;

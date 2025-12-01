@@ -221,16 +221,16 @@
     - Pass real data to MessagesScreen
     - _Requirements: 10.1, 10.2, 10.4_
 
-- [ ] 20. Update IndividualChatScreen for real messaging
-  - [ ] 20.1 Verify IndividualChatScreen uses real API
+- [x] 20. Update IndividualChatScreen for real messaging
+  - [x] 20.1 Verify IndividualChatScreen uses real API
     - Confirm sendMessage and getMessageHistory are called correctly
     - Ensure display names are shown for messages
     - _Requirements: 6.1, 6.2, 6.3, 7.1, 7.2, 7.3_
 
 ## Phase 7: Status and Notifications
 
-- [ ] 21. Implement online/offline status updates
-  - [ ] 21.1 Add AppState listener in App.tsx
+- [x] 21. Implement online/offline status updates
+  - [x] 21.1 Add AppState listener in App.tsx
     - Update status to "online" when app becomes active
     - Update status to "offline" when app goes to background
     - _Requirements: 14.1, 14.2_
