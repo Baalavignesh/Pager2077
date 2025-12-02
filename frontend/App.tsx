@@ -18,6 +18,10 @@ import { NameEntryScreen, NameEntryScreenHandle } from './src/screens/NameEntryS
 import { EditNameScreen, EditNameScreenHandle } from './src/screens/EditNameScreen';
 import { IndividualChatScreenHandle } from './src/screens/IndividualChatScreen';
 import { LiveActivityDemoScreen, LiveActivityDemoScreenHandle } from './src/screens/LiveActivityDemoScreen';
+import { GamesMenuScreen } from './src/screens/GamesMenuScreen';
+import { SnakeGameScreen, SnakeGameScreenHandle } from './src/screens/SnakeGameScreen';
+import { SnakeLeaderboardScreen } from './src/screens/SnakeLeaderboardScreen';
+import { getSnakeLeaderboard, addSnakeScore, LeaderboardEntry } from './src/services/gameService';
 import { PagerBody } from './src/components/PagerBody';
 import { ChatPagerBody } from './src/components/ChatPagerBody';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
@@ -30,14 +34,14 @@ import { setCurrentUserDisplayName } from './src/services/displayNameService';
 import { areActivitiesEnabled, registerPushTokenWithBackend } from './src/services/liveActivityService';
 import { sendFriendRequest, updateUserStatus } from './src/services/apiClient';
 
-type Screen = 'main' | 'messages' | 'chat' | 'friends' | 'addFriend' | 'friendRequests' | 'friendRequestConfirmation' | 'myhex' | 'settings' | 'editName' | 'liveActivityDemo';
+type Screen = 'main' | 'messages' | 'chat' | 'friends' | 'addFriend' | 'friendRequests' | 'friendRequestConfirmation' | 'myhex' | 'settings' | 'editName' | 'liveActivityDemo' | 'games' | 'snakeGame' | 'snakeLeaderboard';
 
 const mainMenu = [
   { id: 'messages', label: '1. MESSAGES', screen: 'messages' as Screen },
   { id: 'friends', label: '2. FRIENDS', screen: 'friends' as Screen },
   { id: 'myhex', label: '3. MY HEX', screen: 'myhex' as Screen },
-  { id: 'settings', label: '4. SETTINGS', screen: 'settings' as Screen },
-  { id: 'liveActivity', label: '5. LIVE ACTIVITY', screen: 'liveActivityDemo' as Screen },
+  { id: 'games', label: '4. GAMES', screen: 'games' as Screen },
+  { id: 'settings', label: '5. SETTINGS', screen: 'settings' as Screen },
 ];
 
 // mockFriends removed - now using useFriends hook for real API data
@@ -88,6 +92,10 @@ function AppContent() {
   const editNameRef = useRef<EditNameScreenHandle>(null);
   const chatScreenRef = useRef<IndividualChatScreenHandle>(null);
   const liveActivityDemoRef = useRef<LiveActivityDemoScreenHandle>(null);
+  const snakeGameRef = useRef<SnakeGameScreenHandle>(null);
+  
+  // Games state
+  const [snakeLeaderboard, setSnakeLeaderboard] = useState<LeaderboardEntry[]>([]);
   
   // Add friend state
   const [friendRequestInput, setFriendRequestInput] = useState('');
@@ -605,6 +613,16 @@ function AppContent() {
   }
 
   const navigate = (direction: 'up' | 'down') => {
+    // Snake game uses navigation keys for movement
+    if (currentScreen === 'snakeGame') {
+      if (direction === 'up') {
+        snakeGameRef.current?.handleDirection('UP');
+      } else {
+        snakeGameRef.current?.handleDirection('DOWN');
+      }
+      return;
+    }
+    
     // On confirmation screen, up/down toggles between yes and no
     if (currentScreen === 'friendRequestConfirmation') {
       if (confirmationFocusedButton === 'yes') {
@@ -631,6 +649,8 @@ function AppContent() {
       maxIndex = 5; // Sound, Vibrate, Edit Name, About, Help, Logout
     } else if (currentScreen === 'liveActivityDemo') {
       maxIndex = 4; // Start, Prev, Next, End, End All
+    } else if (currentScreen === 'games') {
+      maxIndex = 1; // Snake, Leaderboard
     }
 
     if (direction === 'up' && selectedIndex > 0) {
@@ -641,25 +661,31 @@ function AppContent() {
   };
 
   const handleNavigateLeft = () => {
+    // Snake game uses navigation keys for movement
+    if (currentScreen === 'snakeGame') {
+      snakeGameRef.current?.handleDirection('LEFT');
+      return;
+    }
+    
     // On confirmation screen, focus "NO"
     if (currentScreen === 'friendRequestConfirmation') {
       setConfirmationFocusedButton('no');
       return;
     }
-    
-    // No-op for other screens
-    console.log('Navigate left (not yet implemented)');
   };
 
   const handleNavigateRight = () => {
+    // Snake game uses navigation keys for movement
+    if (currentScreen === 'snakeGame') {
+      snakeGameRef.current?.handleDirection('RIGHT');
+      return;
+    }
+    
     // On confirmation screen, focus "YES"
     if (currentScreen === 'friendRequestConfirmation') {
       setConfirmationFocusedButton('yes');
       return;
     }
-    
-    // No-op for other screens
-    console.log('Navigate right (not yet implemented)');
   };
 
   const handleSelect = () => {
@@ -763,6 +789,33 @@ function AppContent() {
     } else if (currentScreen === 'liveActivityDemo') {
       // Delegate to Live Activity demo screen
       liveActivityDemoRef.current?.handleSelect();
+    } else if (currentScreen === 'games') {
+      // Handle games menu selection
+      if (selectedIndex === 0) {
+        // Snake game
+        setCurrentScreen('snakeGame');
+      } else if (selectedIndex === 1) {
+        // Leaderboard
+        loadSnakeLeaderboard();
+        setCurrentScreen('snakeLeaderboard');
+      }
+    } else if (currentScreen === 'snakeGame') {
+      // Delegate to snake game
+      snakeGameRef.current?.handleSelect();
+    }
+  };
+
+  // Load snake leaderboard
+  const loadSnakeLeaderboard = async () => {
+    const scores = await getSnakeLeaderboard();
+    setSnakeLeaderboard(scores);
+  };
+
+  // Handle snake game over
+  const handleSnakeGameOver = async (score: number) => {
+    if (score > 0) {
+      await addSnakeScore(score);
+      await loadSnakeLeaderboard();
     }
   };
 
@@ -795,6 +848,13 @@ function AppContent() {
     if (currentScreen === 'settings' && settingsView !== 'main') {
       // Return to settings main menu from About, Help, or Edit Name
       setSettingsView('main');
+      return;
+    }
+    
+    if (currentScreen === 'snakeGame' || currentScreen === 'snakeLeaderboard') {
+      // Return to games menu
+      setCurrentScreen('games');
+      setSelectedIndex(0);
       return;
     }
     
@@ -888,6 +948,24 @@ function AppContent() {
         editNameRef.current?.handleBackspace();
       } else if (number >= '0' && number <= '9') {
         editNameRef.current?.handleNumberPress(number);
+      }
+    }
+    
+    // Handle snake game controls (2=UP, 4=LEFT, 6=RIGHT, 8=DOWN)
+    if (currentScreen === 'snakeGame') {
+      switch (number) {
+        case '2':
+          snakeGameRef.current?.handleDirection('UP');
+          break;
+        case '4':
+          snakeGameRef.current?.handleDirection('LEFT');
+          break;
+        case '6':
+          snakeGameRef.current?.handleDirection('RIGHT');
+          break;
+        case '8':
+          snakeGameRef.current?.handleDirection('DOWN');
+          break;
       }
     }
     
@@ -1082,6 +1160,19 @@ function AppContent() {
         return <MyHexScreen />;
       case 'liveActivityDemo':
         return <LiveActivityDemoScreen ref={liveActivityDemoRef} selectedIndex={selectedIndex} />;
+      case 'games':
+        return <GamesMenuScreen selectedIndex={selectedIndex} />;
+      case 'snakeGame':
+        return (
+          <SnakeGameScreen
+            ref={snakeGameRef}
+            onGameOver={handleSnakeGameOver}
+            soundEnabled={soundEnabled}
+            vibrateEnabled={vibrateEnabled}
+          />
+        );
+      case 'snakeLeaderboard':
+        return <SnakeLeaderboardScreen scores={snakeLeaderboard} />;
       case 'settings':
         if (settingsView === 'editName') {
           return (
