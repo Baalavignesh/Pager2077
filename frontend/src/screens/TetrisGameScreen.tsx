@@ -479,8 +479,8 @@ const styles = StyleSheet.create({
   },
   grid: {
     borderWidth: 1,
-    borderColor: '#3d3d3d',
-    backgroundColor: '#a8b8a0',
+    borderColor: '#6B7D5F',
+    backgroundColor: '#8B9D7F',
   },
   gridRow: {
     flexDirection: 'row',
@@ -518,8 +518,8 @@ const styles = StyleSheet.create({
   },
   nextPiecePreview: {
     borderWidth: 1,
-    borderColor: '#3d3d3d',
-    backgroundColor: '#a8b8a0',
+    borderColor: '#6B7D5F',
+    backgroundColor: '#8B9D7F',
     padding: 1,
   },
   previewRow: {
@@ -558,7 +558,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(168, 184, 160, 0.92)',
+    backgroundColor: 'rgba(139, 157, 127, 0.92)',
   },
   statusText: {
     fontFamily: 'Chicago',
