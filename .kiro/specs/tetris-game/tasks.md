@@ -206,17 +206,17 @@
     - Handle navigation to/from Tetris screens
     - _Requirements: 7.1, 7.2, 7.3_
 
-- [ ] 8. Refactor Snake game to use shared components
-  - [ ] 8.1 Update SnakeGameScreen to use shared components
+- [x] 8. Refactor Snake game to use shared components
+  - [x] 8.1 Update SnakeGameScreen to use shared components
     - Replace inline header with GameHeader
     - Replace inline overlay with GameOverlay
     - Replace inline controls with GameControls
     - Ensure visual consistency with Tetris
     - _Requirements: 7.1_
 
-  - [ ] 8.2 Update SnakeLeaderboardScreen to use LeaderboardView
+  - [x] 8.2 Update SnakeLeaderboardScreen to use LeaderboardView
     - Replace inline leaderboard rendering with LeaderboardView
     - _Requirements: 5.1_
 
-- [ ] 9. Final Checkpoint - Make sure all tests are passing
+- [x] 9. Final Checkpoint - Make sure all tests are passing
   - Ensure all tests pass, ask the user if questions arise.

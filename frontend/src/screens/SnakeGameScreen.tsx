@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, forwardRef, useImperativeHandle } from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, StyleSheet, Dimensions } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { GameHeader, GameOverlay, GameControls } from '../components/games';
 
 // Game constants
 const GRID_SIZE = 12;
@@ -264,12 +265,16 @@ export const SnakeGameScreen = forwardRef<SnakeGameScreenHandle, SnakeGameScreen
       }
     };
 
+    const getInstructions = () => {
+      if (gameState === 'READY') {
+        return 'USE 2/4/6/8 TO MOVE';
+      }
+      return undefined;
+    };
+
     return (
       <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.title}>SNAKE</Text>
-          <Text style={styles.score}>SCORE: {score.toString().padStart(4, '0')}</Text>
-        </View>
+        <GameHeader title="SNAKE" score={score} />
         
         <View style={styles.gameArea}>
           <View style={styles.grid}>
@@ -277,18 +282,13 @@ export const SnakeGameScreen = forwardRef<SnakeGameScreenHandle, SnakeGameScreen
           </View>
         </View>
         
-        {gameState !== 'PLAYING' && (
-          <View style={styles.overlay}>
-            <Text style={styles.statusText}>{getStatusText()}</Text>
-            {gameState === 'READY' && (
-              <Text style={styles.instructions}>USE 2/4/6/8 TO MOVE</Text>
-            )}
-          </View>
-        )}
+        <GameOverlay
+          visible={gameState !== 'PLAYING'}
+          statusText={getStatusText()}
+          instructions={getInstructions()}
+        />
         
-        <View style={styles.controls}>
-          <Text style={styles.controlText}>2=UP 4=LEFT 6=RIGHT 8=DOWN</Text>
-        </View>
+        <GameControls controlText="2=UP 4=LEFT 6=RIGHT 8=DOWN" />
       </View>
     );
   }
@@ -298,30 +298,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 8,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 4,
-    paddingBottom: 8,
-    borderBottomWidth: 2,
-    borderBottomColor: '#3d3d3d',
-    marginBottom: 8,
-  },
-  title: {
-    fontFamily: 'Chicago',
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#1a2618',
-    letterSpacing: 1.5,
-  },
-  score: {
-    fontFamily: 'Chicago',
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#1a2618',
-    letterSpacing: 1,
   },
   gameArea: {
     flex: 1,
@@ -350,44 +326,5 @@ const styles = StyleSheet.create({
   },
   food: {
     backgroundColor: '#8B0000',
-  },
-  overlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(168, 184, 160, 0.9)',
-  },
-  statusText: {
-    fontFamily: 'Chicago',
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#1a2618',
-    letterSpacing: 1.5,
-    textAlign: 'center',
-  },
-  instructions: {
-    fontFamily: 'Chicago',
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#3d4d38',
-    letterSpacing: 1,
-    marginTop: 8,
-  },
-  controls: {
-    paddingTop: 8,
-    borderTopWidth: 2,
-    borderTopColor: '#3d3d3d',
-    alignItems: 'center',
-  },
-  controlText: {
-    fontFamily: 'Chicago',
-    fontSize: 8,
-    fontWeight: '700',
-    color: '#3d4d38',
-    letterSpacing: 1,
   },
 });
