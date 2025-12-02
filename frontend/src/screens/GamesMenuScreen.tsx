@@ -3,7 +3,7 @@ import { PagerScreen, PagerText } from '../components/PagerScreen';
 
 interface GamesMenuScreenProps {
   selectedIndex: number;
-  currentGame?: 'snake' | null;
+  currentGame?: 'snake' | 'tetris' | null;
 }
 
 export const GamesMenuScreen: React.FC<GamesMenuScreenProps> = ({ selectedIndex, currentGame }) => {
@@ -14,8 +14,11 @@ export const GamesMenuScreen: React.FC<GamesMenuScreenProps> = ({ selectedIndex,
       { id: 'leaderboard', label: '2. LEADERBOARD' },
     ];
 
+    // Get title based on current game
+    const gameTitle = currentGame === 'snake' ? 'SNAKE' : 'TETRIS';
+
     return (
-      <PagerScreen title="SNAKE">
+      <PagerScreen title={gameTitle}>
         {menuItems.map((item, index) => (
           <PagerText key={item.id} selected={index === selectedIndex}>
             {index === selectedIndex ? '>' : ' '} {item.label}
@@ -25,9 +28,11 @@ export const GamesMenuScreen: React.FC<GamesMenuScreenProps> = ({ selectedIndex,
     );
   }
 
-  // Main games list (only Snake for now)
+  // Main games list - Snake and Tetris
+  // Requirements: 7.1 - Tetris appears as selectable option alongside Snake
   const menuItems = [
     { id: 'snake', label: '1. SNAKE' },
+    { id: 'tetris', label: '2. TETRIS' },
   ];
 
   return (

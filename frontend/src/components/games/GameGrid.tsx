@@ -21,7 +21,7 @@ export const GameGrid: React.FC<GameGridProps> = ({
     for (let x = 0; x < cols; x++) {
       rowCells.push(
         <View
-          key={`${x}-${y}`}
+          key={`cell-${x}-${y}`}
           style={[styles.cell, { width: cellSize, height: cellSize }]}
         >
           {renderCell(x, y)}
@@ -54,5 +54,7 @@ const styles = StyleSheet.create({
   cell: {
     borderWidth: 1,
     borderColor: 'rgba(0,0,0,0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

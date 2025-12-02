@@ -13,6 +13,10 @@ interface LeaderboardViewProps {
   emptyMessage?: string;
 }
 
+/**
+ * Shared leaderboard view component for displaying ranked scores with dates.
+ * Used by Snake, Tetris, and future game leaderboard screens.
+ */
 export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
   title,
   scores,

@@ -21,7 +21,9 @@ import { LiveActivityDemoScreen, LiveActivityDemoScreenHandle } from './src/scre
 import { GamesMenuScreen } from './src/screens/GamesMenuScreen';
 import { SnakeGameScreen, SnakeGameScreenHandle } from './src/screens/SnakeGameScreen';
 import { SnakeLeaderboardScreen } from './src/screens/SnakeLeaderboardScreen';
-import { getSnakeLeaderboard, addSnakeScore, LeaderboardEntry } from './src/services/gameService';
+import { TetrisGameScreen, TetrisGameScreenHandle } from './src/screens/TetrisGameScreen';
+import { TetrisLeaderboardScreen } from './src/screens/TetrisLeaderboardScreen';
+import { getSnakeLeaderboard, addSnakeScore, getTetrisLeaderboard, addTetrisScore, LeaderboardEntry } from './src/services/gameService';
 import { PagerBody } from './src/components/PagerBody';
 import { ChatPagerBody } from './src/components/ChatPagerBody';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
@@ -34,7 +36,7 @@ import { setCurrentUserDisplayName } from './src/services/displayNameService';
 import { areActivitiesEnabled, registerPushTokenWithBackend } from './src/services/liveActivityService';
 import { sendFriendRequest, updateUserStatus } from './src/services/apiClient';
 
-type Screen = 'main' | 'messages' | 'chat' | 'friends' | 'addFriend' | 'friendRequests' | 'friendRequestConfirmation' | 'myhex' | 'settings' | 'editName' | 'liveActivityDemo' | 'games' | 'gameMenu' | 'snakeGame' | 'snakeLeaderboard';
+type Screen = 'main' | 'messages' | 'chat' | 'friends' | 'addFriend' | 'friendRequests' | 'friendRequestConfirmation' | 'myhex' | 'settings' | 'editName' | 'liveActivityDemo' | 'games' | 'gameMenu' | 'snakeGame' | 'snakeLeaderboard' | 'tetrisGame' | 'tetrisLeaderboard';
 
 const mainMenu = [
   { id: 'messages', label: '1. MESSAGES', screen: 'messages' as Screen },
@@ -93,10 +95,13 @@ function AppContent() {
   const chatScreenRef = useRef<IndividualChatScreenHandle>(null);
   const liveActivityDemoRef = useRef<LiveActivityDemoScreenHandle>(null);
   const snakeGameRef = useRef<SnakeGameScreenHandle>(null);
+  const tetrisGameRef = useRef<TetrisGameScreenHandle>(null);
   
   // Games state
-  const [currentGame, setCurrentGame] = useState<'snake' | null>(null);
+  // Requirements: 7.1, 7.2 - Support both Snake and Tetris games
+  const [currentGame, setCurrentGame] = useState<'snake' | 'tetris' | null>(null);
   const [snakeLeaderboard, setSnakeLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [tetrisLeaderboard, setTetrisLeaderboard] = useState<LeaderboardEntry[]>([]);
   
   // Add friend state
   const [friendRequestInput, setFriendRequestInput] = useState('');
@@ -624,6 +629,17 @@ function AppContent() {
       return;
     }
     
+    // Tetris game uses navigation keys for movement
+    // Requirements: 7.3 - Wire numpad controls to Tetris game
+    if (currentScreen === 'tetrisGame') {
+      if (direction === 'up') {
+        tetrisGameRef.current?.handleDirection('UP');
+      } else {
+        tetrisGameRef.current?.handleDirection('DOWN');
+      }
+      return;
+    }
+    
     // On confirmation screen, up/down toggles between yes and no
     if (currentScreen === 'friendRequestConfirmation') {
       if (confirmationFocusedButton === 'yes') {
@@ -651,7 +667,7 @@ function AppContent() {
     } else if (currentScreen === 'liveActivityDemo') {
       maxIndex = 4; // Start, Prev, Next, End, End All
     } else if (currentScreen === 'games') {
-      maxIndex = 0; // Only Snake
+      maxIndex = 1; // Snake and Tetris
     } else if (currentScreen === 'gameMenu') {
       maxIndex = 1; // Play, Leaderboard
     }
@@ -670,6 +686,13 @@ function AppContent() {
       return;
     }
     
+    // Tetris game uses navigation keys for movement
+    // Requirements: 7.3 - Wire numpad controls to Tetris game
+    if (currentScreen === 'tetrisGame') {
+      tetrisGameRef.current?.handleDirection('LEFT');
+      return;
+    }
+    
     // On confirmation screen, focus "NO"
     if (currentScreen === 'friendRequestConfirmation') {
       setConfirmationFocusedButton('no');
@@ -681,6 +704,13 @@ function AppContent() {
     // Snake game uses navigation keys for movement
     if (currentScreen === 'snakeGame') {
       snakeGameRef.current?.handleDirection('RIGHT');
+      return;
+    }
+    
+    // Tetris game uses navigation keys for movement
+    // Requirements: 7.3 - Wire numpad controls to Tetris game
+    if (currentScreen === 'tetrisGame') {
+      tetrisGameRef.current?.handleDirection('RIGHT');
       return;
     }
     
@@ -793,10 +823,16 @@ function AppContent() {
       // Delegate to Live Activity demo screen
       liveActivityDemoRef.current?.handleSelect();
     } else if (currentScreen === 'games') {
-      // Handle games list selection - only Snake available
+      // Handle games list selection - Snake and Tetris available
+      // Requirements: 7.1, 7.2 - Tetris appears as selectable option
       if (selectedIndex === 0) {
         // Snake selected - go to game menu
         setCurrentGame('snake');
+        setCurrentScreen('gameMenu');
+        setSelectedIndex(0);
+      } else if (selectedIndex === 1) {
+        // Tetris selected - go to game menu
+        setCurrentGame('tetris');
         setCurrentScreen('gameMenu');
         setSelectedIndex(0);
       }
@@ -806,17 +842,27 @@ function AppContent() {
         // Play
         if (currentGame === 'snake') {
           setCurrentScreen('snakeGame');
+        } else if (currentGame === 'tetris') {
+          // Requirements: 7.3 - Start Tetris game in ready state
+          setCurrentScreen('tetrisGame');
         }
       } else if (selectedIndex === 1) {
         // Leaderboard
         if (currentGame === 'snake') {
           loadSnakeLeaderboard();
           setCurrentScreen('snakeLeaderboard');
+        } else if (currentGame === 'tetris') {
+          loadTetrisLeaderboard();
+          setCurrentScreen('tetrisLeaderboard');
         }
       }
     } else if (currentScreen === 'snakeGame') {
       // Delegate to snake game
       snakeGameRef.current?.handleSelect();
+    } else if (currentScreen === 'tetrisGame') {
+      // Delegate to tetris game
+      // Requirements: 7.3 - Wire numpad controls to Tetris game
+      tetrisGameRef.current?.handleSelect();
     }
   };
 
@@ -831,6 +877,22 @@ function AppContent() {
     if (score > 0) {
       await addSnakeScore(score);
       await loadSnakeLeaderboard();
+    }
+  };
+
+  // Load tetris leaderboard
+  // Requirements: 5.1, 5.3 - Display top 10 scores with dates
+  const loadTetrisLeaderboard = async () => {
+    const scores = await getTetrisLeaderboard();
+    setTetrisLeaderboard(scores);
+  };
+
+  // Handle tetris game over
+  // Requirements: 3.3, 3.4 - Save score to leaderboard
+  const handleTetrisGameOver = async (score: number) => {
+    if (score > 0) {
+      await addTetrisScore(score);
+      await loadTetrisLeaderboard();
     }
   };
 
@@ -867,6 +929,21 @@ function AppContent() {
     }
     
     if (currentScreen === 'snakeGame' || currentScreen === 'snakeLeaderboard') {
+      // Return to game menu (Play/Leaderboard)
+      setCurrentScreen('gameMenu');
+      setSelectedIndex(0);
+      return;
+    }
+    
+    // Handle Tetris game back navigation
+    // Requirements: 7.2 - Handle navigation to/from Tetris screens
+    if (currentScreen === 'tetrisGame') {
+      // Delegate to tetris game (handles pause/exit)
+      tetrisGameRef.current?.handleBack();
+      return;
+    }
+    
+    if (currentScreen === 'tetrisLeaderboard') {
       // Return to game menu (Play/Leaderboard)
       setCurrentScreen('gameMenu');
       setSelectedIndex(0);
@@ -988,6 +1065,25 @@ function AppContent() {
           break;
         case '8':
           snakeGameRef.current?.handleDirection('DOWN');
+          break;
+      }
+    }
+    
+    // Handle tetris game controls (2=ROTATE, 4=LEFT, 6=RIGHT, 8=DOWN)
+    // Requirements: 7.3 - Wire numpad controls to Tetris game
+    if (currentScreen === 'tetrisGame') {
+      switch (number) {
+        case '2':
+          tetrisGameRef.current?.handleDirection('UP'); // UP = rotate
+          break;
+        case '4':
+          tetrisGameRef.current?.handleDirection('LEFT');
+          break;
+        case '6':
+          tetrisGameRef.current?.handleDirection('RIGHT');
+          break;
+        case '8':
+          tetrisGameRef.current?.handleDirection('DOWN');
           break;
       }
     }
@@ -1198,6 +1294,24 @@ function AppContent() {
         );
       case 'snakeLeaderboard':
         return <SnakeLeaderboardScreen scores={snakeLeaderboard} />;
+      case 'tetrisGame':
+        // Requirements: 7.3 - Start Tetris game in ready state
+        return (
+          <TetrisGameScreen
+            ref={tetrisGameRef}
+            onGameOver={handleTetrisGameOver}
+            onExit={() => {
+              // Return to game menu when exiting from pause
+              setCurrentScreen('gameMenu');
+              setSelectedIndex(0);
+            }}
+            soundEnabled={soundEnabled}
+            vibrateEnabled={vibrateEnabled}
+          />
+        );
+      case 'tetrisLeaderboard':
+        // Requirements: 5.1, 5.3 - Display top 10 scores
+        return <TetrisLeaderboardScreen />;
       case 'settings':
         if (settingsView === 'editName') {
           return (
