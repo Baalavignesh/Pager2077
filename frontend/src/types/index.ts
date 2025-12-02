@@ -99,3 +99,20 @@ export interface T9InputState {
   keyPressCount: number;
   lastKeyPressTime: number;
 }
+
+// Leaderboard Types
+export interface FriendsLeaderboardEntry {
+  rank: number;
+  userId: string;
+  displayName: string | null;
+  hexCode: string;
+  score: number;
+  updatedAt: string;
+  isCurrentUser: boolean;
+}
+
+export interface ScoreSubmissionResult {
+  updated: boolean;
+  score: number;
+  updatedAt: string;
+}

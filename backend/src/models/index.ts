@@ -83,3 +83,22 @@ export interface ApiResponse<T> {
     details?: any;
   };
 }
+
+// Game Types
+export type GameId = 'snake' | 'tetris';
+
+// Leaderboard Models
+export interface HighScore {
+  userId: string;
+  game: GameId;
+  score: number;
+  updatedAt: Date;
+}
+
+export interface LeaderboardEntry {
+  userId: string;
+  displayName: string | null;
+  hexCode: string;
+  score: number;
+  updatedAt: string;
+}

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef, forwardRef, useImperat
 import { View, StyleSheet, Dimensions } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { GameHeader, GameOverlay, GameControls } from '../components/games';
+import { submitHighScore, addScore } from '../services/gameService';
 
 // Game constants
 const GRID_SIZE = 12;
@@ -179,6 +180,16 @@ export const SnakeGameScreen = forwardRef<SnakeGameScreenHandle, SnakeGameScreen
     useEffect(() => {
       if (gameState === 'GAME_OVER' && !gameOverCalledRef.current) {
         gameOverCalledRef.current = true;
+        
+        // Save score locally
+        addScore('snake', score);
+        
+        // Requirement 3.1, 3.2: Submit high score to server
+        // submitHighScore only calls API if score beats local high
+        submitHighScore('snake', score).catch(err => {
+          console.error('Failed to submit snake high score:', err);
+        });
+        
         onGameOver(score);
       } else if (gameState !== 'GAME_OVER') {
         // Reset the flag when game restarts

@@ -26,7 +26,7 @@ import {
   calculateFallSpeed,
   TETROMINO_SHAPES,
 } from '../utils/tetrisLogic';
-import { addTetrisScore } from '../services/gameService';
+import { addTetrisScore, submitHighScore } from '../services/gameService';
 
 // Game constants - cell size for the Tetris grid
 // Grid is 10 columns x 20 rows
@@ -118,8 +118,14 @@ export const TetrisGameScreen = forwardRef<TetrisGameScreenHandle, TetrisGameScr
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         }
         
-        // Save score to leaderboard
+        // Save score to local leaderboard
         addTetrisScore(gameState.score);
+        
+        // Requirement 3.1, 3.2: Submit high score to server
+        // submitHighScore only calls API if score beats local high
+        submitHighScore('tetris', gameState.score).catch(err => {
+          console.error('Failed to submit tetris high score:', err);
+        });
         
         // Notify parent
         onGameOver(gameState.score);

@@ -1293,7 +1293,7 @@ function AppContent() {
           />
         );
       case 'snakeLeaderboard':
-        return <SnakeLeaderboardScreen scores={snakeLeaderboard} />;
+        return <SnakeLeaderboardScreen />;
       case 'tetrisGame':
         // Requirements: 7.3 - Start Tetris game in ready state
         return (

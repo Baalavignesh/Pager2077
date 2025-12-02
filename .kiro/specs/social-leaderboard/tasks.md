@@ -1,0 +1,107 @@
+# Implementation Plan
+
+- [x] 1. Set up database schema and backend models
+  - [x] 1.1 Add high_scores table to database schema
+    - Add CREATE TABLE statement to schema.sql with user_id, game, score, updated_at
+    - Add PRIMARY KEY constraint on (user_id, game)
+    - Add CHECK constraint for valid game values ('snake', 'tetris')
+    - Add indexes for efficient querying
+    - _Requirements: 5.1, 5.2_
+  - [x] 1.2 Add HighScore and LeaderboardEntry interfaces to models
+    - Define HighScore interface with userId, game, score, updatedAt
+    - Define LeaderboardEntry interface with user details and score
+    - Add GameId type if not already present
+    - _Requirements: 2.4_
+
+- [x] 2. Implement LeaderboardRepository
+  - [x] 2.1 Create LeaderboardRepository class with database operations
+    - Implement getUserScore(userId, game) method
+    - Implement upsertScore(userId, game, score) with conditional update logic
+    - Implement getScoresForUsers(userIds, game) for batch retrieval
+    - _Requirements: 1.1, 1.2, 1.3, 1.4, 5.1_
+  - [ ]* 2.2 Write property test for score update monotonicity
+    - **Property 1: Score Update Monotonicity**
+    - **Validates: Requirements 1.1, 1.2**
+  - [ ]* 2.3 Write property test for single record invariant
+    - **Property 7: Single Record Invariant**
+    - **Validates: Requirements 5.1**
+
+- [x] 3. Implement LeaderboardService
+  - [x] 3.1 Create LeaderboardService class with business logic
+    - Implement submitScore(userId, game, score) method
+    - Implement getFriendsLeaderboard(userId, game) method using FriendshipRepository
+    - Include user's own score in leaderboard results
+    - Sort results by score descending
+    - _Requirements: 1.1, 1.2, 2.1, 2.2, 2.3, 2.4_
+  - [ ]* 3.2 Write property test for leaderboard membership
+    - **Property 2: Leaderboard Membership**
+    - **Validates: Requirements 2.1, 2.2**
+  - [ ]* 3.3 Write property test for leaderboard ordering
+    - **Property 3: Leaderboard Ordering**
+    - **Validates: Requirements 2.3**
+  - [ ]* 3.4 Write property test for leaderboard data completeness
+    - **Property 4: Leaderboard Data Completeness**
+    - **Validates: Requirements 2.4**
+
+- [x] 4. Add API endpoints
+  - [x] 4.1 Implement POST /api/scores endpoint
+    - Add route handler in index.ts
+    - Validate game and score parameters
+    - Call LeaderboardService.submitScore
+    - Return updated flag and current score
+    - _Requirements: 1.1, 1.2, 1.3_
+  - [x] 4.2 Implement GET /api/leaderboard/:game endpoint
+    - Add route handler in index.ts
+    - Validate game parameter
+    - Call LeaderboardService.getFriendsLeaderboard
+    - Return sorted leaderboard entries
+    - _Requirements: 2.1, 2.2, 2.3, 2.4_
+
+- [x] 5. Checkpoint - Ensure all backend tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [x] 6. Update frontend gameService
+  - [x] 6.1 Add API functions for score submission and leaderboard fetching
+    - Implement submitHighScore(gameId, score) function
+    - Implement getFriendsLeaderboard(gameId) function
+    - Implement getMyHighScore(gameId) function
+    - _Requirements: 3.1, 3.3_
+  - [x] 6.2 Update score submission logic to check local high before API call
+    - Compare new score with locally stored high score
+    - Only call API if new score is strictly greater
+    - Update local storage on successful submission
+    - _Requirements: 3.1, 3.2, 3.3_
+  - [ ]* 6.3 Write property test for client submission logic
+    - **Property 5: Client Submission Logic**
+    - **Validates: Requirements 3.1, 3.2**
+
+- [x] 7. Update LeaderboardView component
+  - [x] 7.1 Create FriendsLeaderboardView component or update existing LeaderboardView
+    - Add support for FriendsLeaderboardEntry type with isCurrentUser flag
+    - Display rank, display name (or hex code), score, and date
+    - Highlight current user's entry with visual distinction
+    - Show empty state message when no friends have scores
+    - _Requirements: 4.2, 4.3, 4.4_
+  - [ ]* 7.2 Write property test for current user identification
+    - **Property 6: Current User Identification**
+    - **Validates: Requirements 4.3**
+
+- [x] 8. Integrate leaderboard into game screens
+  - [x] 8.1 Update SnakeLeaderboardScreen to use friends leaderboard
+    - Fetch friends leaderboard from API
+    - Pass current user ID for highlighting
+    - Handle loading and error states
+    - _Requirements: 4.1, 4.2, 4.3, 4.4_
+  - [x] 8.2 Update TetrisLeaderboardScreen to use friends leaderboard
+    - Fetch friends leaderboard from API
+    - Pass current user ID for highlighting
+    - Handle loading and error states
+    - _Requirements: 4.1, 4.2, 4.3, 4.4_
+  - [x] 8.3 Update game over flow to submit high scores
+    - Call submitHighScore on game over in SnakeGameScreen
+    - Call submitHighScore on game over in TetrisGameScreen
+    - Only submit if score beats local high
+    - _Requirements: 3.1, 3.2_
+
+- [x] 9. Final Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.

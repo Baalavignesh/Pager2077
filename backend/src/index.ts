@@ -15,13 +15,15 @@ import { initDatabase } from './db';
 import { UserRepository } from './repositories/UserRepository';
 import { FriendshipRepository } from './repositories/FriendshipRepository';
 import { MessageRepository } from './repositories/MessageRepository';
+import { LeaderboardRepository } from './repositories/LeaderboardRepository';
 import { UserService } from './services/UserService';
 import { FriendshipService } from './services/FriendshipService';
 import { MessageService } from './services/MessageService';
 import { NotificationService } from './services/NotificationService';
+import { LeaderboardService } from './services/LeaderboardService';
 import { AppError } from './utils/errors';
 import { verifyJWT } from './utils/jwt';
-import type { ApiResponse, RegisterUserRequest, SendFriendRequestRequest } from './models';
+import type { ApiResponse, RegisterUserRequest, SendFriendRequestRequest, GameId } from './models';
 
 console.log('🚀 Pager 2077 Backend Starting...');
 
@@ -40,12 +42,14 @@ startNotificationWorker();
 const userRepo = new UserRepository(db);
 const friendshipRepo = new FriendshipRepository(db);
 const messageRepo = new MessageRepository(db);
+const leaderboardRepo = new LeaderboardRepository(db);
 
 // Initialize services
 const userService = new UserService(userRepo);
 const friendshipService = new FriendshipService(userRepo, friendshipRepo);
 const notificationService = new NotificationService();
 const messageService = new MessageService(messageRepo, userRepo, friendshipRepo, notificationService);
+const leaderboardService = new LeaderboardService(leaderboardRepo, friendshipRepo, userRepo);
 
 // Create Hono app
 const app = new Hono();
@@ -331,6 +335,69 @@ app.get('/api/conversations', (c) => {
   }));
 
   return c.json({ success: true, data: { conversations: conversationsResponse } });
+});
+
+// ============================================
+// Leaderboard Routes
+// ============================================
+
+const VALID_GAMES: GameId[] = ['snake', 'tetris'];
+
+function isValidGame(game: string): game is GameId {
+  return VALID_GAMES.includes(game as GameId);
+}
+
+/**
+ * POST /api/scores - Submit a new high score
+ * Requirements: 1.1, 1.2, 1.3
+ */
+app.post('/api/scores', async (c) => {
+  const userId = getUserIdFromAuth(c.req.header('Authorization'));
+  const body = await c.req.json() as { game: string; score: number };
+  
+  // Validate game parameter
+  if (!body.game || !isValidGame(body.game)) {
+    throw new AppError(400, 'INVALID_GAME', 'Game must be one of: snake, tetris');
+  }
+  
+  // Validate score parameter
+  if (typeof body.score !== 'number' || !Number.isInteger(body.score) || body.score < 0) {
+    throw new AppError(400, 'INVALID_SCORE', 'Score must be a non-negative integer');
+  }
+  
+  const result = leaderboardService.submitScore(userId, body.game, body.score);
+  
+  return c.json({
+    success: true,
+    data: {
+      updated: result.updated,
+      score: result.score.score,
+      updatedAt: result.score.updatedAt.toISOString(),
+    },
+  });
+});
+
+/**
+ * GET /api/leaderboard/:game - Get friends leaderboard for a game
+ * Requirements: 2.1, 2.2, 2.3, 2.4
+ */
+app.get('/api/leaderboard/:game', (c) => {
+  const userId = getUserIdFromAuth(c.req.header('Authorization'));
+  const game = c.req.param('game');
+  
+  // Validate game parameter
+  if (!isValidGame(game)) {
+    throw new AppError(400, 'INVALID_GAME', 'Game must be one of: snake, tetris');
+  }
+  
+  const entries = leaderboardService.getFriendsLeaderboard(userId, game);
+  
+  return c.json({
+    success: true,
+    data: {
+      entries,
+    },
+  });
 });
 
 // 404 handler

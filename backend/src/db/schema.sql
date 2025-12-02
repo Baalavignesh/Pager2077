@@ -80,3 +80,16 @@ CREATE TABLE IF NOT EXISTS messages (
 
 CREATE INDEX IF NOT EXISTS idx_messages_conversation ON messages(sender_id, recipient_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_messages_recipient_unread ON messages(recipient_id, is_read);
+
+-- High Scores Table
+CREATE TABLE IF NOT EXISTS high_scores (
+  user_id TEXT NOT NULL,
+  game TEXT NOT NULL CHECK(game IN ('snake', 'tetris')),
+  score INTEGER NOT NULL,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (user_id, game),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_high_scores_game ON high_scores(game);
+CREATE INDEX IF NOT EXISTS idx_high_scores_score ON high_scores(game, score DESC);
