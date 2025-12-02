@@ -28,11 +28,11 @@ import {
 } from '../utils/tetrisLogic';
 import { addTetrisScore } from '../services/gameService';
 
-// Game constants - calculate cell size based on available height
-// The LCD screen area is approximately 200px tall, minus header (~30px) and controls (~20px)
-// Available height for grid: ~150px for 20 rows = 7.5px per cell
-// We'll use 8px cells which gives us 160px grid height - fits well
-const CELL_SIZE = 8;
+// Game constants - cell size for the Tetris grid
+// Grid is 10 columns x 20 rows
+// Using 14px cells: 14 * 20 = 280px height, 14 * 10 = 140px width
+// This fills the LCD screen area nicely
+const CELL_SIZE = 14;
 
 type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
 
@@ -354,7 +354,7 @@ export const TetrisGameScreen = forwardRef<TetrisGameScreenHandle, TetrisGameScr
       
       const previewCells: React.ReactElement[] = [];
       const previewSize = 4;
-      const previewCellSize = 6;
+      const previewCellSize = 12;
       
       for (let py = 0; py < previewSize; py++) {
         const rowCells: React.ReactElement[] = [];
@@ -510,7 +510,7 @@ const styles = StyleSheet.create({
   },
   nextLabel: {
     fontFamily: 'Chicago',
-    fontSize: 8,
+    fontSize: 10,
     fontWeight: '700',
     color: '#3d4d38',
     letterSpacing: 1,
@@ -537,15 +537,15 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontFamily: 'Chicago',
-    fontSize: 7,
+    fontSize: 9,
     fontWeight: '700',
     color: '#3d4d38',
     letterSpacing: 1,
-    marginTop: 4,
+    marginTop: 6,
   },
   statValue: {
     fontFamily: 'Chicago',
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '700',
     color: '#1a2618',
     letterSpacing: 1,
@@ -562,7 +562,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontFamily: 'Chicago',
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '700',
     color: '#1a2618',
     letterSpacing: 1,
