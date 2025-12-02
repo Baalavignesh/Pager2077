@@ -37,6 +37,7 @@ export const SnakeGameScreen = forwardRef<SnakeGameScreenHandle, SnakeGameScreen
     const gameLoopRef = useRef<NodeJS.Timeout | null>(null);
     const gameStateRef = useRef<GameState>('READY');
     const directionChangedThisTick = useRef<boolean>(false);
+    const mountedTimeRef = useRef<number>(Date.now());
 
     const generateFood = useCallback((currentSnake: Position[]): Position => {
       let newFood: Position;
@@ -61,6 +62,11 @@ export const SnakeGameScreen = forwardRef<SnakeGameScreenHandle, SnakeGameScreen
     }, [generateFood]);
 
     const startGame = useCallback(() => {
+      // Prevent accidental start within 300ms of mounting (from button press propagation)
+      if (Date.now() - mountedTimeRef.current < 300) {
+        return;
+      }
+      
       if (gameState === 'READY' || gameState === 'GAME_OVER') {
         // Reset game state first
         const initialSnake = [{ x: 3, y: 6 }];

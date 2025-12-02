@@ -34,7 +34,7 @@ import { setCurrentUserDisplayName } from './src/services/displayNameService';
 import { areActivitiesEnabled, registerPushTokenWithBackend } from './src/services/liveActivityService';
 import { sendFriendRequest, updateUserStatus } from './src/services/apiClient';
 
-type Screen = 'main' | 'messages' | 'chat' | 'friends' | 'addFriend' | 'friendRequests' | 'friendRequestConfirmation' | 'myhex' | 'settings' | 'editName' | 'liveActivityDemo' | 'games' | 'snakeGame' | 'snakeLeaderboard';
+type Screen = 'main' | 'messages' | 'chat' | 'friends' | 'addFriend' | 'friendRequests' | 'friendRequestConfirmation' | 'myhex' | 'settings' | 'editName' | 'liveActivityDemo' | 'games' | 'gameMenu' | 'snakeGame' | 'snakeLeaderboard';
 
 const mainMenu = [
   { id: 'messages', label: '1. MESSAGES', screen: 'messages' as Screen },
@@ -95,6 +95,7 @@ function AppContent() {
   const snakeGameRef = useRef<SnakeGameScreenHandle>(null);
   
   // Games state
+  const [currentGame, setCurrentGame] = useState<'snake' | null>(null);
   const [snakeLeaderboard, setSnakeLeaderboard] = useState<LeaderboardEntry[]>([]);
   
   // Add friend state
@@ -650,7 +651,9 @@ function AppContent() {
     } else if (currentScreen === 'liveActivityDemo') {
       maxIndex = 4; // Start, Prev, Next, End, End All
     } else if (currentScreen === 'games') {
-      maxIndex = 1; // Snake, Leaderboard
+      maxIndex = 0; // Only Snake
+    } else if (currentScreen === 'gameMenu') {
+      maxIndex = 1; // Play, Leaderboard
     }
 
     if (direction === 'up' && selectedIndex > 0) {
@@ -790,14 +793,26 @@ function AppContent() {
       // Delegate to Live Activity demo screen
       liveActivityDemoRef.current?.handleSelect();
     } else if (currentScreen === 'games') {
-      // Handle games menu selection
+      // Handle games list selection - only Snake available
       if (selectedIndex === 0) {
-        // Snake game
-        setCurrentScreen('snakeGame');
+        // Snake selected - go to game menu
+        setCurrentGame('snake');
+        setCurrentScreen('gameMenu');
+        setSelectedIndex(0);
+      }
+    } else if (currentScreen === 'gameMenu') {
+      // Handle game menu (Play/Leaderboard)
+      if (selectedIndex === 0) {
+        // Play
+        if (currentGame === 'snake') {
+          setCurrentScreen('snakeGame');
+        }
       } else if (selectedIndex === 1) {
         // Leaderboard
-        loadSnakeLeaderboard();
-        setCurrentScreen('snakeLeaderboard');
+        if (currentGame === 'snake') {
+          loadSnakeLeaderboard();
+          setCurrentScreen('snakeLeaderboard');
+        }
       }
     } else if (currentScreen === 'snakeGame') {
       // Delegate to snake game
@@ -852,7 +867,15 @@ function AppContent() {
     }
     
     if (currentScreen === 'snakeGame' || currentScreen === 'snakeLeaderboard') {
-      // Return to games menu
+      // Return to game menu (Play/Leaderboard)
+      setCurrentScreen('gameMenu');
+      setSelectedIndex(0);
+      return;
+    }
+    
+    if (currentScreen === 'gameMenu') {
+      // Return to games list
+      setCurrentGame(null);
       setCurrentScreen('games');
       setSelectedIndex(0);
       return;
@@ -1162,6 +1185,8 @@ function AppContent() {
         return <LiveActivityDemoScreen ref={liveActivityDemoRef} selectedIndex={selectedIndex} />;
       case 'games':
         return <GamesMenuScreen selectedIndex={selectedIndex} />;
+      case 'gameMenu':
+        return <GamesMenuScreen selectedIndex={selectedIndex} currentGame={currentGame} />;
       case 'snakeGame':
         return (
           <SnakeGameScreen
