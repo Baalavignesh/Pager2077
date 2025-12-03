@@ -49,7 +49,7 @@ export const AddFriendScreen: React.FC<AddFriendScreenProps> = ({
       <PagerText>TIMES FOR LETTERS</PagerText>
       <PagerText> </PagerText>
       <PagerText>#: BACKSPACE</PagerText>
-      <PagerText>CALL: SEND</PagerText>
+      <PagerText>CALL: {hexInput.length === 0 ? 'PASTE' : hexInput.length === 8 ? 'SEND' : '---'}</PagerText>
     </PagerScreen>
   );
 };

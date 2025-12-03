@@ -191,7 +191,8 @@ app.post('/api/friends/request', async (c) => {
   const recipient = userService.getUserByHexCode(body.toHexCode.toUpperCase());
   if (recipient) {
     try {
-      await notificationService.notifyFriendRequest(recipient, sender.hexCode, request.id);
+      // Pass sender's display name for notification (falls back to hex code if null)
+      await notificationService.notifyFriendRequest(recipient, sender.hexCode, request.id, sender.displayName);
     } catch (notifError) {
       console.error('Failed to send friend request notification:', notifError);
     }

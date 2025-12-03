@@ -5,9 +5,8 @@ import type { ApiResponse, RegistrationResponse, User, Friend, FriendRequest, Co
 
 // For physical device testing, use your computer's local network IP
 // Find your IP: ifconfig | grep "inet " | grep -v 127.0.0.1
-const API_URL = __DEV__ 
-  ? 'http://192.168.0.122:3000'  // Local network IP for physical device testing
-  : 'https://pager.baalavignesh.com'; // Update with production URL
+const API_URL =  // Local network IP for physical device testing
+   'https://pager.baalavignesh.com'; // Update with production URL
 
 // Log the API URL on startup
 console.log('🌐 API Client initialized with URL:', API_URL);

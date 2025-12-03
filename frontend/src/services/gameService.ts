@@ -24,9 +24,7 @@ const HIGH_SCORE_KEYS: Record<GameId, string> = {
 };
 
 // API URL configuration
-const API_URL = __DEV__ 
-  ? 'http://192.168.0.122:3000'
-  : 'https://pager.baalavignesh.com';
+const API_URL = 'https://pager.baalavignesh.com';
 
 export interface LeaderboardEntry {
   score: number;

@@ -73,12 +73,17 @@ export class NotificationService {
 
   /**
    * Send friend request notification (alert)
+   * Uses display name if available, falls back to hex code
    */
   async notifyFriendRequest(
     recipient: User,
     senderHexCode: string,
-    requestId: string
+    requestId: string,
+    senderDisplayName?: string | null
   ): Promise<void> {
+    // Use display name if available, otherwise fall back to hex code
+    const senderName = senderDisplayName || senderHexCode;
+    
     await queueNotification({
       type: 'alert',
       userId: recipient.id,
@@ -86,7 +91,7 @@ export class NotificationService {
         deviceToken: recipient.deviceToken,
         alert: {
           title: '👋 Friend Request',
-          body: `${senderHexCode} wants to be friends`,
+          body: `${senderName} wants to be friends`,
           sound: 'default',
         },
         data: {

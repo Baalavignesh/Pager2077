@@ -12,7 +12,8 @@ import { FriendsListScreen } from './src/screens/FriendsListScreen';
 import { AddFriendScreen } from './src/screens/AddFriendScreen';
 import { FriendRequestsScreen } from './src/screens/FriendRequestsScreen';
 import { FriendRequestConfirmationScreen } from './src/screens/FriendRequestConfirmationScreen';
-import { MyHexScreen } from './src/screens/MyHexScreen';
+import { MyHexScreen, MyHexScreenHandle } from './src/screens/MyHexScreen';
+import * as Clipboard from 'expo-clipboard';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { NameEntryScreen, NameEntryScreenHandle } from './src/screens/NameEntryScreen';
 import { EditNameScreen, EditNameScreenHandle } from './src/screens/EditNameScreen';
@@ -96,6 +97,7 @@ function AppContent() {
   const liveActivityDemoRef = useRef<LiveActivityDemoScreenHandle>(null);
   const snakeGameRef = useRef<SnakeGameScreenHandle>(null);
   const tetrisGameRef = useRef<TetrisGameScreenHandle>(null);
+  const myHexScreenRef = useRef<MyHexScreenHandle>(null);
   
   // Games state
   // Requirements: 7.1, 7.2 - Support both Snake and Tetris games
@@ -1092,10 +1094,31 @@ function AppContent() {
     // No need to handle here
   };
 
-  const handleCall = () => {
-    // On Add Friend screen, call button sends the friend request (8-char hex code)
-    if (currentScreen === 'addFriend' && friendRequestInput.length === 8) {
-      handleSendFriendRequest(friendRequestInput);
+  const handleCall = async () => {
+    // On MyHex screen, call button copies hex code to clipboard
+    if (currentScreen === 'myhex') {
+      myHexScreenRef.current?.handleCopyToClipboard();
+      return;
+    }
+    
+    // On Add Friend screen with empty input, paste from clipboard
+    // On Add Friend screen with 8 chars, send the friend request
+    if (currentScreen === 'addFriend') {
+      if (friendRequestInput.length === 0) {
+        // Paste from clipboard
+        try {
+          const clipboardContent = await Clipboard.getStringAsync();
+          // Only paste if it looks like a valid hex code (8 alphanumeric chars)
+          if (clipboardContent && /^[0-9A-Fa-f]{8}$/.test(clipboardContent)) {
+            setFriendRequestInput(clipboardContent.toUpperCase());
+          }
+        } catch (error) {
+          console.error('Failed to paste from clipboard:', error);
+        }
+      } else if (friendRequestInput.length === 8) {
+        handleSendFriendRequest(friendRequestInput);
+      }
+      return;
     }
     
     // On Edit Name screen, call button saves the name
@@ -1276,7 +1299,7 @@ function AppContent() {
           />
         ) : null;
       case 'myhex':
-        return <MyHexScreen />;
+        return <MyHexScreen ref={myHexScreenRef} />;
       case 'liveActivityDemo':
         return <LiveActivityDemoScreen ref={liveActivityDemoRef} selectedIndex={selectedIndex} />;
       case 'games':
