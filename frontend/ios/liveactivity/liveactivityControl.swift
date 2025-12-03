@@ -2,7 +2,7 @@
 //  liveactivityControl.swift
 //  liveactivity
 //
-//  Created by Mithilesh on 30/11/25.
+//  Created by Baalavignesh Arunachalam on 12/3/25.
 //
 
 import AppIntents
@@ -10,15 +10,17 @@ import SwiftUI
 import WidgetKit
 
 struct liveactivityControl: ControlWidget {
+    static let kind: String = "com.pager2077v1.app.liveactivity"
+
     var body: some ControlWidgetConfiguration {
-        StaticControlConfiguration(
-            kind: "com.pager2077v1.app.liveactivity",
+        AppIntentControlConfiguration(
+            kind: Self.kind,
             provider: Provider()
         ) { value in
             ControlWidgetToggle(
                 "Start Timer",
-                isOn: value,
-                action: StartTimerIntent()
+                isOn: value.isRunning,
+                action: StartTimerIntent(value.name)
             ) { isRunning in
                 Label(isRunning ? "On" : "Off", systemImage: "timer")
             }
@@ -29,26 +31,47 @@ struct liveactivityControl: ControlWidget {
 }
 
 extension liveactivityControl {
-    struct Provider: ControlValueProvider {
-        var previewValue: Bool {
-            false
+    struct Value {
+        var isRunning: Bool
+        var name: String
+    }
+
+    struct Provider: AppIntentControlValueProvider {
+        func previewValue(configuration: TimerConfiguration) -> Value {
+            liveactivityControl.Value(isRunning: false, name: configuration.timerName)
         }
 
-        func currentValue() async throws -> Bool {
+        func currentValue(configuration: TimerConfiguration) async throws -> Value {
             let isRunning = true // Check if the timer is running
-            return isRunning
+            return liveactivityControl.Value(isRunning: isRunning, name: configuration.timerName)
         }
     }
+}
+
+struct TimerConfiguration: ControlConfigurationIntent {
+    static let title: LocalizedStringResource = "Timer Name Configuration"
+
+    @Parameter(title: "Timer Name", default: "Timer")
+    var timerName: String
 }
 
 struct StartTimerIntent: SetValueIntent {
     static let title: LocalizedStringResource = "Start a timer"
 
+    @Parameter(title: "Timer Name")
+    var name: String
+
     @Parameter(title: "Timer is running")
     var value: Bool
 
+    init() {}
+
+    init(_ name: String) {
+        self.name = name
+    }
+
     func perform() async throws -> some IntentResult {
-        // Start / stop the timer based on `value`.
+        // Start the timer…
         return .result()
     }
 }

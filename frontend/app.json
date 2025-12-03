@@ -15,8 +15,8 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.pager2077.app",
-      "appleTeamId": "PQD3HLJC38",
+      "bundleIdentifier": "com.pager2077v1.app",
+      "appleTeamId": "C5682GULYK",
       "infoPlist": {
         "UIBackgroundModes": [
           "remote-notification"

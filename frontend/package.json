@@ -36,6 +36,8 @@
     "react-native-web": "^0.21.0"
   },
   "devDependencies": {
+    "@react-native-community/cli": "^18.0.0",
+    "@react-native/metro-config": "^0.81.0",
     "@types/react": "~19.1.0",
     "babel-preset-expo": "~54.0.0",
     "install-expo-modules": "^0.13.12",

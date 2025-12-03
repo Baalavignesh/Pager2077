@@ -3,42 +3,42 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		17F6901BB14B82D3F0031906 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 7073E763E5955AFDBD1C36CF /* PrivacyInfo.xcprivacy */; };
-		244CC8119D1B57FA62ED7D5B /* libPods-Pager2077.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 521CFC0E2E271470C47FB6C9 /* libPods-Pager2077.a */; };
+		2D4981482EE018D0006928CB /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4981472EE018D0006928CB /* WidgetKit.framework */; };
+		2D49814A2EE018D0006928CB /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4981492EE018D0006928CB /* SwiftUI.framework */; };
+		2D49815B2EE018D3006928CB /* liveactivityExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2D4981462EE018D0006928CB /* liveactivityExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		7EEBA255F5B02B1E2CD39F12 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17D792C136FDF4D51CC8F8FB /* ExpoModulesProvider.swift */; };
-		8F38D0B2C67D4D14BF4C3C0B /* LiveActivityBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A995F148F684075845408C1 /* LiveActivityBridge.m */; };
-		A22939AFADB241F3B4923B87 /* LiveActivityBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50F0CB368082415AAB9C67F4 /* LiveActivityBridge.swift */; };
+		41A9B2C0E36A4210989AB2FD /* LiveActivityBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FA949BADB8C401A99C41072 /* LiveActivityBridge.swift */; };
+		585D48B6D8602D9F645EA139 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A965DBF282DBF33690E07B9 /* ExpoModulesProvider.swift */; };
+		7B97A5E26FE26449F4A87A50 /* libPods-Pager2077.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 76CDB685D5C800D9AB072164 /* libPods-Pager2077.a */; };
+		87FCEE34330BFB74E2217625 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 201118BF6969220FD821CCB4 /* PrivacyInfo.xcprivacy */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
-		C2D07AFB2EDC59A700C47FFC /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C2D07AFA2EDC59A700C47FFC /* WidgetKit.framework */; };
-		C2D07AFD2EDC59A700C47FFC /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C2D07AFC2EDC59A700C47FFC /* SwiftUI.framework */; };
-		C2D07B0C2EDC59A800C47FFC /* liveactivityExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C2D07AF92EDC59A600C47FFC /* liveactivityExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
+		FD8543B2D59C4B9590A1D609 /* LiveActivityBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = A420DBEB4F79480CB3A2B4FA /* LiveActivityBridge.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		C2D07B0A2EDC59A800C47FFC /* PBXContainerItemProxy */ = {
+		2D4981592EE018D3006928CB /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = C2D07AF82EDC59A600C47FFC;
+			remoteGlobalIDString = 2D4981452EE018D0006928CB;
 			remoteInfo = liveactivityExtension;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		C2D07B0D2EDC59A800C47FFC /* Embed Foundation Extensions */ = {
+		2D49815C2EE018D3006928CB /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				C2D07B0C2EDC59A800C47FFC /* liveactivityExtension.appex in Embed Foundation Extensions */,
+				2D49815B2EE018D3006928CB /* liveactivityExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -46,41 +46,41 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		0A995F148F684075845408C1 /* LiveActivityBridge.m */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.objc; name = LiveActivityBridge.m; path = Pager2077/LiveActivityBridge.m; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* Pager2077.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Pager2077.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Pager2077/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Pager2077/Info.plist; sourceTree = "<group>"; };
-		17D792C136FDF4D51CC8F8FB /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Pager2077/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		4E8E4810A493B81E4D40E2F5 /* Pods-Pager2077.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Pager2077.debug.xcconfig"; path = "Target Support Files/Pods-Pager2077/Pods-Pager2077.debug.xcconfig"; sourceTree = "<group>"; };
-		50F0CB368082415AAB9C67F4 /* LiveActivityBridge.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = LiveActivityBridge.swift; path = Pager2077/LiveActivityBridge.swift; sourceTree = "<group>"; };
-		521CFC0E2E271470C47FB6C9 /* libPods-Pager2077.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Pager2077.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		7073E763E5955AFDBD1C36CF /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = Pager2077/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		1A13F30B08D558522DD0018F /* Pods-Pager2077.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Pager2077.debug.xcconfig"; path = "Target Support Files/Pods-Pager2077/Pods-Pager2077.debug.xcconfig"; sourceTree = "<group>"; };
+		201118BF6969220FD821CCB4 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = Pager2077/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		2D4981462EE018D0006928CB /* liveactivityExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = liveactivityExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		2D4981472EE018D0006928CB /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		2D4981492EE018D0006928CB /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		3FA949BADB8C401A99C41072 /* LiveActivityBridge.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = LiveActivityBridge.swift; path = Pager2077/LiveActivityBridge.swift; sourceTree = "<group>"; };
+		76CDB685D5C800D9AB072164 /* libPods-Pager2077.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Pager2077.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8A965DBF282DBF33690E07B9 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Pager2077/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		9986D0326535D3ADEFC07AB8 /* Pods-Pager2077.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Pager2077.release.xcconfig"; path = "Target Support Files/Pods-Pager2077/Pods-Pager2077.release.xcconfig"; sourceTree = "<group>"; };
+		A420DBEB4F79480CB3A2B4FA /* LiveActivityBridge.m */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.objc; name = LiveActivityBridge.m; path = Pager2077/LiveActivityBridge.m; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = Pager2077/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		C2D07AF92EDC59A600C47FFC /* liveactivityExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = liveactivityExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		C2D07AFA2EDC59A700C47FFC /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
-		C2D07AFC2EDC59A700C47FFC /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
-		C4106EE3722AB511B9D02AA5 /* Pods-Pager2077.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Pager2077.release.xcconfig"; path = "Target Support Files/Pods-Pager2077/Pods-Pager2077.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Pager2077/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* Pager2077-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "Pager2077-Bridging-Header.h"; path = "Pager2077/Pager2077-Bridging-Header.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		C2D07B102EDC59A800C47FFC /* Exceptions for "liveactivity" folder in "liveactivityExtension" target */ = {
+		2D49815F2EE018D3006928CB /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = C2D07AF82EDC59A600C47FFC /* liveactivityExtension */;
+			target = 2D4981452EE018D0006928CB /* liveactivityExtension */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		C2D07AFE2EDC59A700C47FFC /* liveactivity */ = {
+		2D49814B2EE018D0006928CB /* liveactivity */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				C2D07B102EDC59A800C47FFC /* Exceptions for "liveactivity" folder in "liveactivityExtension" target */,
+				2D49815F2EE018D3006928CB /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
 			);
 			explicitFileTypes = {
 			};
@@ -96,30 +96,22 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				244CC8119D1B57FA62ED7D5B /* libPods-Pager2077.a in Frameworks */,
+				7B97A5E26FE26449F4A87A50 /* libPods-Pager2077.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		C2D07AF62EDC59A600C47FFC /* Frameworks */ = {
+		2D4981432EE018D0006928CB /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C2D07AFD2EDC59A700C47FFC /* SwiftUI.framework in Frameworks */,
-				C2D07AFB2EDC59A700C47FFC /* WidgetKit.framework in Frameworks */,
+				2D49814A2EE018D0006928CB /* SwiftUI.framework in Frameworks */,
+				2D4981482EE018D0006928CB /* WidgetKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		133111C4E1F306D02B4F610A /* Pager2077 */ = {
-			isa = PBXGroup;
-			children = (
-				17D792C136FDF4D51CC8F8FB /* ExpoModulesProvider.swift */,
-			);
-			name = Pager2077;
-			sourceTree = "<group>";
-		};
 		13B07FAE1A68108700A75B9A /* Pager2077 */ = {
 			isa = PBXGroup;
 			children = (
@@ -129,37 +121,37 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				7073E763E5955AFDBD1C36CF /* PrivacyInfo.xcprivacy */,
+				201118BF6969220FD821CCB4 /* PrivacyInfo.xcprivacy */,
 			);
 			name = Pager2077;
+			sourceTree = "<group>";
+		};
+		26C161F7DDCBA12A87ABD3D6 /* ExpoModulesProviders */ = {
+			isa = PBXGroup;
+			children = (
+				C577A69FBD71B86B7D024F91 /* Pager2077 */,
+			);
+			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				C2D07AFA2EDC59A700C47FFC /* WidgetKit.framework */,
-				C2D07AFC2EDC59A700C47FFC /* SwiftUI.framework */,
-				521CFC0E2E271470C47FB6C9 /* libPods-Pager2077.a */,
+				76CDB685D5C800D9AB072164 /* libPods-Pager2077.a */,
+				2D4981472EE018D0006928CB /* WidgetKit.framework */,
+				2D4981492EE018D0006928CB /* SwiftUI.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		4F6AA56F4D88DC1071989A8C /* Pods */ = {
+		54E73F2C019E6565D829A3CF /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				4E8E4810A493B81E4D40E2F5 /* Pods-Pager2077.debug.xcconfig */,
-				C4106EE3722AB511B9D02AA5 /* Pods-Pager2077.release.xcconfig */,
+				1A13F30B08D558522DD0018F /* Pods-Pager2077.debug.xcconfig */,
+				9986D0326535D3ADEFC07AB8 /* Pods-Pager2077.release.xcconfig */,
 			);
 			path = Pods;
-			sourceTree = "<group>";
-		};
-		7F706B29EE9F8C4AF303A36B /* ExpoModulesProviders */ = {
-			isa = PBXGroup;
-			children = (
-				133111C4E1F306D02B4F610A /* Pager2077 */,
-			);
-			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -174,13 +166,13 @@
 			children = (
 				13B07FAE1A68108700A75B9A /* Pager2077 */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
-				C2D07AFE2EDC59A700C47FFC /* liveactivity */,
+				2D49814B2EE018D0006928CB /* liveactivity */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				50F0CB368082415AAB9C67F4 /* LiveActivityBridge.swift */,
-				0A995F148F684075845408C1 /* LiveActivityBridge.m */,
-				4F6AA56F4D88DC1071989A8C /* Pods */,
-				7F706B29EE9F8C4AF303A36B /* ExpoModulesProviders */,
+				3FA949BADB8C401A99C41072 /* LiveActivityBridge.swift */,
+				A420DBEB4F79480CB3A2B4FA /* LiveActivityBridge.m */,
+				54E73F2C019E6565D829A3CF /* Pods */,
+				26C161F7DDCBA12A87ABD3D6 /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -191,7 +183,7 @@
 			isa = PBXGroup;
 			children = (
 				13B07F961A680F5B00A75B9A /* Pager2077.app */,
-				C2D07AF92EDC59A600C47FFC /* liveactivityExtension.appex */,
+				2D4981462EE018D0006928CB /* liveactivityExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -205,6 +197,14 @@
 			path = Pager2077/Supporting;
 			sourceTree = "<group>";
 		};
+		C577A69FBD71B86B7D024F91 /* Pager2077 */ = {
+			isa = PBXGroup;
+			children = (
+				8A965DBF282DBF33690E07B9 /* ExpoModulesProvider.swift */,
+			);
+			name = Pager2077;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -212,44 +212,46 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Pager2077" */;
 			buildPhases = (
-				659F788F8005606BF53FABFF /* [CP] Check Pods Manifest.lock */,
-				A9C9DB6C933CB5D6AF5D0A73 /* [Expo] Configure project */,
+				960D2703CEC1277C0F83ADA1 /* [CP] Check Pods Manifest.lock */,
+				ACC2047893B5954283A77A6A /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				C2D07B0D2EDC59A800C47FFC /* Embed Foundation Extensions */,
-				AFFFD300FA085092060F8DBF /* [CP] Embed Pods Frameworks */,
-				E2ED935DDBCFEC724F7EC863 /* [CP] Copy Pods Resources */,
+				871EB7BC4E6572BB4354CD31 /* [CP] Embed Pods Frameworks */,
+				1DA623BD32E2971554138AD1 /* [CP] Copy Pods Resources */,
+				2D49815C2EE018D3006928CB /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				C2D07B0B2EDC59A800C47FFC /* PBXTargetDependency */,
+				2D49815A2EE018D3006928CB /* PBXTargetDependency */,
 			);
 			name = Pager2077;
 			productName = Pager2077;
 			productReference = 13B07F961A680F5B00A75B9A /* Pager2077.app */;
 			productType = "com.apple.product-type.application";
 		};
-		C2D07AF82EDC59A600C47FFC /* liveactivityExtension */ = {
+		2D4981452EE018D0006928CB /* liveactivityExtension */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = C2D07B112EDC59A800C47FFC /* Build configuration list for PBXNativeTarget "liveactivityExtension" */;
+			buildConfigurationList = 2D4981602EE018D3006928CB /* Build configuration list for PBXNativeTarget "liveactivityExtension" */;
 			buildPhases = (
-				C2D07AF52EDC59A600C47FFC /* Sources */,
-				C2D07AF62EDC59A600C47FFC /* Frameworks */,
-				C2D07AF72EDC59A600C47FFC /* Resources */,
+				2D4981422EE018D0006928CB /* Sources */,
+				2D4981432EE018D0006928CB /* Frameworks */,
+				2D4981442EE018D0006928CB /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				C2D07AFE2EDC59A700C47FFC /* liveactivity */,
+				2D49814B2EE018D0006928CB /* liveactivity */,
 			);
 			name = liveactivityExtension;
+			packageProductDependencies = (
+			);
 			productName = liveactivityExtension;
-			productReference = C2D07AF92EDC59A600C47FFC /* liveactivityExtension.appex */;
+			productReference = 2D4981462EE018D0006928CB /* liveactivityExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
@@ -258,14 +260,14 @@
 		83CBB9F71A601CBA00E9B192 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 2600;
+				LastSwiftUpdateCheck = 2610;
 				LastUpgradeCheck = 1130;
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
 						LastSwiftMigration = 1250;
 					};
-					C2D07AF82EDC59A600C47FFC = {
-						CreatedOnToolsVersion = 26.0.1;
+					2D4981452EE018D0006928CB = {
+						CreatedOnToolsVersion = 26.1.1;
 					};
 				};
 			};
@@ -283,7 +285,7 @@
 			projectRoot = "";
 			targets = (
 				13B07F861A680F5B00A75B9A /* Pager2077 */,
-				C2D07AF82EDC59A600C47FFC /* liveactivityExtension */,
+				2D4981452EE018D0006928CB /* liveactivityExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -296,11 +298,11 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				17F6901BB14B82D3F0031906 /* PrivacyInfo.xcprivacy in Resources */,
+				87FCEE34330BFB74E2217625 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		C2D07AF72EDC59A600C47FFC /* Resources */ = {
+		2D4981442EE018D0006928CB /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -327,75 +329,7 @@
 			shellPath = /bin/sh;
 			shellScript = "if [[ -f \"$PODS_ROOT/../.xcode.env\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env\"\nfi\nif [[ -f \"$PODS_ROOT/../.xcode.env.local\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env.local\"\nfi\n\n# The project root by default is one level up from the ios directory\nexport PROJECT_ROOT=\"$PROJECT_DIR\"/..\n\nif [[ \"$CONFIGURATION\" = *Debug* ]]; then\n  export SKIP_BUNDLING=1\nfi\nif [[ -z \"$ENTRY_FILE\" ]]; then\n  # Set the entry JS file using the bundler's entry resolution.\n  export ENTRY_FILE=\"$(\"$NODE_BINARY\" -e \"require('expo/scripts/resolveAppEntry')\" \"$PROJECT_ROOT\" ios absolute | tail -n 1)\"\nfi\n\nif [[ -z \"$CLI_PATH\" ]]; then\n  # Use Expo CLI\n  export CLI_PATH=\"$(\"$NODE_BINARY\" --print \"require.resolve('@expo/cli', { paths: [require.resolve('expo/package.json')] })\")\"\nfi\nif [[ -z \"$BUNDLE_COMMAND\" ]]; then\n  # Default Expo CLI command for bundling\n  export BUNDLE_COMMAND=\"export:embed\"\nfi\n\n# Source .xcode.env.updates if it exists to allow\n# SKIP_BUNDLING to be unset if needed\nif [[ -f \"$PODS_ROOT/../.xcode.env.updates\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env.updates\"\nfi\n# Source local changes to allow overrides\n# if needed\nif [[ -f \"$PODS_ROOT/../.xcode.env.local\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env.local\"\nfi\n\n`\"$NODE_BINARY\" --print \"require('path').dirname(require.resolve('react-native/package.json')) + '/scripts/react-native-xcode.sh'\"`\n\n";
 		};
-		659F788F8005606BF53FABFF /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-Pager2077-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		A9C9DB6C933CB5D6AF5D0A73 /* [Expo] Configure project */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/.xcode.env",
-				"$(SRCROOT)/.xcode.env.local",
-				"$(SRCROOT)/Pager2077/Pager2077.entitlements",
-				"$(SRCROOT)/Pods/Target Support Files/Pods-Pager2077/expo-configure-project.sh",
-			);
-			name = "[Expo] Configure project";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(SRCROOT)/Pods/Target Support Files/Pods-Pager2077/ExpoModulesProvider.swift",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-Pager2077/expo-configure-project.sh\"\n";
-		};
-		AFFFD300FA085092060F8DBF /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Pager2077/Pods-Pager2077-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/React-Core-prebuilt/React.framework/React",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ReactNativeDependencies/ReactNativeDependencies.framework/ReactNativeDependencies",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/React.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactNativeDependencies.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Pager2077/Pods-Pager2077-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		E2ED935DDBCFEC724F7EC863 /* [CP] Copy Pods Resources */ = {
+		1DA623BD32E2971554138AD1 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -431,6 +365,74 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Pager2077/Pods-Pager2077-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
+		871EB7BC4E6572BB4354CD31 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Pager2077/Pods-Pager2077-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/React-Core-prebuilt/React.framework/React",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ReactNativeDependencies/ReactNativeDependencies.framework/ReactNativeDependencies",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/React.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactNativeDependencies.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Pager2077/Pods-Pager2077-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		960D2703CEC1277C0F83ADA1 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-Pager2077-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		ACC2047893B5954283A77A6A /* [Expo] Configure project */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/.xcode.env",
+				"$(SRCROOT)/.xcode.env.local",
+				"$(SRCROOT)/Pager2077/Pager2077.entitlements",
+				"$(SRCROOT)/Pods/Target Support Files/Pods-Pager2077/expo-configure-project.sh",
+			);
+			name = "[Expo] Configure project";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/Pods/Target Support Files/Pods-Pager2077/ExpoModulesProvider.swift",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-Pager2077/expo-configure-project.sh\"\n";
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -439,13 +441,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				A22939AFADB241F3B4923B87 /* LiveActivityBridge.swift in Sources */,
-				8F38D0B2C67D4D14BF4C3C0B /* LiveActivityBridge.m in Sources */,
-				7EEBA255F5B02B1E2CD39F12 /* ExpoModulesProvider.swift in Sources */,
+				41A9B2C0E36A4210989AB2FD /* LiveActivityBridge.swift in Sources */,
+				FD8543B2D59C4B9590A1D609 /* LiveActivityBridge.m in Sources */,
+				585D48B6D8602D9F645EA139 /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		C2D07AF52EDC59A600C47FFC /* Sources */ = {
+		2D4981422EE018D0006928CB /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -455,23 +457,23 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		C2D07B0B2EDC59A800C47FFC /* PBXTargetDependency */ = {
+		2D49815A2EE018D3006928CB /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = C2D07AF82EDC59A600C47FFC /* liveactivityExtension */;
-			targetProxy = C2D07B0A2EDC59A800C47FFC /* PBXContainerItemProxy */;
+			target = 2D4981452EE018D0006928CB /* liveactivityExtension */;
+			targetProxy = 2D4981592EE018D3006928CB /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4E8E4810A493B81E4D40E2F5 /* Pods-Pager2077.debug.xcconfig */;
+			baseConfigurationReference = 1A13F30B08D558522DD0018F /* Pods-Pager2077.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Pager2077/Pager2077.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = PQD3HLJC38;
+				DEVELOPMENT_TEAM = C5682GULYK;
 				ENABLE_BITCODE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -490,7 +492,7 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
-				PRODUCT_BUNDLE_IDENTIFIER = com.pager2077.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pager2077v1.app;
 				PRODUCT_NAME = "Pager2077";
 				SWIFT_OBJC_BRIDGING_HEADER = "Pager2077/Pager2077-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -502,13 +504,13 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C4106EE3722AB511B9D02AA5 /* Pods-Pager2077.release.xcconfig */;
+			baseConfigurationReference = 9986D0326535D3ADEFC07AB8 /* Pods-Pager2077.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Pager2077/Pager2077.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = PQD3HLJC38;
+				DEVELOPMENT_TEAM = C5682GULYK;
 				INFOPLIST_FILE = Pager2077/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -522,12 +524,105 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
-				PRODUCT_BUNDLE_IDENTIFIER = com.pager2077.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pager2077v1.app;
 				PRODUCT_NAME = "Pager2077";
 				SWIFT_OBJC_BRIDGING_HEADER = "Pager2077/Pager2077-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+		2D49815D2EE018D3006928CB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = C5682GULYK;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = liveactivity/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = liveactivity;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pager2077v1.app.liveactivity;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		2D49815E2EE018D3006928CB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = C5682GULYK;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = liveactivity/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = liveactivity;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pager2077v1.app.liveactivity;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -649,101 +744,6 @@
 			};
 			name = Release;
 		};
-		C2D07B0E2EDC59A800C47FFC /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = PQD3HLJC38;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = liveactivity/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = liveactivity;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.0;
-				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
-				MTL_FAST_MATH = YES;
-				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
-				PRODUCT_BUNDLE_IDENTIFIER = com.pager2077.app.liveactivity;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		C2D07B0F2EDC59A800C47FFC /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_STYLE = Automatic;
-				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = PQD3HLJC38;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = liveactivity/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = liveactivity;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.0;
-				MTL_FAST_MATH = YES;
-				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
-				PRODUCT_BUNDLE_IDENTIFIER = com.pager2077.app.liveactivity;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -756,20 +756,20 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		2D4981602EE018D3006928CB /* Build configuration list for PBXNativeTarget "liveactivityExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2D49815D2EE018D3006928CB /* Debug */,
+				2D49815E2EE018D3006928CB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "Pager2077" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				83CBBA201A601CBA00E9B192 /* Debug */,
 				83CBBA211A601CBA00E9B192 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		C2D07B112EDC59A800C47FFC /* Build configuration list for PBXNativeTarget "liveactivityExtension" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				C2D07B0E2EDC59A800C47FFC /* Debug */,
-				C2D07B0F2EDC59A800C47FFC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
