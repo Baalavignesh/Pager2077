@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef, forwardRef, useImperativeHandle } from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
+import { View, StyleSheet, Dimensions, Text } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { GameHeader, GameOverlay, GameControls } from '../components/games';
 import { submitHighScore, addScore } from '../services/gameService';
+import { PagerDisplayGame, GAME_TYPOGRAPHY, GAME_COLORS } from '../components/PagerDisplayGame';
 
 // Game constants
 const GRID_SIZE = 12;
-const CELL_SIZE = Math.floor((Dimensions.get('window').width - 80) / GRID_SIZE);
+// Cell size for compact game grid centered in screen
+const CELL_SIZE = 20;
 const INITIAL_SPEED = 350; // Slower initial speed for better playability
 const SPEED_INCREMENT = 10;
 const MIN_SPEED = 120;
@@ -284,8 +285,14 @@ export const SnakeGameScreen = forwardRef<SnakeGameScreenHandle, SnakeGameScreen
     };
 
     return (
-      <View style={styles.container}>
-        <GameHeader title="SNAKE" score={score} />
+      <PagerDisplayGame>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.title}>SNAKE</Text>
+          <Text style={styles.score}>
+            SCORE: {score.toString().padStart(4, '0')}
+          </Text>
+        </View>
         
         <View style={styles.gameArea}>
           <View style={styles.grid}>
@@ -293,32 +300,52 @@ export const SnakeGameScreen = forwardRef<SnakeGameScreenHandle, SnakeGameScreen
           </View>
         </View>
         
-        <GameOverlay
-          visible={gameState !== 'PLAYING'}
-          statusText={getStatusText()}
-          instructions={getInstructions()}
-        />
+        {/* Overlay for non-playing states */}
+        {gameState !== 'PLAYING' && (
+          <View style={styles.overlay}>
+            <Text style={styles.statusText}>{getStatusText()}</Text>
+            {getInstructions() && (
+              <Text style={styles.instructions}>{getInstructions()}</Text>
+            )}
+          </View>
+        )}
         
-        <GameControls controlText="2=UP 4=LEFT 6=RIGHT 8=DOWN" />
-      </View>
+        {/* Controls hint */}
+        <View style={styles.controls}>
+          <Text style={styles.controlText}>2=UP 4=LEFT 6=RIGHT 8=DOWN</Text>
+        </View>
+      </PagerDisplayGame>
     );
   }
 );
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 8,
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+    paddingBottom: 8,
+    borderBottomWidth: 2,
+    borderBottomColor: GAME_COLORS.sectionBorder,
+    marginBottom: 8,
+  },
+  title: {
+    ...GAME_TYPOGRAPHY.title,
+  },
+  score: {
+    ...GAME_TYPOGRAPHY.score,
   },
   gameArea: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingVertical: 8,
   },
   grid: {
     borderWidth: 2,
-    borderColor: '#3d3d3d',
-    backgroundColor: '#a8b8a0',
+    borderColor: GAME_COLORS.gridBorder,
+    backgroundColor: GAME_COLORS.gridBackground,
   },
   gridRow: {
     flexDirection: 'row',
@@ -327,15 +354,41 @@ const styles = StyleSheet.create({
     width: CELL_SIZE,
     height: CELL_SIZE,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.1)',
+    borderColor: GAME_COLORS.cellBorder,
   },
   snakeHead: {
-    backgroundColor: '#1a2618',
+    backgroundColor: GAME_COLORS.activeCell,
   },
   snakeBody: {
-    backgroundColor: '#3d4d38',
+    backgroundColor: GAME_COLORS.lockedCell,
   },
   food: {
     backgroundColor: '#8B0000',
+  },
+  overlay: {
+    position: 'absolute',
+    top: -110,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    // backgroundColor: GAME_COLORS.overlayBackground,
+  },
+  statusText: {
+    ...GAME_TYPOGRAPHY.status,
+  },
+  instructions: {
+    ...GAME_TYPOGRAPHY.instructions,
+    marginTop: 8,
+  },
+  controls: {
+    paddingTop: 8,
+    borderTopWidth: 2,
+    borderTopColor: GAME_COLORS.sectionBorder,
+    alignItems: 'center',
+  },
+  controlText: {
+    ...GAME_TYPOGRAPHY.controlHint,
   },
 });

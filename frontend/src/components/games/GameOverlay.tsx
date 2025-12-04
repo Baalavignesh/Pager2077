@@ -44,6 +44,9 @@ const styles = StyleSheet.create({
     color: '#1a2618',
     letterSpacing: 1.5,
     textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
   },
   instructions: {
     fontFamily: 'Chicago',
@@ -53,5 +56,8 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     marginTop: 8,
     textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
   },
 });

@@ -61,6 +61,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#1a2618',
     letterSpacing: 1.5,
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
   },
   level: {
     fontFamily: 'Chicago',
@@ -68,6 +71,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#3d4d38',
     letterSpacing: 1,
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
   },
   score: {
     fontFamily: 'Chicago',
@@ -75,6 +81,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#1a2618',
     letterSpacing: 1,
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
   },
   extraInfo: {
     fontFamily: 'Chicago',
@@ -82,5 +91,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#3d4d38',
     letterSpacing: 1,
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
   },
 });

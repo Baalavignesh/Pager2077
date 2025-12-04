@@ -234,11 +234,71 @@ Example: `feat: add voice recording functionality`
 - All buttons use PagerButton with label prop for consistent styling
 - Flicker effect only applies to selected items (PagerText with selected={true})
 
+### Game UI Components
+Game screens (Snake, Tetris) render inside PagerDisplay which provides the LCD background (#8B9D7F) and vignette effects. Game screens use the `PagerDisplayGame` wrapper component for consistent styling.
+
+- **PagerDisplayGame**: Wrapper component for game screens that provides:
+  - Dual-layer scanlines (300 horizontal + 150 vertical lines) matching PagerScreen
+  - Consistent 12px padding
+  - Exports `GAME_TYPOGRAPHY` and `GAME_COLORS` constants for unified styling
+  - Located at `frontend/src/components/PagerDisplayGame.tsx`
+
+Shared components in `frontend/src/components/games/`:
+- **LeaderboardView**: Shared leaderboard display using PagerScreen/PagerText
+
+### Unified Game Styling
+All game UI uses shared constants from `PagerDisplayGame.tsx`:
+
+**GAME_TYPOGRAPHY** - Typography styles matching PagerScreen exactly:
+- `title`: fontSize 12, fontWeight 700, letterSpacing 1.5, color #1a2618
+- `score`: fontSize 12, fontWeight 700, letterSpacing 1, color #1a2618
+- `label`: fontSize 10, fontWeight 700, letterSpacing 1, color #3d4d38
+- `controlHint`: fontSize 8, fontWeight 700, letterSpacing 1, color #3d4d38
+- `status`: fontSize 14, fontWeight 700, letterSpacing 1.5, color #1a2618, textAlign center
+- `instructions`: fontSize 10, fontWeight 700, letterSpacing 1, color #3d4d38, textAlign center
+- All include textShadow: rgba(0, 0, 0, 0.25), offset {1, 1}, radius 0
+
+**GAME_COLORS** - Color constants for game grids:
+- `gridBackground`: #9BAD8F (slightly lighter than LCD #8B9D7F for visual separation)
+- `gridBorder`: #3d3d3d
+- `activeCell`: #1a2618 (dark green - snake head, active tetromino)
+- `lockedCell`: #3d4d38 (medium green - snake body, locked pieces)
+- `ghostCell`: rgba(26, 38, 24, 0.25) (ghost piece preview)
+- `cellBorder`: rgba(0,0,0,0.1)
+- `overlayBackground`: rgba(100, 115, 90, 0.95) (darker semi-transparent for better text visibility)
+- `sectionBorder`: #3d3d3d (header/controls borders)
+
+**Usage in game screens:**
+```typescript
+import { PagerDisplayGame, GAME_TYPOGRAPHY, GAME_COLORS } from '../components/PagerDisplayGame';
+
+// Wrap game content
+return (
+  <PagerDisplayGame>
+    {/* Game content */}
+  </PagerDisplayGame>
+);
+
+// Use shared styles
+const styles = StyleSheet.create({
+  title: { ...GAME_TYPOGRAPHY.title },
+  grid: { backgroundColor: GAME_COLORS.gridBackground },
+});
+```
+
+**Game Screen States:**
+- When not playing (READY, PAUSED, GAME_OVER): Show centered text on LCD background with scanlines, hide game grid
+- When playing: Show game grid with side panel (Tetris) or just grid (Snake)
+- This ensures text is readable and the LCD scanline effect is visible in menu states
+
+Game screens inherit the LCD background from PagerDisplay - no need to set background color on the game container.
+
 ### Styling Approach
 - PagerScreen contains all LCD screen styling (fonts, spacing, scanlines)
 - Individual screens focus on functionality, not styling
 - Screen-specific styles only when needed (e.g., text alignment)
 - No centralized style files - styles colocated with components
+- Game screens should use shared game components for consistency
 
 ## Dependencies Management
 

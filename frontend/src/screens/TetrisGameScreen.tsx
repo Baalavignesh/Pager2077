@@ -27,12 +27,13 @@ import {
   TETROMINO_SHAPES,
 } from '../utils/tetrisLogic';
 import { addTetrisScore, submitHighScore } from '../services/gameService';
+import { PagerDisplayGame, GAME_TYPOGRAPHY, GAME_COLORS } from '../components/PagerDisplayGame';
 
 // Game constants - cell size for the Tetris grid
 // Grid is 10 columns x 20 rows
-// Using 14px cells: 14 * 20 = 280px height, 14 * 10 = 140px width
-// This fills the LCD screen area nicely
-const CELL_SIZE = 14;
+// Using 12px cells: 12 * 20 = 240px height, 12 * 10 = 120px width
+// Compact size to fit centered in screen
+const CELL_SIZE = 12;
 
 type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
 
@@ -360,7 +361,7 @@ export const TetrisGameScreen = forwardRef<TetrisGameScreenHandle, TetrisGameScr
       
       const previewCells: React.ReactElement[] = [];
       const previewSize = 4;
-      const previewCellSize = 12;
+      const previewCellSize = 10;
       
       for (let py = 0; py < previewSize; py++) {
         const rowCells: React.ReactElement[] = [];
@@ -402,7 +403,7 @@ export const TetrisGameScreen = forwardRef<TetrisGameScreenHandle, TetrisGameScr
     };
 
     return (
-      <View style={styles.container}>
+      <PagerDisplayGame>
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>TETRIS</Text>
@@ -411,27 +412,26 @@ export const TetrisGameScreen = forwardRef<TetrisGameScreenHandle, TetrisGameScr
           </Text>
         </View>
         
-        {/* Game Area */}
-        <View style={styles.gameArea}>
-          {/* Main Grid */}
-          <View style={styles.grid}>
-            {renderGrid()}
-          </View>
-          
-          {/* Side Panel */}
-          <View style={styles.sidePanel}>
-            {renderNextPiecePreview()}
-            <View style={styles.statsContainer}>
-              <Text style={styles.statLabel}>LVL</Text>
-              <Text style={styles.statValue}>{gameState.level}</Text>
-              <Text style={styles.statLabel}>LNS</Text>
-              <Text style={styles.statValue}>{gameState.linesCleared}</Text>
+        {/* Show game area only when playing, otherwise show centered text */}
+        {gameState.gameState === 'PLAYING' ? (
+          <View style={styles.gameArea}>
+            {/* Main Grid */}
+            <View style={styles.grid}>
+              {renderGrid()}
+            </View>
+            
+            {/* Side Panel */}
+            <View style={styles.sidePanel}>
+              {renderNextPiecePreview()}
+              <View style={styles.statsContainer}>
+                <Text style={styles.statLabel}>LVL</Text>
+                <Text style={styles.statValue}>{gameState.level}</Text>
+                <Text style={styles.statLabel}>LNS</Text>
+                <Text style={styles.statValue}>{gameState.linesCleared}</Text>
+              </View>
             </View>
           </View>
-        </View>
-        
-        {/* Overlay for non-playing states */}
-        {gameState.gameState !== 'PLAYING' && (
+        ) : (
           <View style={styles.overlay}>
             <Text style={styles.statusText}>{getStatusText()}</Text>
             <Text style={styles.instructions}>{getInstructions()}</Text>
@@ -442,51 +442,40 @@ export const TetrisGameScreen = forwardRef<TetrisGameScreenHandle, TetrisGameScr
         <View style={styles.controls}>
           <Text style={styles.controlText}>2=↻ 4=← 6=→ 8=↓ 5=DROP</Text>
         </View>
-      </View>
+      </PagerDisplayGame>
     );
   }
 );
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 4,
-  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 2,
-    paddingBottom: 4,
-    borderBottomWidth: 1,
-    borderBottomColor: '#3d3d3d',
-    marginBottom: 4,
+    paddingHorizontal: 4,
+    paddingBottom: 8,
+    borderBottomWidth: 2,
+    borderBottomColor: GAME_COLORS.sectionBorder,
+    marginBottom: 8,
   },
   title: {
-    fontFamily: 'Chicago',
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#1a2618',
-    letterSpacing: 1,
+    ...GAME_TYPOGRAPHY.title,
   },
   score: {
-    fontFamily: 'Chicago',
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#1a2618',
-    letterSpacing: 1,
+    ...GAME_TYPOGRAPHY.score,
   },
   gameArea: {
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'flex-start',
-    gap: 6,
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 4,
   },
   grid: {
-    borderWidth: 1,
-    borderColor: '#6B7D5F',
-    backgroundColor: '#8B9D7F',
+    borderWidth: 2,
+    borderColor: GAME_COLORS.gridBorder,
+    backgroundColor: GAME_COLORS.gridBackground,
   },
   gridRow: {
     flexDirection: 'row',
@@ -494,17 +483,17 @@ const styles = StyleSheet.create({
   cell: {
     width: CELL_SIZE,
     height: CELL_SIZE,
-    borderWidth: 0.5,
-    borderColor: 'rgba(0,0,0,0.1)',
+    borderWidth: 1,
+    borderColor: GAME_COLORS.cellBorder,
   },
   activeCell: {
-    backgroundColor: '#1a2618',
+    backgroundColor: GAME_COLORS.activeCell,
   },
   ghostCell: {
-    backgroundColor: 'rgba(26, 38, 24, 0.25)',
+    backgroundColor: GAME_COLORS.ghostCell,
   },
   lockedCell: {
-    backgroundColor: '#3d4d38',
+    backgroundColor: GAME_COLORS.lockedCell,
   },
   sidePanel: {
     justifyContent: 'flex-start',
@@ -515,84 +504,55 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   nextLabel: {
-    fontFamily: 'Chicago',
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#3d4d38',
-    letterSpacing: 1,
+    ...GAME_TYPOGRAPHY.label,
     marginBottom: 2,
   },
   nextPiecePreview: {
-    borderWidth: 1,
-    borderColor: '#6B7D5F',
-    backgroundColor: '#8B9D7F',
+    borderWidth: 2,
+    borderColor: GAME_COLORS.gridBorder,
+    backgroundColor: GAME_COLORS.gridBackground,
     padding: 1,
   },
   previewRow: {
     flexDirection: 'row',
   },
   previewCell: {
-    borderWidth: 0.5,
-    borderColor: 'rgba(0,0,0,0.05)',
+    borderWidth: 1,
+    borderColor: GAME_COLORS.cellBorder,
   },
   previewActiveCell: {
-    backgroundColor: '#1a2618',
+    backgroundColor: GAME_COLORS.activeCell,
   },
   statsContainer: {
     alignItems: 'center',
   },
   statLabel: {
-    fontFamily: 'Chicago',
-    fontSize: 9,
-    fontWeight: '700',
-    color: '#3d4d38',
-    letterSpacing: 1,
+    ...GAME_TYPOGRAPHY.label,
     marginTop: 6,
   },
   statValue: {
-    fontFamily: 'Chicago',
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#1a2618',
-    letterSpacing: 1,
+    ...GAME_TYPOGRAPHY.score,
   },
   overlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(139, 157, 127, 0.92)',
+    // No background - LCD scanlines from PagerDisplayGame show through
   },
   statusText: {
-    fontFamily: 'Chicago',
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#1a2618',
-    letterSpacing: 1,
-    textAlign: 'center',
+    ...GAME_TYPOGRAPHY.status,
   },
   instructions: {
-    fontFamily: 'Chicago',
-    fontSize: 8,
-    fontWeight: '700',
-    color: '#3d4d38',
-    letterSpacing: 1,
-    marginTop: 6,
+    ...GAME_TYPOGRAPHY.instructions,
+    marginTop: 8,
   },
   controls: {
-    paddingTop: 4,
-    borderTopWidth: 1,
-    borderTopColor: '#3d3d3d',
+    paddingTop: 8,
+    borderTopWidth: 2,
+    borderTopColor: GAME_COLORS.sectionBorder,
     alignItems: 'center',
   },
   controlText: {
-    fontFamily: 'Chicago',
-    fontSize: 7,
-    fontWeight: '700',
-    color: '#3d4d38',
-    letterSpacing: 0.5,
+    ...GAME_TYPOGRAPHY.controlHint,
   },
 });
