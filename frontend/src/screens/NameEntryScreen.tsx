@@ -171,9 +171,8 @@ export const NameEntryScreen = forwardRef<NameEntryScreenHandle, NameEntryScreen
         </>
       ) : null}
       
-      <PagerText>USE NUMPAD TO TYPE</PagerText>
-      <PagerText>PRESS KEY MULTIPLE</PagerText>
-      <PagerText>TIMES FOR LETTERS</PagerText>
+       
+
       <PagerText> </PagerText>
       <PagerText>CALL: SAVE</PagerText>
       <PagerText># : BACKSPACE</PagerText>

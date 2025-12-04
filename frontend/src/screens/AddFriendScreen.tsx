@@ -44,7 +44,6 @@ export const AddFriendScreen: React.FC<AddFriendScreenProps> = ({
         </>
       ) : null}
       
-      <PagerText>USE NUMPAD TO TYPE</PagerText>
       <PagerText>PRESS KEY MULTIPLE</PagerText>
       <PagerText>TIMES FOR LETTERS</PagerText>
       <PagerText> </PagerText>
