@@ -5,11 +5,11 @@
     "scheme": "pager2077",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/appicon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/pagersplash.png",
       "resizeMode": "contain",
       "backgroundColor": "#C7D3C0"
     },
@@ -17,6 +17,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.pager2077v1.app",
       "appleTeamId": "C5682GULYK",
+      "buildNumber": "3",
       "infoPlist": {
         "UIBackgroundModes": [
           "remote-notification"
@@ -41,7 +42,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/icon.png",
+          "icon": "./assets/appicon.png",
           "color": "#C7D3C0"
         }
       ],

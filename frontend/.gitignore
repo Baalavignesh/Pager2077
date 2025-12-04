@@ -39,6 +39,9 @@ yarn-error.*
 # generated native folders
 # /ios  # Commented out - we need to track ios/ for Widget Extension
 /android
+
+# CocoaPods
+ios/Pods/
 yarn.lock
 # Expo
 .expo
