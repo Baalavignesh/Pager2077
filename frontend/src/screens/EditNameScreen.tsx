@@ -3,8 +3,8 @@
  * Requirements: 12.1, 12.2, 12.3 - Call backend API to update display name
  *                                 Update local state on success
  */
-import React, { useState, useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { useState, useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
+import { View, StyleSheet, Animated, Text } from 'react-native';
 import { PagerScreen, PagerText } from '../components/PagerScreen';
 import { T9InputHandler } from '../utils/t9Input';
 import { validateDisplayName } from '../services/displayNameService';
@@ -33,6 +33,9 @@ export const EditNameScreen = forwardRef<EditNameScreenHandle, EditNameScreenPro
   const [canRetry, setCanRetry] = useState(false);
   const t9Handler = useRef(new T9InputHandler());
 
+  // Blinking cursor animation
+  const cursorOpacity = useRef(new Animated.Value(1)).current;
+
   useEffect(() => {
     // Pre-fill with current name
     t9Handler.current.setInput(currentDisplayName);
@@ -42,6 +45,29 @@ export const EditNameScreen = forwardRef<EditNameScreenHandle, EditNameScreenPro
       t9Handler.current.cleanup();
     };
   }, [currentDisplayName]);
+
+  // Blinking cursor animation
+  useEffect(() => {
+    const blink = Animated.loop(
+      Animated.sequence([
+        Animated.timing(cursorOpacity, {
+          toValue: 0,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(cursorOpacity, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    blink.start();
+
+    return () => {
+      blink.stop();
+    };
+  }, [cursorOpacity]);
 
   const handleNumberPress = (key: string) => {
     // If in error state with retry option, clear error first
@@ -125,9 +151,6 @@ export const EditNameScreen = forwardRef<EditNameScreenHandle, EditNameScreenPro
     handleRetry,
   }));
 
-  // Format input for display
-  const displayInput = input || '_';
-
   if (isProcessing) {
     return (
       <PagerScreen title="EDIT NAME">
@@ -146,10 +169,13 @@ export const EditNameScreen = forwardRef<EditNameScreenHandle, EditNameScreenPro
         <PagerText style={{ textAlign: 'center' }}>ERROR:</PagerText>
         <PagerText style={{ textAlign: 'center' }}>{error}</PagerText>
         <PagerText> </PagerText>
-        <PagerText style={{ textAlign: 'center' }}>NAME: {displayInput}</PagerText>
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>NAME: </Text>
+          <Text style={styles.inputText}>{input}</Text>
+          <Animated.Text style={[styles.cursor, { opacity: cursorOpacity }]}>_</Animated.Text>
+        </View>
         <PagerText> </PagerText>
         <PagerText>CALL: RETRY</PagerText>
-        <PagerText>BACK: CANCEL</PagerText>
         <PagerText>0-9: EDIT NAME</PagerText>
       </PagerScreen>
     );
@@ -160,9 +186,10 @@ export const EditNameScreen = forwardRef<EditNameScreenHandle, EditNameScreenPro
       <PagerText>EDIT YOUR NAME:</PagerText>
       <PagerText> </PagerText>
       
-      <PagerText style={{ textAlign: 'center' }}>
-        {displayInput}
-      </PagerText>
+      <View style={styles.inputContainer}>
+        <Text style={styles.inputText}>{input}</Text>
+        <Animated.Text style={[styles.cursor, { opacity: cursorOpacity }]}>_</Animated.Text>
+      </View>
 
       <PagerText> </PagerText>
       
@@ -173,19 +200,45 @@ export const EditNameScreen = forwardRef<EditNameScreenHandle, EditNameScreenPro
         </>
       ) : null}
       
-      <PagerText>USE NUMPAD TO TYPE</PagerText>
-      <PagerText>PRESS KEY MULTIPLE</PagerText>
-      <PagerText>TIMES FOR LETTERS</PagerText>
       <PagerText> </PagerText>
       <PagerText>CALL: SAVE</PagerText>
       <PagerText># : BACKSPACE</PagerText>
-      <PagerText>BACK: CANCEL</PagerText>
     </PagerScreen>
   );
 });
 
 const styles = StyleSheet.create({
-  spacer: {
-    height: 8,
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  label: {
+    fontFamily: 'Chicago',
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1a2618',
+    letterSpacing: 1.5,
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
+  },
+  inputText: {
+    fontFamily: 'Chicago',
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1a2618',
+    letterSpacing: 1.5,
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
+  },
+  cursor: {
+    fontFamily: 'Chicago',
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1a2618',
+    marginLeft: 0,
   },
 });
