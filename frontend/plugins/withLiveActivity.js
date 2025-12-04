@@ -9,12 +9,13 @@ const { withXcodeProject, withDangerousMod, IOSConfig } = require('@expo/config-
 const fs = require('fs');
 const path = require('path');
 
-// LiveActivityBridge.swift content
+// LiveActivityBridge.swift content - iOS 18.5+ (no version checks needed)
 const LIVE_ACTIVITY_BRIDGE_SWIFT = `//
 //  LiveActivityBridge.swift
 //  Pager2077
 //
 //  Native module to bridge React Native with iOS Live Activity (ActivityKit)
+//  Minimum iOS version: 18.5
 //
 
 import Foundation
@@ -59,25 +60,15 @@ class LiveActivityBridge: NSObject {
     @objc
     func areActivitiesEnabled(_ resolve: @escaping RCTPromiseResolveBlock,
                               reject: @escaping RCTPromiseRejectBlock) {
-        if #available(iOS 16.1, *) {
-            let enabled = ActivityAuthorizationInfo().areActivitiesEnabled
-            print("[LiveActivityBridge] areActivitiesEnabled: \\(enabled)")
-            resolve(enabled)
-        } else {
-            print("[LiveActivityBridge] iOS version < 16.1, Live Activities not supported")
-            resolve(false)
-        }
+        let enabled = ActivityAuthorizationInfo().areActivitiesEnabled
+        print("[LiveActivityBridge] areActivitiesEnabled: \\(enabled)")
+        resolve(enabled)
     }
     
     @objc
     func startActivity(_ content: NSDictionary,
                        resolve: @escaping RCTPromiseResolveBlock,
                        reject: @escaping RCTPromiseRejectBlock) {
-        
-        guard #available(iOS 16.1, *) else {
-            resolve(["success": false, "error": "Live Activities require iOS 16.1 or later"])
-            return
-        }
         
         guard ActivityAuthorizationInfo().areActivitiesEnabled else {
             resolve(["success": false, "error": "Live Activities are not enabled"])
@@ -135,11 +126,6 @@ class LiveActivityBridge: NSObject {
                         resolve: @escaping RCTPromiseResolveBlock,
                         reject: @escaping RCTPromiseRejectBlock) {
         
-        guard #available(iOS 16.1, *) else {
-            resolve(["success": false, "error": "Live Activities require iOS 16.1 or later"])
-            return
-        }
-        
         guard let sender = content["sender"] as? String,
               let message = content["message"] as? String else {
             resolve(["success": false, "error": "Invalid content"])
@@ -178,11 +164,6 @@ class LiveActivityBridge: NSObject {
                      resolve: @escaping RCTPromiseResolveBlock,
                      reject: @escaping RCTPromiseRejectBlock) {
         
-        guard #available(iOS 16.1, *) else {
-            resolve(["success": false, "error": "Live Activities require iOS 16.1 or later"])
-            return
-        }
-        
         let activities = Activity<PagerActivityAttributes>.activities
         guard let activity = activities.first(where: { $0.id == activityId }) else {
             resolve(["success": false, "error": "Activity not found"])
@@ -203,11 +184,6 @@ class LiveActivityBridge: NSObject {
     func endAllActivities(_ resolve: @escaping RCTPromiseResolveBlock,
                           reject: @escaping RCTPromiseRejectBlock) {
         
-        guard #available(iOS 16.1, *) else {
-            resolve(["success": false, "error": "Live Activities require iOS 16.1 or later"])
-            return
-        }
-        
         Task {
             for activity in Activity<PagerActivityAttributes>.activities {
                 await activity.end(dismissalPolicy: .immediate)
@@ -222,11 +198,6 @@ class LiveActivityBridge: NSObject {
     func getCurrentActivityId(_ resolve: @escaping RCTPromiseResolveBlock,
                               reject: @escaping RCTPromiseRejectBlock) {
         
-        guard #available(iOS 16.1, *) else {
-            resolve(nil)
-            return
-        }
-        
         if let activity = Activity<PagerActivityAttributes>.activities.first {
             resolve(activity.id)
         } else {
@@ -237,13 +208,6 @@ class LiveActivityBridge: NSObject {
     @objc
     func getPushToken(_ resolve: @escaping RCTPromiseResolveBlock,
                       reject: @escaping RCTPromiseRejectBlock) {
-        
-        // Push tokens for Live Activities require iOS 17.2+
-        guard #available(iOS 17.2, *) else {
-            print("[LiveActivityBridge] getPushToken: iOS version < 17.2, push tokens not supported")
-            resolve(nil)
-            return
-        }
         
         guard ActivityAuthorizationInfo().areActivitiesEnabled else {
             print("[LiveActivityBridge] getPushToken: Live Activities not enabled")
@@ -285,12 +249,12 @@ class LiveActivityBridge: NSObject {
 }
 `;
 
-// Widget Extension Live Activity file content - Retro LCD Design
+// Widget Extension Live Activity file content - Retro Pager Device Design
 const WIDGET_LIVE_ACTIVITY_SWIFT = `//
 //  liveactivityLiveActivity.swift
 //  liveactivity
 //
-//  Pager2077 Live Activity Widget - Retro LCD Design
+//  Pager2077 Live Activity Widget - Retro Pager Device Design
 //
 
 import ActivityKit
@@ -324,70 +288,108 @@ struct PagerActivityAttributes: ActivityAttributes {
 // MARK: - Color Constants
 
 extension Color {
-    static let lcdGreen = Color(red: 0.545, green: 0.616, blue: 0.498) // #8B9D7F
+    // LCD Colors
+    static let lcdGreen = Color(red: 0.780, green: 0.835, blue: 0.690) // Lighter green LCD #C7D5B0
     static let lcdTextDark = Color(red: 0.102, green: 0.149, blue: 0.094) // #1a2618
     static let lcdBorder = Color(red: 0.42, green: 0.49, blue: 0.37)
+    
+    // Pager Frame Colors (dark metallic)
+    static let pagerFrameOuter = Color(red: 0.12, green: 0.12, blue: 0.12) // #1f1f1f
+    static let pagerFrameInner = Color(red: 0.18, green: 0.18, blue: 0.18) // #2e2e2e
+    static let pagerIndicator = Color(red: 0.3, green: 0.3, blue: 0.3) // Indicator dots
 }
 
-// MARK: - Retro LCD View
+// MARK: - Pager Device View
 
-struct RetroLCDView: View {
+struct PagerDeviceView: View {
     let context: ActivityViewContext<PagerActivityAttributes>
     
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color.lcdGreen)
-            
-            RoundedRectangle(cornerRadius: 8)
-                .strokeBorder(Color.lcdBorder, lineWidth: 3)
-            
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 4) {
-                    Text(String(format: "%02d", context.state.messageIndex) + ":")
-                        .font(.system(size: 13, weight: .bold, design: .monospaced))
-                    Text(context.state.sender.uppercased())
-                        .font(.system(size: 13, weight: .bold, design: .monospaced))
-                        .lineLimit(1)
-                    Spacer()
-                    if context.state.isDemo {
-                        Text("DEMO")
-                            .font(.system(size: 10, weight: .medium, design: .monospaced))
-                            .padding(.horizontal, 4)
-                            .padding(.vertical, 2)
-                            .background(Color.lcdTextDark.opacity(0.15))
-                            .cornerRadius(2)
-                    }
-                }
-                
-                Text(context.state.message.uppercased())
-                    .font(.system(size: 14, weight: .semibold, design: .monospaced))
-                    .lineLimit(3)
-                    .fixedSize(horizontal: false, vertical: true)
-                
-                Spacer(minLength: 4)
-                
-                HStack {
-                    Text(context.state.timestamp, style: .time)
-                        .font(.system(size: 12, weight: .medium, design: .monospaced))
-                    Spacer()
-                    Text(context.state.timestamp, format: .dateTime.day(.twoDigits).month(.twoDigits).year())
-                        .font(.system(size: 12, weight: .medium, design: .monospaced))
-                }
-            }
-            .foregroundColor(Color.lcdTextDark)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
+            // Outer dark frame
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.pagerFrameOuter)
             
             VStack(spacing: 0) {
-                ForEach(0..<40, id: \\.self) { i in
-                    Rectangle()
-                        .fill(Color.black.opacity(i % 2 == 0 ? 0.04 : 0.0))
-                        .frame(height: 2)
+                // Top indicator dots
+                HStack(spacing: 6) {
+                    ForEach(0..<5, id: \\.self) { _ in
+                        Circle()
+                            .fill(Color.pagerIndicator)
+                            .frame(width: 4, height: 4)
+                    }
                 }
+                .padding(.top, 8)
+                .padding(.bottom, 6)
+                
+                // LCD Screen with inner frame
+                ZStack {
+                    // LCD background
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.lcdGreen)
+                    
+                    // LCD border
+                    RoundedRectangle(cornerRadius: 8)
+                        .strokeBorder(Color.lcdBorder.opacity(0.5), lineWidth: 2)
+                    
+                    // Content
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack(spacing: 4) {
+                            Text("FROM:")
+                                .font(.system(size: 13, weight: .bold, design: .monospaced))
+                            Text(context.state.sender.uppercased())
+                                .font(.system(size: 13, weight: .bold, design: .monospaced))
+                                .lineLimit(1)
+                            Spacer()
+                            if context.state.isDemo {
+                                Text("DEMO")
+                                    .font(.system(size: 10, weight: .medium, design: .monospaced))
+                                    .padding(.horizontal, 4)
+                                    .padding(.vertical, 2)
+                                    .background(Color.lcdTextDark.opacity(0.15))
+                                    .cornerRadius(2)
+                            }
+                        }
+                        
+                        Text(context.state.message.uppercased())
+                            .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                            .lineLimit(2)
+                            .fixedSize(horizontal: false, vertical: true)
+                        
+                        Spacer(minLength: 4)
+                        
+                        HStack {
+                            Text(context.state.timestamp, style: .time)
+                                .font(.system(size: 12, weight: .medium, design: .monospaced))
+                            Spacer()
+                            Text(context.state.timestamp, format: .dateTime.day(.twoDigits).month(.twoDigits).year())
+                                .font(.system(size: 12, weight: .medium, design: .monospaced))
+                        }
+                    }
+                    .foregroundColor(Color.lcdTextDark)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                    
+                    // Scanline effect
+                    VStack(spacing: 0) {
+                        ForEach(0..<30, id: \\.self) { i in
+                            Rectangle()
+                                .fill(Color.black.opacity(i % 2 == 0 ? 0.03 : 0.0))
+                                .frame(height: 2)
+                        }
+                    }
+                    .allowsHitTesting(false)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+                .padding(.horizontal, 10)
+                
+                // Bottom branding
+                Text("PAGER2077")
+                    .font(.system(size: 9, weight: .medium, design: .monospaced))
+                    .foregroundColor(Color.pagerIndicator)
+                    .padding(.top, 6)
+                    .padding(.bottom, 8)
             }
-            .allowsHitTesting(false)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
         }
     }
 }
@@ -397,8 +399,8 @@ struct RetroLCDView: View {
 struct liveactivityLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: PagerActivityAttributes.self) { context in
-            RetroLCDView(context: context)
-                .activityBackgroundTint(Color.lcdGreen)
+            PagerDeviceView(context: context)
+                .activityBackgroundTint(Color.pagerFrameOuter)
             
         } dynamicIsland: { context in
             DynamicIsland {
@@ -409,17 +411,17 @@ struct liveactivityLiveActivity: Widget {
                         Text(context.state.sender.prefix(6).uppercased())
                             .font(.system(size: 11, weight: .bold, design: .monospaced))
                     }
-                    .foregroundColor(Color.lcdTextDark)
+                    .foregroundColor(Color.lcdGreen)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
                     Text("\\(context.state.messageIndex)/\\(context.state.totalMessages)")
                         .font(.system(size: 10, design: .monospaced))
-                        .foregroundColor(Color.lcdTextDark.opacity(0.7))
+                        .foregroundColor(Color.lcdGreen.opacity(0.7))
                 }
                 DynamicIslandExpandedRegion(.bottom) {
                     Text(context.state.message.uppercased())
                         .font(.system(size: 12, weight: .medium, design: .monospaced))
-                        .foregroundColor(Color.lcdTextDark)
+                        .foregroundColor(Color.lcdGreen)
                         .lineLimit(2)
                 }
             } compactLeading: {

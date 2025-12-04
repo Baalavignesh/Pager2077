@@ -2,7 +2,7 @@
 //  liveactivityBundle.swift
 //  liveactivity
 //
-//  Created by Baalavignesh Arunachalam on 12/4/25.
+//  Created by Mithilesh on 04/12/25.
 //
 
 import WidgetKit

@@ -2,43 +2,45 @@
 //  liveactivity.swift
 //  liveactivity
 //
-//  Created by Baalavignesh Arunachalam on 12/4/25.
+//  Created by Mithilesh on 04/12/25.
 //
 
 import WidgetKit
 import SwiftUI
 
-struct Provider: AppIntentTimelineProvider {
+struct Provider: TimelineProvider {
     func placeholder(in context: Context) -> SimpleEntry {
-        SimpleEntry(date: Date(), configuration: ConfigurationAppIntent())
+        SimpleEntry(date: Date(), emoji: "😀")
     }
 
-    func snapshot(for configuration: ConfigurationAppIntent, in context: Context) async -> SimpleEntry {
-        SimpleEntry(date: Date(), configuration: configuration)
+    func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
+        let entry = SimpleEntry(date: Date(), emoji: "😀")
+        completion(entry)
     }
-    
-    func timeline(for configuration: ConfigurationAppIntent, in context: Context) async -> Timeline<SimpleEntry> {
+
+    func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
         var entries: [SimpleEntry] = []
 
         // Generate a timeline consisting of five entries an hour apart, starting from the current date.
         let currentDate = Date()
         for hourOffset in 0 ..< 5 {
             let entryDate = Calendar.current.date(byAdding: .hour, value: hourOffset, to: currentDate)!
-            let entry = SimpleEntry(date: entryDate, configuration: configuration)
+            let entry = SimpleEntry(date: entryDate, emoji: "😀")
             entries.append(entry)
         }
 
-        return Timeline(entries: entries, policy: .atEnd)
+        let timeline = Timeline(entries: entries, policy: .atEnd)
+        completion(timeline)
     }
 
-//    func relevances() async -> WidgetRelevances<ConfigurationAppIntent> {
+//    func relevances() async -> WidgetRelevances<Void> {
 //        // Generate a list containing the contexts this widget is relevant in.
 //    }
 }
 
 struct SimpleEntry: TimelineEntry {
     let date: Date
-    let configuration: ConfigurationAppIntent
+    let emoji: String
 }
 
 struct liveactivityEntryView : View {
@@ -49,8 +51,8 @@ struct liveactivityEntryView : View {
             Text("Time:")
             Text(entry.date, style: .time)
 
-            Text("Favorite Emoji:")
-            Text(entry.configuration.favoriteEmoji)
+            Text("Emoji:")
+            Text(entry.emoji)
         }
     }
 }
@@ -59,30 +61,24 @@ struct liveactivity: Widget {
     let kind: String = "liveactivity"
 
     var body: some WidgetConfiguration {
-        AppIntentConfiguration(kind: kind, intent: ConfigurationAppIntent.self, provider: Provider()) { entry in
-            liveactivityEntryView(entry: entry)
-                .containerBackground(.fill.tertiary, for: .widget)
+        StaticConfiguration(kind: kind, provider: Provider()) { entry in
+            if #available(iOS 17.0, *) {
+                liveactivityEntryView(entry: entry)
+                    .containerBackground(.fill.tertiary, for: .widget)
+            } else {
+                liveactivityEntryView(entry: entry)
+                    .padding()
+                    .background()
+            }
         }
-    }
-}
-
-extension ConfigurationAppIntent {
-    fileprivate static var smiley: ConfigurationAppIntent {
-        let intent = ConfigurationAppIntent()
-        intent.favoriteEmoji = "😀"
-        return intent
-    }
-    
-    fileprivate static var starEyes: ConfigurationAppIntent {
-        let intent = ConfigurationAppIntent()
-        intent.favoriteEmoji = "🤩"
-        return intent
+        .configurationDisplayName("My Widget")
+        .description("This is an example widget.")
     }
 }
 
 #Preview(as: .systemSmall) {
     liveactivity()
 } timeline: {
-    SimpleEntry(date: .now, configuration: .smiley)
-    SimpleEntry(date: .now, configuration: .starEyes)
+    SimpleEntry(date: .now, emoji: "😀")
+    SimpleEntry(date: .now, emoji: "🤩")
 }

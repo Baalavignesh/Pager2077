@@ -3,6 +3,7 @@
 //  Pager2077
 //
 //  Native module to bridge React Native with iOS Live Activity (ActivityKit)
+//  Minimum iOS version: 18.5
 //
 
 import Foundation
@@ -47,25 +48,15 @@ class LiveActivityBridge: NSObject {
     @objc
     func areActivitiesEnabled(_ resolve: @escaping RCTPromiseResolveBlock,
                               reject: @escaping RCTPromiseRejectBlock) {
-        if #available(iOS 16.1, *) {
-            let enabled = ActivityAuthorizationInfo().areActivitiesEnabled
-            print("[LiveActivityBridge] areActivitiesEnabled: \(enabled)")
-            resolve(enabled)
-        } else {
-            print("[LiveActivityBridge] iOS version < 16.1, Live Activities not supported")
-            resolve(false)
-        }
+        let enabled = ActivityAuthorizationInfo().areActivitiesEnabled
+        print("[LiveActivityBridge] areActivitiesEnabled: \(enabled)")
+        resolve(enabled)
     }
     
     @objc
     func startActivity(_ content: NSDictionary,
                        resolve: @escaping RCTPromiseResolveBlock,
                        reject: @escaping RCTPromiseRejectBlock) {
-        
-        guard #available(iOS 16.1, *) else {
-            resolve(["success": false, "error": "Live Activities require iOS 16.1 or later"])
-            return
-        }
         
         guard ActivityAuthorizationInfo().areActivitiesEnabled else {
             resolve(["success": false, "error": "Live Activities are not enabled"])
@@ -123,11 +114,6 @@ class LiveActivityBridge: NSObject {
                         resolve: @escaping RCTPromiseResolveBlock,
                         reject: @escaping RCTPromiseRejectBlock) {
         
-        guard #available(iOS 16.1, *) else {
-            resolve(["success": false, "error": "Live Activities require iOS 16.1 or later"])
-            return
-        }
-        
         guard let sender = content["sender"] as? String,
               let message = content["message"] as? String else {
             resolve(["success": false, "error": "Invalid content"])
@@ -166,11 +152,6 @@ class LiveActivityBridge: NSObject {
                      resolve: @escaping RCTPromiseResolveBlock,
                      reject: @escaping RCTPromiseRejectBlock) {
         
-        guard #available(iOS 16.1, *) else {
-            resolve(["success": false, "error": "Live Activities require iOS 16.1 or later"])
-            return
-        }
-        
         let activities = Activity<PagerActivityAttributes>.activities
         guard let activity = activities.first(where: { $0.id == activityId }) else {
             resolve(["success": false, "error": "Activity not found"])
@@ -191,11 +172,6 @@ class LiveActivityBridge: NSObject {
     func endAllActivities(_ resolve: @escaping RCTPromiseResolveBlock,
                           reject: @escaping RCTPromiseRejectBlock) {
         
-        guard #available(iOS 16.1, *) else {
-            resolve(["success": false, "error": "Live Activities require iOS 16.1 or later"])
-            return
-        }
-        
         Task {
             for activity in Activity<PagerActivityAttributes>.activities {
                 await activity.end(dismissalPolicy: .immediate)
@@ -210,11 +186,6 @@ class LiveActivityBridge: NSObject {
     func getCurrentActivityId(_ resolve: @escaping RCTPromiseResolveBlock,
                               reject: @escaping RCTPromiseRejectBlock) {
         
-        guard #available(iOS 16.1, *) else {
-            resolve(nil)
-            return
-        }
-        
         if let activity = Activity<PagerActivityAttributes>.activities.first {
             resolve(activity.id)
         } else {
@@ -225,13 +196,6 @@ class LiveActivityBridge: NSObject {
     @objc
     func getPushToken(_ resolve: @escaping RCTPromiseResolveBlock,
                       reject: @escaping RCTPromiseRejectBlock) {
-        
-        // Push tokens for Live Activities require iOS 17.2+
-        guard #available(iOS 17.2, *) else {
-            print("[LiveActivityBridge] getPushToken: iOS version < 17.2, push tokens not supported")
-            resolve(nil)
-            return
-        }
         
         guard ActivityAuthorizationInfo().areActivitiesEnabled else {
             print("[LiveActivityBridge] getPushToken: Live Activities not enabled")
