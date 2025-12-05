@@ -100,7 +100,7 @@ export const PagerDisplay: React.FC<PagerDisplayProps> = ({ children }) => {
 const styles = StyleSheet.create({
   wrapper: {
     margin: 12,
-    marginTop: 80,
+    marginTop: 70,
     marginBottom: 16,
     flex: 1,
     borderRadius: 20,

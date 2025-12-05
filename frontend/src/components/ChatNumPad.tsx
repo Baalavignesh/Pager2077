@@ -58,12 +58,8 @@ const ChatNumPadButton: React.FC<ChatNumPadButtonProps> = ({
 }) => {
   const [isPressed, setIsPressed] = useState(false);
 
-  // Safe callback invocation with error handling
   const handlePress = () => {
-    if (!onPress || disabled) {
-      return;
-    }
-    
+    if (!onPress || disabled) return;
     try {
       onPress();
     } catch (error) {
@@ -73,13 +69,7 @@ const ChatNumPadButton: React.FC<ChatNumPadButtonProps> = ({
 
   const handlePressIn = () => {
     if (disabled) return;
-    
-    // Trigger feedback (non-blocking)
-    if (triggerFeedback) {
-      triggerFeedback();
-    }
-    
-    // Update visual state
+    if (triggerFeedback) triggerFeedback();
     setIsPressed(true);
   };
 
@@ -103,51 +93,32 @@ const ChatNumPadButton: React.FC<ChatNumPadButtonProps> = ({
         onPressOut={handlePressOut}
         disabled={disabled}
       >
-        <View style={[
-          styles.buttonInner,
-          isPressed && styles.buttonPressed
-        ]}>
+        <View style={[styles.buttonInner, isPressed && styles.buttonPressed]}>
           {icon ? (
             <>
               {icon.library === 'ionicons' && (
-                <Ionicons 
-                  name={icon.name as any}
-                  size={icon.size || 24}
-                  style={styles.iconStyle}
-                  color="#898989ff" 
-                />
+                <Ionicons name={icon.name as any} size={icon.size || 24} style={styles.iconStyle} color="#898989ff" />
               )}
               {icon.library === 'fontawesome' && (
-                <FontAwesome
-                  name={icon.name as any}
-                  size={icon.size || 24}
-                  style={styles.iconStyle}
-                  color="#898989ff" 
-                />
+                <FontAwesome name={icon.name as any} size={icon.size || 24} style={styles.iconStyle} color="#898989ff" />
               )}
               {icon.library === 'materialicons' && (
-                <MaterialIcons 
-                  name={icon.name as any}
-                  size={icon.size || 24}
-                  style={styles.iconStyle}
-                  color="#898989ff" 
-                />
+                <MaterialIcons name={icon.name as any} size={icon.size || 24} style={styles.iconStyle} color="#898989ff" />
               )}
             </>
           ) : symbol ? (
             <Text style={styles.symbol}>{symbol}</Text>
           ) : (
             <View style={styles.buttonContent}>
-              <Text style={[
-                styles.number,
-                number === '–' && styles.dashNumber
-              ]}>
-                {number}
-              </Text>
-              {letters && (
-                <Text style={styles.letters}>
-                  {letters}
-                </Text>
+              <View style={styles.numberLettersContainer}>
+                <Text style={[styles.number, number === '–' && styles.dashNumber]}>{number}</Text>
+                <View style={styles.lettersContainer}>
+                  <Text style={styles.letters}>{letters || 'abc'}</Text>
+                  {!letters && <View style={styles.lettersOverlay} />}
+                </View>
+              </View>
+              {number === '#' && (
+                <Ionicons name="backspace-outline" size={18} color="#888888" style={styles.backspaceHint} />
               )}
             </View>
           )}
@@ -158,14 +129,11 @@ const ChatNumPadButton: React.FC<ChatNumPadButtonProps> = ({
 };
 
 interface ChatNumPadProps {
-  // Text input callbacks
   onNumberPress: (number: string) => void;
-  onConfirm: () => void;  // Center circle - confirm character
+  onConfirm: () => void;
   onBack: () => void;
-  onCall: () => void;     // Submit/save
+  onCall: () => void;
   onMenu: () => void;
-  
-  // Settings
   soundEnabled?: boolean;
   vibrateEnabled?: boolean;
 }
@@ -179,7 +147,6 @@ export const ChatNumPad: React.FC<ChatNumPadProps> = ({
   soundEnabled = true,
   vibrateEnabled = true
 }) => {
-  // Load click sound on mount, unload on unmount
   useEffect(() => {
     const loadClickSound = async () => {
       try {
@@ -188,22 +155,15 @@ export const ChatNumPad: React.FC<ChatNumPadProps> = ({
         console.error('Failed to load click sound:', error);
       }
     };
-
     loadClickSound();
-
-    return () => {
-      audioService.unloadSound('click');
-    };
+    return () => { audioService.unloadSound('click'); };
   }, []);
 
-  // Handle app state changes (background/foreground)
   useEffect(() => {
     const handleAppStateChange = async (nextAppState: AppStateStatus) => {
       if (nextAppState === 'background') {
-        // Unload sounds when app goes to background
         await audioService.unloadAll();
       } else if (nextAppState === 'active') {
-        // Reload sounds when app comes to foreground
         try {
           await audioService.loadSound('click', require('../../assets/click.mp3'));
         } catch (error) {
@@ -211,18 +171,12 @@ export const ChatNumPad: React.FC<ChatNumPadProps> = ({
         }
       }
     };
-
     const subscription = AppState.addEventListener('change', handleAppStateChange);
-
-    return () => {
-      subscription.remove();
-    };
+    return () => { subscription.remove(); };
   }, []);
 
-  // Trigger haptic feedback
   const triggerHaptic = async () => {
     if (!vibrateEnabled) return;
-    
     try {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch (error) {
@@ -230,10 +184,8 @@ export const ChatNumPad: React.FC<ChatNumPadProps> = ({
     }
   };
 
-  // Play click sound
   const playClickSound = async () => {
     if (!soundEnabled) return;
-    
     try {
       await audioService.playSound('click');
     } catch (error) {
@@ -241,24 +193,13 @@ export const ChatNumPad: React.FC<ChatNumPadProps> = ({
     }
   };
 
-  // Trigger both feedback types concurrently
   const triggerFeedback = async () => {
     const feedbackPromises = [];
-    
-    if (vibrateEnabled) {
-      feedbackPromises.push(triggerHaptic());
-    }
-    
-    if (soundEnabled) {
-      feedbackPromises.push(playClickSound());
-    }
-    
-    if (feedbackPromises.length > 0) {
-      await Promise.allSettled(feedbackPromises);
-    }
+    if (vibrateEnabled) feedbackPromises.push(triggerHaptic());
+    if (soundEnabled) feedbackPromises.push(playClickSound());
+    if (feedbackPromises.length > 0) await Promise.allSettled(feedbackPromises);
   };
 
-  // Number buttons configuration - all number keys for T9 text input
   const numberButtons: ChatNumPadButtonProps[][] = [
     [
       { icon: { library: 'ionicons', name: 'arrow-back', size: 24 }, onPress: onBack, type: 'number' },
@@ -292,11 +233,7 @@ export const ChatNumPad: React.FC<ChatNumPadProps> = ({
       {numberButtons.map((row, rowIndex) => (
         <View key={`row-${rowIndex}`} style={rowIndex === numberButtons.length - 1 ? styles.numberRowLast : styles.numberRow}>
           {row.map((button, colIndex) => (
-            <ChatNumPadButton 
-              key={`num-${rowIndex}-${colIndex}`} 
-              {...button} 
-              triggerFeedback={triggerFeedback}
-            />
+            <ChatNumPadButton key={`num-${rowIndex}-${colIndex}`} {...button} triggerFeedback={triggerFeedback} />
           ))}
         </View>
       ))}
@@ -317,10 +254,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     height: '20%',
   },
-    numberRowLast: {
+  numberRowLast: {
     flexDirection: 'row',
     height: '25%',
-    paddingBottom: 20
+    paddingBottom: 20,
   },
   buttonWrapper: {
     flex: 1,
@@ -355,11 +292,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 0,
+    position: 'relative',
+    width: '100%',
+    height: '100%',
   },
-
-
-    number: {
-    fontSize: 28,
+  numberLettersContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backspaceHint: {
+    position: 'absolute',
+    bottom: 8,
+    opacity: 0.6,
+  },
+  number: {
+    fontSize: 27,
     fontWeight: '800',
     color: '#888888',
     fontFamily: 'FuturaCyrillicBook',
@@ -371,6 +318,10 @@ const styles = StyleSheet.create({
     fontFamily: 'System',
     letterSpacing: -2,
   },
+  lettersContainer: {
+    position: 'relative',
+    height: 18,
+  },
   letters: {
     fontSize: 16,
     fontWeight: '300',
@@ -378,6 +329,15 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     textTransform: 'lowercase',
     fontFamily: 'FuturaCyrillicBook',
+    lineHeight: 18,
+  },
+  lettersOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#1a1a1a',
   },
   symbol: {
     fontSize: 32,

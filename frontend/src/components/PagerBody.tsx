@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
         shadowRadius: 8,
         elevation: 3,
         margin: 12,
-        marginTop: 4,
+        marginTop: 0,
     },
     innerRecess: {
         flex: 1,

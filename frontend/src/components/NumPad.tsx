@@ -145,22 +145,34 @@ const NumPadButton: React.FC<NumPadButtonProps> = ({
             <Text style={styles.symbol}>{symbol}</Text>
           ) : (
             <View style={styles.buttonContent}>
-              {number === '2' && (
-                <Ionicons name="chevron-up" size={12} color="#888888" style={styles.arrowHint} />
+              {number === '4' && (
+                <Ionicons name="chevron-back" size={12} color="#888888" style={styles.arrowLeft} />
               )}
-              <Text style={[
-                styles.number,
-                number === '–' && styles.dashNumber
-              ]}>
-                {number}
-              </Text>
-              {letters && (
-                <Text style={styles.letters}>
-                  {letters}
-                </Text>
+              {number === '6' && (
+                <Ionicons name="chevron-forward" size={12} color="#888888" style={styles.arrowRight} />
+              )}
+              {number === '2' && (
+                <Ionicons name="chevron-up" size={12} color="#888888" style={styles.arrowUp} />
               )}
               {number === '8' && (
-                <Ionicons name="chevron-down" size={12} color="#888888" style={styles.arrowHint} />
+                <Ionicons name="chevron-down" size={12} color="#888888" style={styles.arrowDown} />
+              )}
+              <View style={styles.numberLettersContainer}>
+                <Text style={[
+                  styles.number,
+                  number === '–' && styles.dashNumber
+                ]}>
+                  {number}
+                </Text>
+                <View style={styles.lettersContainer}>
+                  <Text style={styles.letters}>
+                    {letters || 'abc'}
+                  </Text>
+                  {!letters && <View style={styles.lettersOverlay} />}
+                </View>
+              </View>
+              {number === '#' && (
+                <Ionicons name="backspace-outline" size={18} color="#888888" style={styles.backspaceHint} />
               )}
             </View>
           )}
@@ -382,13 +394,46 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 0,
+    position: 'relative',
+    width: '100%',
+    height: '100%',
   },
-  arrowHint: {
+  numberLettersContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  symbolContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  arrowUp: {
+    position: 'absolute',
+    top: 6,
     opacity: 0.6,
-    marginVertical: -2,
+  },
+  arrowDown: {
+    position: 'absolute',
+    bottom: 6,
+    opacity: 0.6,
+  },
+  arrowLeft: {
+    position: 'absolute',
+    left: 28,
+    opacity: 0.6,
+  },
+  arrowRight: {
+    position: 'absolute',
+    right: 28,
+    opacity: 0.6,
+  },
+  backspaceHint: {
+    position: 'absolute',
+    bottom: 8,
+    opacity: 0.6,
   },
   number: {
-    fontSize: 28,
+    fontSize: 27,
     fontWeight: '800',
     color: '#888888',
     fontFamily: 'FuturaCyrillicBook',
@@ -400,6 +445,10 @@ const styles = StyleSheet.create({
     fontFamily: 'System',
     letterSpacing: -2,
   },
+  lettersContainer: {
+    position: 'relative',
+    height: 18,
+  },
   letters: {
     fontSize: 16,
     fontWeight: '300',
@@ -407,6 +456,15 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     textTransform: 'lowercase',
     fontFamily: 'FuturaCyrillicBook',
+    lineHeight: 18,
+  },
+  lettersOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#1a1a1a',
   },
   symbol: {
     fontSize: 32,
