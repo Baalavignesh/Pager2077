@@ -29,7 +29,7 @@ Pager 2077 is a retro-futuristic messaging app that looks and feels like a 90s p
 
 
 <p align="center">
-  <img src="frontend/readme/app.gif" alt="App Demo" width="500"/>
+  <img src="frontend/readme/app.gif" alt="App Demo" width="700"/>
 </p>
 
 ## Project Structure
