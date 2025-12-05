@@ -17,7 +17,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.pager2077v1.app",
       "appleTeamId": "C5682GULYK",
-      "buildNumber": "5",
+      "buildNumber": "6",
       "deploymentTarget": "18.0",
       "infoPlist": {
         "UIBackgroundModes": [

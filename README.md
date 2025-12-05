@@ -1,27 +1,86 @@
-# Pager 2077 - Retro Voice Messaging App
 
-A minimalist React Native mobile application that recreates the nostalgic experience of 90s pager communication with modern voice messaging capabilities.
+# Pager 2077
+
+<div align="center">
+
+<img src="frontend/readme/logo.jpeg" alt="Pager 2077 Logo" width="300"/>
+
+**A retro messaging app with 90s pager aesthetics**
+
+[![Built with Kiro IDE](https://img.shields.io/badge/Built%20with-Kiro%20IDE-00D9FF?style=flat-square)](https://kiro.dev/)
+[![React Native](https://img.shields.io/badge/React%20Native-Expo-61DAFB?style=flat-square&logo=react)](https://reactnative.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![Bun](https://img.shields.io/badge/Bun-Backend-F9F1E1?style=flat-square&logo=bun)](https://bun.sh/)
+[![SQLite](https://img.shields.io/badge/SQLite-Database-003B57?style=flat-square&logo=sqlite)](https://sqlite.org/)
+
+</div>
+
+
+
+
+
+## Inspiration
+
+We wanted to capture the nostalgic charm of 90s pagers. Those chunky, monochrome devices felt like magic before smartphones took over. There's something beautifully simple about the constraints of that era: limited screens, T9 input, and the anticipation of waiting for a message. We asked ourselves: what if we brought that experience back, but with modern connectivity and a cyberpunk twist?
+
+## What it does
+
+Pager 2077 is a retro-futuristic messaging app that looks and feels like a 90s pager. Users get a unique 6-digit code as their identity, add friends using those codes, and exchange messages through an authentic LCD display interface.
+
+
+<p align="center">
+  <img src="frontend/readme/app.gif" alt="App Demo" width="500"/>
+</p>
 
 ## Project Structure
 
 ```
 pager2077/
 ├── frontend/          # React Native mobile app (Expo + TypeScript)
-├── backend/           # AWS serverless backend (Bun + TypeScript)
+├── backend/           # Bun + SQLite backend
 └── .kiro/specs/       # Design specifications and requirements
 ```
 
 ## Features
 
-- Unique 6-digit user codes (simplified from hex IDs)
-- User display names with T9 text input
-- Simple friend request system with confirmation flow
-- Voice note recording and sending
-- Retro 90s pager-style UI (monochrome, pixelated)
-- Real-time voice note delivery with auto-play
+- T9-style text input with multi-tap character entry
+- Classic phone numpad navigation (2/4/6/8 for directional controls)
+- Unique 6-digit user codes for adding friends
+- Real-time battery indicator with charging animation
+- Built-in games (Snake and Tetris) with social leaderboards
+- iOS Live Activities showing incoming messages on the lock screen
+- Push notifications via Apple Push Notification Service
+- Retro 90s pager-style UI (monochrome LCD, pixelated fonts)
 - Online/offline status indicators
-- Phone numpad-style navigation interface
-- Single-screen interface with intuitive controls
+
+## How we built it
+
+- **Frontend**: React Native with Expo, featuring custom components that replicate LCD scanlines, metallic button gradients, and the iconic green-on-black display
+- **Backend**: Bun runtime with SQLite for data persistence and Redis for notification queuing
+- **Native iOS**: Swift extensions for Live Activities that display messages in the Dynamic Island
+- **Design System**: Every component follows strict retro guidelines — sharp corners, thick borders, monochrome palette, and pixelated typography
+
+## Challenges we ran into
+
+- **Live Activities integration**: Bridging React Native to native Swift for Dynamic Island support required custom Expo plugins and careful token management
+- **T9 input accuracy**: Getting multi-tap text entry to feel responsive while cycling through characters took several iterations
+- **Authentic LCD aesthetics**: Recreating convincing scanlines and vignette effects without killing performance was tricky. We landed on a dual-layer approach with 300 horizontal and 150 vertical lines
+- **Push notification reliability**: Managing APNS tokens across app states and ensuring delivery required a robust queue system
+
+## Accomplishments that we're proud of
+
+- The visual authenticity — people genuinely think they're looking at a real pager
+- Live Activities that make incoming messages feel urgent and retro-cool on the lock screen
+- A complete social system with friend codes, requests, and real-time status
+- Two fully playable games with global leaderboards, all rendered on the LCD display
+- The haptic and audio feedback that makes every button press satisfying
+
+## What we learned
+
+- Native module bridging in React Native is powerful but requires deep understanding of both platforms
+- Constraints breed creativity — limiting ourselves to monochrome and simple shapes forced better design decisions
+- Spec-driven development with clear requirements prevents scope creep and keeps features focused
+- Users love nostalgia, but they expect modern reliability underneath
 
 ## Tech Stack
 
@@ -31,14 +90,12 @@ pager2077/
 - **UI Library**: NativeBase (customized for retro aesthetic)
 - **Language**: TypeScript
 - **State Management**: React Context
-- **Audio**: react-native-audio-recorder-player (to be added)
 
 ### Backend
 
 - **Runtime**: Bun
 - **Language**: TypeScript
-- **Infrastructure**: AWS (Lambda, API Gateway, RDS PostgreSQL, S3, SNS)
-- **IaC**: Terraform
+- **Database**: SQLite
 
 ## Getting Started
 
@@ -100,116 +157,29 @@ bun run dev
 
 The backend server will start on `http://localhost:3000` with hot reload enabled.
 
-## Current Status
+## Built with Kiro
 
-**Completed:**
+This entire project was built using [Kiro](https://kiro.dev/), which completely changed how we collaborated across time zones and vibe coded in a spec-driven way.
 
-- Project structure initialized
-- Frontend base setup with Expo + TypeScript
-- Retro theme configuration (monochrome color palette)
-- Core UI components:
-  - HexCodeDisplay (with tap-to-copy)
-  - FriendList (scrollable with status indicators)
-  - VoiceControls (TALK/STOP/CLEAR/PLAY/SEND buttons)
-  - AddFriendButton
-  - NumPad (phone numpad-style navigation)
-  - ChatNumPad (chat-specific numpad with T9 input)
-  - PagerBody (container for NumPad)
-  - ChatPagerBody (compact container for ChatNumPad)
-  - BatteryIndicator (real-time battery status)
-- Main PagerScreen layout
-- Friends management system:
-  - FriendsListScreen with 6-digit codes
-  - AddFriendScreen with numpad entry
-  - FriendRequestsScreen
-  - FriendRequestConfirmationScreen
-- Display names feature:
-  - NameEntryScreen with T9 text input
-  - EditNameScreen for changing display name
-  - Local storage for display name mappings
-  - Display names shown throughout app (friends, requests, messages)
-- Messaging system:
-  - IndividualChatScreen for one-on-one text messaging
-  - T9 text input for message composition (500 character limit)
-  - Message history display with sent/received indicators
-  - Message validation and sanitization
-  - Error handling with user-friendly messages
-  - Haptic feedback for send/success/error states
-- Backend project structure
-- TypeScript interfaces for data models
+We are split between New Jersey and India, 11 hours apart. One of us would work while the other slept. Normally this would mean endless messages, confusing handoffs, and "wait, what did you change?" moments. With Kiro, that friction disappeared.
 
-**To Do:**
+Here's why Kiro was a game-changer for us:
 
-- Audio recording integration
-- Complete messaging API integration (sendMessage and getMessageHistory endpoints)
-- Backend API endpoints
-- Database schema and migrations
-- AWS infrastructure (Terraform)
-- Push notifications
-- Status management
-- Backend display name sync
-- Message composer component (MessageComposer.tsx)
-- Message history component (MessageHistory.tsx)
-- Message bubble component (MessageBubble.tsx)
+- **Spec-Driven Development**: Every feature started as a spec with requirements, design docs, and task lists. When one teammate woke up, they could see the specs and immediately understand what was planned, what was done, and what was next. No guessing, no sync calls needed.
+- **Persistent Context**: Kiro remembers. It knows the codebase, the design decisions, the patterns we established. When the other teammate picked up where we left off, Kiro already understood the project standards, the retro design system, the service/repository architecture. It felt like having a third teammate who never sleeps and never forgets.
+- **Steering Rules**: We defined project-wide standards once (monochrome palette, sharp corners, T9 input patterns) and Kiro enforced them automatically. Every component followed the same guidelines without us having to remind each other.
+- **Agent Hooks**: Automated workflows that triggered on file saves, keeping tests running and code consistent without manual intervention.
+- **Task Tracking**: The tasks.md files acted as a living checklist. Mark a task complete, and the next person knows exactly where to pick up. No status meetings required.
 
-## Development Notes
+Building a full-featured app with native iOS extensions, real-time notifications, and multiple games in a hackathon timeframe would have been brutal with traditional async collaboration. Kiro made it feel seamless. We shipped more features, had fewer merge conflicts, and actually slept.
 
-### Frontend
+## What's next for Pager 2077
 
-- The app uses a single-screen design (PagerScreen)
-- All components follow the retro aesthetic (sharp corners, thick borders, pixelated fonts)
-- Mock data is currently used for development
-- NativeBase theme is heavily customized in `src/theme/index.ts`
-- Display names stored locally using Secure Storage (user's own name) and AsyncStorage (mappings)
-- T9 text input system for entering names using numpad (multi-tap character entry)
-
-### Backend
-
-- Basic Bun server setup is complete
-- Models and interfaces are defined in `src/models/index.ts`
-- Directory structure follows service/repository pattern
-- Ready for API endpoint implementation
-
-## Design Documents
-
-Full specifications are available in `.kiro/specs/retro-pager-voice-app/`:
-
-- `requirements.md` - Detailed requirements with acceptance criteria
-- `design.md` - Technical architecture and component design
-- `tasks.md` - Implementation task breakdown
-
-## Kiro Features
-
-This project is set up with advanced Kiro features:
-
-### Spec-Driven Development
-
-- Complete specifications in `.kiro/specs/retro-pager-voice-app/`
-- Requirements, design, and task breakdown
-- Click "Start task" in `tasks.md` to begin implementation
-
-### Steering Documents
-
-- **Project Standards** - Always active coding guidelines
-- **Retro UI Guidelines** - Auto-loaded for frontend components
-- **Backend API Standards** - Auto-loaded for backend code
-- **AWS/Terraform Guidelines** - Auto-loaded for infrastructure code
-
-### Agent Hooks
-
-- **Format and Lint** - Auto-format on save
-- **Check Retro Styling** - Verify UI follows design system
-- **Update Tests** - Generate test suggestions
-- **API Documentation** - Auto-generate API docs
-- **Commit Message Helper** - Generate conventional commits
-
-### MCP Integration
-
-- **AWS Documentation** - Search AWS docs directly
-- **Git** - Enhanced git operations
-- **Filesystem** - Advanced file operations
-
-See `.kiro/KIRO_FEATURES.md` for detailed usage guide.
+- Voice messages: Record and send audio clips, true to the original pager evolution
+- Group chats: Create "channels" with multiple friends
+- Custom themes: Different pager shell colors and LCD tints
+- Android Live Activities equivalent: Persistent notifications with similar functionality
+- More games: Bringing back classics like Breakout and Space Invaders
 
 ## Team
 
