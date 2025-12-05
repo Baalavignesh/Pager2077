@@ -145,6 +145,9 @@ const NumPadButton: React.FC<NumPadButtonProps> = ({
             <Text style={styles.symbol}>{symbol}</Text>
           ) : (
             <View style={styles.buttonContent}>
+              {number === '2' && (
+                <Ionicons name="chevron-up" size={12} color="#888888" style={styles.arrowHint} />
+              )}
               <Text style={[
                 styles.number,
                 number === '–' && styles.dashNumber
@@ -155,6 +158,9 @@ const NumPadButton: React.FC<NumPadButtonProps> = ({
                 <Text style={styles.letters}>
                   {letters}
                 </Text>
+              )}
+              {number === '8' && (
+                <Ionicons name="chevron-down" size={12} color="#888888" style={styles.arrowHint} />
               )}
             </View>
           )}
@@ -376,6 +382,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 0,
+  },
+  arrowHint: {
+    opacity: 0.6,
+    marginVertical: -2,
   },
   number: {
     fontSize: 28,
